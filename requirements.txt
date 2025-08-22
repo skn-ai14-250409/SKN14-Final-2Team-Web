@@ -7,3 +7,5 @@ django
 pinecone
 numpy
 gunicorn
+uvicorn
+blacknoise
