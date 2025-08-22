@@ -1,0 +1,8 @@
+selenium
+requests
+python-dotenv
+openai
+python-dotenv
+Django
+pinecone
+numpy
