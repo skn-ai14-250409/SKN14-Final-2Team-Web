@@ -1,9 +1,9 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "docker-image:latest",
-    "Update": "true"
-  },
+  "Name": "kangyungu/django-cicd-app:latest",
+  "Update": "true"
+},
   "Ports": [
     {
       "ContainerPort": 8000,
