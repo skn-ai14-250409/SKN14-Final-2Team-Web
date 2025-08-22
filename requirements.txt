@@ -3,6 +3,7 @@ requests
 python-dotenv
 openai
 python-dotenv
-Django
+django
 pinecone
 numpy
+gunicorn
