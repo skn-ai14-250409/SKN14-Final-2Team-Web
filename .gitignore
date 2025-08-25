@@ -1,10 +1,10 @@
 # 파이참 설정파일을 버젼관리에서 제외한다.
-# - *.iml 모든 iml확장자를 가진 파일
+# - *.iml 모든 iml확장자를 가진 파일 
 # - /**/ 0개이상 n개의 하위 디렉토리를 모두 포함하는 표현식 /.idea, /a/b/c/d/.idea
 /**/.idea/
 /**/*.iml
 
-# 구글 드라이브 숨긴파일
+# 구글 드라이브 숨긴파일 
 /**/.tmp.drivedownload/
 /**/.tmp.driveupload/
 
@@ -222,8 +222,6 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
 
 # Flask stuff:
 instance/
