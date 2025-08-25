@@ -12,4 +12,4 @@ bind = '0.0.0.0:8000'
 worker_class = 'uvicorn.workers.UvicornWorker'
 
 # wsgi_app 실행한 모듈 application
-wsgi_app = 'django_app.asgi:application'
+wsgi_app = 'scentlab.asgi:application'
