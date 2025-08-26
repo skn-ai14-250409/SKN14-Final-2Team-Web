@@ -1,4 +1,0 @@
-django
-gunicorn
-uvicorn
-blacknoise
