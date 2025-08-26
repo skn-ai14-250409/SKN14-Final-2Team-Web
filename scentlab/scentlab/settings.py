@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "django-app-env.eba-xvbfmb7m.ap-northeast-2.elasticbeanstalk.com",
+    "django-app-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com ",
 ]
 
 # Application definition
