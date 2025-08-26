@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "vitna/django-cicd-app:latest",
+    "Name": "jung33010/django-cicd-app:latest",
     "Update": "true"
   },
   "Ports": [
