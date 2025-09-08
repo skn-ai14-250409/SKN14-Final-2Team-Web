@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
+from dotenv import load_dotenv
+load_dotenv()  # 로컬 개발 시 .env 읽기
 
 from pathlib import Path
 
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app',
 ]
 
 MIDDLEWARE = [
@@ -73,22 +76,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_app.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 # 운영 db
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get("DB_NAME", "scentpick"),
+        'USER': os.environ.get("DB_USER", "admin"),
+        'PASSWORD': os.environ.get("DB_PASSWORD", "yourpassword"),
+        'HOST': os.environ.get("DB_HOST", "scentpickdb.ctcauieck9iz.ap-northeast-2.rds.amazonaws.com"),
+        'PORT': os.environ.get("DB_PORT", "3306"),
     }
 }
 
