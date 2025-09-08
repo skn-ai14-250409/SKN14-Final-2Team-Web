@@ -3,3 +3,5 @@ gunicorn
 uvicorn
 blacknoise
 requests
+mysqlclient
+python-dotenv
