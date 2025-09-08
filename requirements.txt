@@ -2,3 +2,4 @@ django
 gunicorn
 uvicorn
 blacknoise
+requests
