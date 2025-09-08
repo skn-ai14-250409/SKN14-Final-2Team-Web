@@ -9,6 +9,9 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import os
+FASTAPI_URL = os.environ.get("FASTAPI_URL")
+
 
 from pathlib import Path
 
