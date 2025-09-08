@@ -142,5 +142,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "django-app-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com",
+    "django-web-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com",
 ]
