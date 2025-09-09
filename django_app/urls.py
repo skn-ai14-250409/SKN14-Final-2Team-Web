@@ -21,6 +21,9 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('app/', include('app.urls')),
-    path('', RedirectView.as_view(url='app/')),
+    # path('app/', include('app.urls')),
+    # path('', RedirectView.as_view(url='app/')),
+    path('scentpick/', include(('scentpick.urls'))),
+    path('uauth/', include(('uauth.urls', 'uauth'), namespace='uauth')),
+    path('', RedirectView.as_view(url='/scentpick/', permanent=False), name='index'),
 ]
