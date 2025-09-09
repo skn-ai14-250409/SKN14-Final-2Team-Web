@@ -1,0 +1,10 @@
+{# scentpick/templates/scentpick/home.html #}
+{% extends "scentpick/base.html" %}
+{% block title %}ScentPick - 홈{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1>당신만의 완벽한 향수를 찾아보세요</h1>
+  <p>AI 기반 맞춤 추천과 전문가의 조언으로 당신에게 어울리는 향수를 발견하세요</p>
+  <a class="cta-button" href="{% url 'uauth:login' %}">시작하기</a>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "scentpick/base.html" %}
+{% block title %}향수 리스트 - ScentPick{% endblock %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;color:#2d3748;">향수 리스트</h2>
+
+<input type="text" class="search-bar" placeholder="향수 이름, 브랜드, 메인 어코드로 검색하세요...">
+
+<div class="filter-tags">
+  <div class="tag active">전체</div>
+  <div class="tag">시트러스</div>
+  <div class="tag">우디</div>
+  <div class="tag">플로럴</div>
+  <div class="tag">오리엔탈</div>
+  <div class="tag">프레시</div>
+  <div class="tag">스파이시</div>
+</div>
+
+<div class="products-container">
+  <!-- 왼쪽 필터 -->
+  <div class="filters">
+    <div class="filter-section">
+      <h4>브랜드</h4>
+      <div class="filter-option"><input type="checkbox" id="chanel"><label for="chanel">샤넬</label></div>
+      <div class="filter-option"><input type="checkbox" id="dior"><label for="dior">디올</label></div>
+      <div class="filter-option"><input type="checkbox" id="tomford"><label for="tomford">톰포드</label></div>
+      <div class="filter-option"><input type="checkbox" id="creed"><label for="creed">크리드</label></div>
+    </div>
+
+    <div class="filter-section">
+      <h4>가격대</h4>
+      <div class="filter-option"><input type="checkbox" id="under100"><label for="under100">10만원 이하</label></div>
+      <div class="filter-option"><input type="checkbox" id="100to200"><label for="100to200">10-20만원</label></div>
+      <div class="filter-option"><input type="checkbox" id="200to300"><label for="200to300">20-30만원</label></div>
+      <div class="filter-option"><input type="checkbox" id="over300"><label for="over300">30만원 이상</label></div>
+    </div>
+
+    <div class="filter-section">
+      <h4>용량</h4>
+      <div class="filter-option"><input type="checkbox" id="30ml"><label for="30ml">30ml</label></div>
+      <div class="filter-option"><input type="checkbox" id="50ml"><label for="50ml">50ml</label></div>
+      <div class="filter-option"><input type="checkbox" id="100ml"><label for="100ml">100ml</label></div>
+    </div>
+  </div>
+
+  <!-- 오른쪽 리스트 -->
+  <div>
+    <div class="products-grid">
+      <a href="{% url 'scentpick:product_detail' slug='bleu-de-chanel' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Chanel</div>
+          <div class="product-name">블루 드 샤넬</div>
+          <div class="product-price">₩165,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='dior-sauvage' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Dior</div>
+          <div class="product-name">소바쥬</div>
+          <div class="product-price">₩145,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='tomford-homme' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Tom Ford</div>
+          <div class="product-name">옴므</div>
+          <div class="product-price">₩280,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='creed-aventus' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Creed</div>
+          <div class="product-name">아벤투스</div>
+          <div class="product-price">₩420,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='jo-malone-wood-sage-sea-salt' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Jo Malone</div>
+          <div class="product-name">우드 세이지 & 씨 솔트</div>
+          <div class="product-price">₩198,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='hermes-terre-dhermes' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Hermès</div>
+          <div class="product-name">테르 드 에르메스</div>
+          <div class="product-price">₩235,000</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Pagination -->
+    <div style="text-align:center;margin-top:40px;">
+      <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer;">이전</button>
+      <button style="background:#6366f1;color:#fff;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;">1</button>
+      <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer;">2</button>
+      <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer;">3</button>
+      <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer;">다음</button>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+  // 나중에 서버 필터(pagination/쿼리스트링)로 바꿀 땐, 이 자리에서 window.location = '?q=...&tag=...' 로 넘기도록 바꾸면 됨
+  (() => {
+    const searchInput = document.querySelector(".search-bar");
+    const tagEls = document.querySelectorAll(".filter-tags .tag");
+    const cards = document.querySelectorAll(".products-grid .product-card");
+    if (!cards.length) return;
+
+    function normalize(s) { return (s || "").toLowerCase().trim(); }
+
+    function cardText(el) {
+      const brand = el.querySelector(".product-brand")?.textContent || "";
+      const name  = el.querySelector(".product-name")?.textContent  || "";
+      const price = el.querySelector(".product-price")?.textContent || "";
+      return `${brand} ${name} ${price}`;
+    }
+
+    function filterCards() {
+      const q = normalize(searchInput?.value);
+      const activeTag = document.querySelector(".filter-tags .tag.active");
+      const tagKey = normalize(activeTag?.textContent);
+
+      cards.forEach(card => {
+        const txt = normalize(cardText(card));
+
+        // 태그 키워드(시트러스/우디/플로럴...) 단순 포함 매칭 (실제에선 data-attribute로 라벨을 박아두는 게 더 정확)
+        const tagMatch = (tagKey === "전체") || (tagKey && txt.includes(tagKey));
+        const textMatch = !q || txt.includes(q);
+
+        const show = tagMatch && textMatch;
+        card.style.display = show ? "" : "none";
+      });
+    }
+
+    if (searchInput) searchInput.addEventListener("input", filterCards);
+    tagEls.forEach(t => t.addEventListener("click", filterCards));
+
+    // 초기 한 번 렌더
+    filterCards();
+  })();
+</script>
+{% endblock script %}

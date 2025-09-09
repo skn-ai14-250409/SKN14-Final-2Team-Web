@@ -1,0 +1,28 @@
+{% extends "scentpick/base.html" %}
+{% block title %}로그인 - ScentPick{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <h2 style="text-align:center;margin-bottom:30px;color:#2d3748;">로그인</h2>
+  <div class="form-group">
+    <label>아이디</label>
+    <input type="text" placeholder="아이디를 입력하세요">
+  </div>
+  <div class="form-group">
+    <label>비밀번호</label>
+    <input type="password" placeholder="비밀번호를 입력하세요">
+  </div>
+  <button class="btn-primary">로그인</button>
+  <div style="text-align:center;margin:15px 0;">
+    <a style="color:#718096;text-decoration:none;font-size:14px;margin-right:15px;">아이디 찾기</a>
+    <a style="color:#718096;text-decoration:none;font-size:14px;">비밀번호 찾기</a>
+  </div>
+  <div style="text-align:center;margin:20px 0;">
+    <a href="{% url 'uauth:register' %}" style="color:#6366f1;text-decoration:none;font-weight:500;">회원가입</a>
+  </div>
+  <div class="social-login">
+    <button class="social-btn" style="color:#03C75A;">네이버</button>
+    <button class="social-btn" style="background:#FEE500;color:#000;">카카오</button>
+    <button class="social-btn" style="color:#4285F4;">구글</button>
+  </div>
+</div>
+{% endblock %}

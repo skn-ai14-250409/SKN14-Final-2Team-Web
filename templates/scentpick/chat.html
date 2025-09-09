@@ -1,0 +1,88 @@
+{% extends "scentpick/base.html" %}
+{% block title %}ScentPick Chat{% endblock %}
+{% block content %}
+<div class="chat-container">
+  <div class="chat-sidebar">
+    <button class="new-chat-btn">새 채팅</button>
+    <ul class="chat-history">
+      <li>30대 남자 향수 추천</li><li>코튼 향의 향수</li><li>여름용 시트러스 향수</li>
+      <li>데이트용 향수 추천</li><li>사무실용 은은한 향수</li>
+    </ul>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <h3 style="margin-bottom:10px;">ScentPick AI 챗봇</h3>
+      <div class="chat-examples">💡 예시: "30대 남자가 자주 찾는 향수 알려줘", "코튼 향의 20만원 이하 향수"</div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="message"><div class="message-content">안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?</div></div>
+    </div>
+    <div class="chat-input">
+      <input type="text" placeholder="메시지를 입력하세요..." id="chatInput">
+      <button class="send-btn" id="chatSendBtn">전송</button>
+    </div>
+  </div>
+
+  <div class="chat-info">
+    <div class="weather-info">
+      <h4>오늘의 날씨</h4><p>🌤️ 맑음, 22°C</p>
+      <p style="font-size:14px;color:#718096;">상쾌한 시트러스 계열을 추천해요!</p>
+    </div>
+    <div class="user-info">
+      <h4>사용자 정보</h4><p>👤 20대 남성</p>
+      <p style="font-size:14px;color:#718096;">젊고 활동적인 향수를 추천!</p>
+    </div>
+    <div>
+      <h4>추천 향수</h4>
+      <div class="recommended-perfumes">
+        <div class="perfume-card">
+          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">샤넬 블루</div>
+          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='bleu-de-chanel' %}">더보기</a>
+        </div>
+        <div class="perfume-card">
+          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">디올 소바쥬</div>
+          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='dior-sauvage' %}">더보기</a>
+        </div>
+        <div class="perfume-card">
+          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">톰포드 옴므</div>
+          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='tomford-homme' %}">더보기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+  window.SC_HIDE_BUBBLE_ON_CHAT = true;
+
+  (() => {
+    const sendBtn = document.getElementById("chatSendBtn");
+    const input   = document.getElementById("chatInput");
+    const box     = document.getElementById("chatMessages");
+    if (!sendBtn || !input || !box) return; // 다른 페이지에서 안전 종료
+
+    function add(msg, isUser) {
+      const div = document.createElement("div");
+      div.className = "message" + (isUser ? " user" : "");
+      div.innerHTML = '<div class="message-content">' + msg + "</div>";
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+    function send() {
+      const txt = (input.value || "").trim();
+      if (!txt) return;
+      input.value = "";
+      add(txt, true);
+      setTimeout(() => {
+        add("네, 30대 남성분에게 인기 있는 향수를 추천해드릴게요! 샤넬 블루 드 샤넬, 디올 소바쥬, 톰포드 옴므 등이 인기가 높습니다. 어떤 스타일의 향을 선호하시나요?", false);
+      }, 600);
+    }
+
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
+  })();
+</script>
+{% endblock %}
