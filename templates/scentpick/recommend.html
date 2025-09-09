@@ -1,0 +1,127 @@
+{% extends "scentpick/base.html" %}
+{% block title %}맞춤 추천 - ScentPick{% endblock %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;color:#2d3748;">맞춤 향수 추천</h2>
+
+<div class="recommend-container">
+  <!-- 오늘의 날씨 기반 추천 -->
+  <div class="weather-recommend">
+    <h3 style="margin-bottom:20px;">오늘의 날씨 기반 추천</h3>
+    <div style="background:#f7fafc;padding:20px;border-radius:10px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+        <div style="font-size:32px;">🌤️</div>
+        <div>
+          <div style="font-size:18px;font-weight:600;">맑음, 22°C</div>
+          <div style="color:#718096;">습도 45%, 바람 약함</div>
+        </div>
+      </div>
+      <p style="color:#4a5568;">상쾌하고 시원한 시트러스 계열이나 아쿠아틱 노트가 어울려요!</p>
+    </div>
+
+    <div class="products-grid">
+      <a href="{% url 'scentpick:product_detail' slug='acqua-di-parma-colonia' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Acqua di Parma</div>
+          <div class="product-name">콜로니아</div>
+          <div class="product-price">₩180,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='hermes-un-jardin-sur-le-toit' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Hermès</div>
+          <div class="product-name">운 자르당 쉬르 르 토와</div>
+          <div class="product-price">₩220,000</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 20대 남성 맞춤 추천 -->
+  <div class="weather-recommend">
+    <h3 style="margin-bottom:20px;">20대 남성 맞춤 추천</h3>
+    <div style="background:#f7fafc;padding:20px;border-radius:10px;margin-bottom:20px;">
+      <p style="color:#4a5568;">활동적이고 젊은 에너지를 표현할 수 있는 프레시하고 스포티한 향수들을 추천해드립니다.</p>
+    </div>
+
+    <div class="products-grid">
+      <a href="{% url 'scentpick:product_detail' slug='bleu-de-chanel' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Chanel</div>
+          <div class="product-name">블루 드 샤넬</div>
+          <div class="product-price">₩165,000</div>
+        </div>
+      </a>
+
+      <a href="{% url 'scentpick:product_detail' slug='dior-sauvage' %}" class="product-card" style="text-decoration:none;color:inherit;">
+        <div class="product-image"></div>
+        <div class="product-info">
+          <div class="product-brand">Dior</div>
+          <div class="product-name">소바쥬</div>
+          <div class="product-price">₩145,000</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 트렌드 분석 -->
+<div class="analysis-section">
+  <h3 style="margin-bottom:20px;">향수 트렌드 분석</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+    <div>
+      <h4 style="margin-bottom:15px;">조회수 TOP 5</h4>
+      <div class="chart-placeholder">조회수 차트</div>
+      <ul class="top-list">
+        <li><div class="rank">1</div><span>샤넬 블루 드 샤넬</span><span>2,847 views</span></li>
+        <li><div class="rank">2</div><span>디올 소바쥬</span><span>2,156 views</span></li>
+        <li><div class="rank">3</div><span>톰포드 옴므</span><span>1,923 views</span></li>
+        <li><div class="rank">4</div><span>크리드 아벤투스</span><span>1,788 views</span></li>
+        <li><div class="rank">5</div><span>조 말론 우드 세이지</span><span>1,654 views</span></li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="margin-bottom:15px;">인기 메인 어코드 TOP 5</h4>
+      <div class="chart-placeholder">어코드 차트</div>
+      <ul class="top-list">
+        <li><div class="rank">1</div><span>Fresh Spicy</span><span>18.5%</span></li>
+        <li><div class="rank">2</div><span>Woody</span><span>16.2%</span></li>
+        <li><div class="rank">3</div><span>Citrus</span><span>14.8%</span></li>
+        <li><div class="rank">4</div><span>Aromatic</span><span>12.4%</span></li>
+        <li><div class="rank">5</div><span>Oriental</span><span>10.9%</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+  (() => {
+    // 예: "조회수 TOP 5" / "인기 메인 어코드 TOP 5"에 가짜 막대 길이 부여
+    const chartBoxes = document.querySelectorAll(".analysis-section .chart-placeholder");
+    if (!chartBoxes.length) return;
+
+    chartBoxes.forEach((box, idx) => {
+      box.style.display = "grid";
+      box.style.alignItems = "end";
+      box.style.gridTemplateColumns = "repeat(5, 1fr)";
+      box.style.gap = "8px";
+      box.style.height = "120px";
+      const heights = idx === 0 ? [100, 76, 68, 62, 55] : [80, 70, 64, 54, 48]; // 대충 예시
+      heights.forEach(h => {
+        const bar = document.createElement("div");
+        bar.style.height = h + "px";
+        bar.style.borderRadius = "6px";
+        bar.style.background = "linear-gradient(135deg,#6366f1,#7c3aed)";
+        box.appendChild(bar);
+      });
+    });
+  })();
+</script>
+{% endblock script %}

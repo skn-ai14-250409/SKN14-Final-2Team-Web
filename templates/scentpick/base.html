@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}ScentPick{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/scentpick.css' %}">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a class="logo" href="{% url 'scentpick:home' %}">ScentPick</a>
+      <ul class="nav-menu">
+        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'chat' %}active{% endif %}" href="{% url 'scentpick:chat' %}">ScentPick Chat</a></li>
+        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'recommend' %}active{% endif %}" href="{% url 'scentpick:recommend' %}">Recommend</a></li>
+        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'perfumes' %}active{% endif %}" href="{% url 'scentpick:perfumes' %}">Perfumes</a></li>
+        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'offlines' %}active{% endif %}" href="{% url 'scentpick:offlines' %}">Offlines</a></li>
+        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'mypage' %}active{% endif %}" href="{% url 'scentpick:mypage' %}">My Page</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Chatbot Toggle -->
+  <button class="chatbot-toggle" id="chatbotToggle" title="ScentPick AI">💬</button>
+
+  <!-- Chatbot Sidebar -->
+  <div class="chatbot-sidebar" id="chatbotSidebar">
+    <div class="chatbot-header">
+      <h3>ScentPick AI</h3>
+      <button class="close-chatbot" id="closeChatbot">×</button>
+    </div>
+    <div class="sidebar-chat-messages" id="sidebarChatMessages">
+      <div class="message"><div class="message-content">
+        안녕하세요! 향수 관련해서 궁금한 것이 있으시면 언제든 물어보세요!
+      </div></div>
+    </div>
+    <div class="sidebar-chat-input">
+      <input type="text" placeholder="메시지를 입력하세요..." id="sidebarChatInput">
+      <button class="send-btn" id="sidebarSendBtn">전송</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-warnings">
+        ⚠️ 향수 사용 시 주의사항: 본 제품은 알레르기 유발 성분을 포함할 수 있습니다.
+        피부에 이상이 생길 경우 사용을 중단하세요. 가연성 물질이므로 화기 근처에서 사용을 금지합니다.
+      </div>
+      <div class="footer-copyright">
+        © 2024 ScentPick. All rights reserved. | 문의: contact@scentpick.com
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/scentpick.js' %}"></script>
+  {% block script %}{% endblock script %}
+  {% block scripts %}{% endblock scripts %}
+</body>
+</html>

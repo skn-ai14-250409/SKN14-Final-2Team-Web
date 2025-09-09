@@ -1,0 +1,91 @@
+{% extends "scentpick/base.html" %}
+{% block title %}오프라인 매장 찾기 - ScentPick{% endblock %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;color:#2d3748;">오프라인 매장 찾기</h2>
+
+<div class="map-container">
+  <div class="map-view">
+    <div class="map-controls">
+      <button class="map-btn">+</button>
+      <button class="map-btn">-</button>
+      <button class="map-btn">🎯</button>
+    </div>
+    <div class="map-placeholder">지도 영역 (GPS 기반 주변 매장 표시)</div>
+  </div>
+
+  <div class="map-sidebar">
+    <div class="map-filters">
+      <button class="map-filter-btn active">전체</button>
+      <button class="map-filter-btn">올리브영</button>
+      <button class="map-filter-btn">향수공방</button>
+      <button class="map-filter-btn">브랜드 매장</button>
+    </div>
+
+    <ul class="store-list">
+      <li class="store-item">
+        <div class="store-name">올리브영 강남점</div>
+        <div class="store-address">서울 강남구 테헤란로 123</div>
+        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 5분 • 영업중</div>
+      </li>
+      <li class="store-item">
+        <div class="store-name">샤넬 뷰티 부티크</div>
+        <div class="store-address">서울 강남구 압구정로 456</div>
+        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 12분 • 영업중</div>
+      </li>
+      <li class="store-item">
+        <div class="store-name">향수공방 르플랑</div>
+        <div class="store-address">서울 강남구 신사동 789</div>
+        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 8분 • 영업중</div>
+      </li>
+      <li class="store-item">
+        <div class="store-name">롯데백화점 면세점</div>
+        <div class="store-address">서울 중구 소공동 1</div>
+        <div style="color:#718096;font-size:12px;margin-top:5px;">지하철 15분 • 영업중</div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+  (() => {
+    const mapEl = document.querySelector(".map-placeholder");
+    const btns = document.querySelectorAll(".map-controls .map-btn");
+    if (!mapEl || !btns.length) return;
+
+    let zoom = 12;
+    function render() {
+      mapEl.textContent = `지도 영역 (가상 줌: ${zoom})`;
+    }
+
+    btns.forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const val = btn.textContent.trim();
+        if (val === "+") {
+          zoom = Math.min(20, zoom + 1);
+          render();
+        } else if (val === "-") {
+          zoom = Math.max(1, zoom - 1);
+          render();
+        } else {
+          // 현재 위치
+          if (!navigator.geolocation) return alert("Geolocation을 지원하지 않는 브라우저입니다.");
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              mapEl.textContent = `현재 위치: (${latitude.toFixed(4)}, ${longitude.toFixed(4)}) • 가상 줌: ${zoom}`;
+            },
+            (err) => alert("위치 정보를 가져오지 못했습니다: " + err.message),
+            { enableHighAccuracy: true, timeout: 5000 }
+          );
+        }
+      });
+    });
+
+    render();
+  })();
+</script>
+{% endblock script %}

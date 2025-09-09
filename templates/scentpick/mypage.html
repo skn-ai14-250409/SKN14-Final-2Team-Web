@@ -1,0 +1,113 @@
+{% extends "scentpick/base.html" %}
+{% block title %}마이페이지 - ScentPick{% endblock %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;color:#2d3748;">마이페이지</h2>
+
+<div class="mypage-container">
+  <!-- 좌측: 프로필 -->
+  <div class="profile-section">
+    <div class="profile-avatar"></div>
+    <div class="profile-name">김향수님</div>
+    <ul class="profile-menu">
+      <li>회원정보 수정</li>
+      <li>비밀번호 변경</li>
+      <li>알림 설정</li>
+      <li>개인정보 처리방침</li>
+      <li>로그아웃</li>
+    </ul>
+  </div>
+
+  <!-- 가운데: 추천 내역 -->
+  <div class="recommendations-section">
+    <h3 style="margin-bottom:20px;">추천 받은 향수 내역</h3>
+
+    <div class="recommendations-grid">
+      <div class="recommendation-card">
+        <div class="recommendation-date">2024.08.25</div>
+        <div class="perfume-img" style="margin:0 auto 10px;"></div>
+        <div style="font-weight:600;margin-bottom:5px;">샤넬 블루</div>
+        <div style="font-size:12px;color:#718096;margin-bottom:10px;">AI 챗봇 추천</div>
+        <div style="display:flex;justify-content:center;gap:10px;">
+          <button style="background:#e53e3e;color:#fff;border:none;padding:5px 10px;border-radius:15px;font-size:12px;">👍</button>
+          <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:5px 10px;border-radius:15px;font-size:12px;">👎</button>
+        </div>
+      </div>
+
+      <div class="recommendation-card">
+        <div class="recommendation-date">2024.08.23</div>
+        <div class="perfume-img" style="margin:0 auto 10px;"></div>
+        <div style="font-weight:600;margin-bottom:5px;">디올 소바쥬</div>
+        <div style="font-size:12px;color:#718096;margin-bottom:10px;">날씨 기반 추천</div>
+        <div style="display:flex;justify-content:center;gap:10px;">
+          <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:5px 10px;border-radius:15px;font-size:12px;">👍</button>
+          <button style="background:#e53e3e;color:#fff;border:none;padding:5px 10px;border-radius:15px;font-size:12px;">👎</button>
+        </div>
+      </div>
+
+      <div class="recommendation-card">
+        <div class="recommendation-date">2024.08.20</div>
+        <div class="perfume-img" style="margin:0 auto 10px;"></div>
+        <div style="font-weight:600;margin-bottom:5px;">톰포드 옴므</div>
+        <div style="font-size:12px;color:#718096;margin-bottom:10px;">AI 챗봇 추천</div>
+        <div style="display:flex;justify-content:center;gap:10px;">
+          <button style="background:#e53e3e;color:#fff;border:none;padding:5px 10px;border-radius:15px;font-size:12px;">👍</button>
+          <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:5px 10px;border-radius:15px;font-size:12px;">👎</button>
+        </div>
+      </div>
+
+      <div class="recommendation-card">
+        <div class="recommendation-date">2024.08.18</div>
+        <div class="perfume-img" style="margin:0 auto 10px;"></div>
+        <div style="font-weight:600;margin-bottom:5px;">조 말론 우드 세이지</div>
+        <div style="font-size:12px;color:#718096;margin-bottom:10px;">사용자 맞춤 추천</div>
+        <div style="display:flex;justify-content:center;gap:10px;">
+          <button style="background:#e53e3e;color:#fff;border:none;padding:5px 10px;border-radius:15px;font-size:12px;">👍</button>
+          <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:5px 10px;border-radius:15px;font-size:12px;">👎</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측: 즐겨찾기 -->
+  <div class="favorites-section">
+    <h3 style="margin-bottom:15px;">즐겨찾기</h3>
+    <div class="favorites-grid">
+      <div class="favorite-item"></div>
+      <div class="favorite-item"></div>
+      <div class="favorite-item"></div>
+      <div class="favorite-item"></div>
+      <div class="favorite-item"></div>
+      <div class="favorite-item"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+  (() => {
+    const cards = document.querySelectorAll(".recommendations-grid .recommendation-card");
+    if (!cards.length) return;
+
+    cards.forEach(card => {
+      const likeBtn = card.querySelector("button:nth-of-type(1)");
+      const hateBtn = card.querySelector("button:nth-of-type(2)");
+      if (!likeBtn || !hateBtn) return;
+
+      likeBtn.addEventListener("click", () => {
+        likeBtn.classList.toggle("active");
+        if (likeBtn.classList.contains("active")) hateBtn.classList.remove("active");
+        // TODO: fetch('/api/feedback', { method:'POST', body: JSON.stringify({action:'like', perfume_id: ...}) })
+      });
+
+      hateBtn.addEventListener("click", () => {
+        hateBtn.classList.toggle("active");
+        if (hateBtn.classList.contains("active")) likeBtn.classList.remove("active");
+        // TODO: fetch('/api/feedback', { method:'POST', body: JSON.stringify({action:'dislike', perfume_id: ...}) })
+      });
+    });
+  })();
+</script>
+{% endblock script %}

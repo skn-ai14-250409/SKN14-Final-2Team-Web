@@ -1,0 +1,108 @@
+{% extends "scentpick/base.html" %}
+{% block title %}{{ name|default:"블루 드 샤넬" }} - ScentPick{% endblock %}
+{% block content %}
+
+<div class="product-detail">
+  <div class="product-detail-image"></div>
+
+  <div class="product-detail-info">
+    <h1>{{ name|default:"블루 드 샤넬" }}</h1>
+    <div class="product-detail-brand">{{ brand|default:"Chanel" }}</div>
+    <div class="product-detail-price">{{ price|default:"₩165,000" }}</div>
+
+    <div class="product-description">
+      상쾌하고 세련된 남성 향수로, 시트러스의 생동감과 우디한 깊이가 완벽하게 조화를 이룹니다.
+      활동적인 현대 남성을 위한 시그니처 향수로, 낮과 밤 모든 시간에 어울리는 베르사일한 매력을 선사합니다.
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <button style="background:#e53e3e;color:#fff;border:none;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;">👍 좋아요</button>
+      <button style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;">👎 싫어요</button>
+    </div>
+
+    <button class="buy-btn">구매 사이트 이동</button>
+  </div>
+</div>
+
+<div class="notes-section">
+  <h3 style="text-align:center;margin-bottom:20px;">향수 노트 구성</h3>
+
+  <!-- Main Accord Chart -->
+  <div style="margin-bottom:40px;">
+    <h4 style="text-align:center;margin-bottom:20px;">메인 어코드</h4>
+    <div style="display:flex;justify-content:center;gap:20px;margin-bottom:30px;">
+      <div style="text-align:center;">
+        <div style="width:60px;height:60px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;">85%</div>
+        <div style="font-size:12px;">Fresh Spicy</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:60px;height:60px;background:linear-gradient(135deg,#48bb78,#38a169);border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;">70%</div>
+        <div style="font-size:12px;">Citrus</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:60px;height:60px;background:linear-gradient(135deg,#ed8936,#dd6b20);border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;">65%</div>
+        <div style="font-size:12px;">Woody</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes-grid">
+    <div class="note-category">
+      <h4>Top Notes</h4>
+      <div class="note-items">
+        <div class="note-item"><div class="note-image"></div><span>레몬</span></div>
+        <div class="note-item"><div class="note-image"></div><span>자몽</span></div>
+        <div class="note-item"><div class="note-image"></div><span>베르가못</span></div>
+      </div>
+    </div>
+    <div class="note-category">
+      <h4>Middle Notes</h4>
+      <div class="note-items">
+        <div class="note-item"><div class="note-image"></div><span>진저</span></div>
+        <div class="note-item"><div class="note-image"></div><span>넛맥</span></div>
+        <div class="note-item"><div class="note-image"></div><span>재스민</span></div>
+      </div>
+    </div>
+    <div class="note-category">
+      <h4>Base Notes</h4>
+      <div class="note-items">
+        <div class="note-item"><div class="note-image"></div><span>시더우드</span></div>
+        <div class="note-item"><div class="note-image"></div><span>샌달우드</span></div>
+        <div class="note-item"><div class="note-image"></div><span>화이트 머스크</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+(() => {
+  const likeBtn = document.querySelector(".product-detail .product-detail-info button:nth-of-type(1)");
+  const hateBtn = document.querySelector(".product-detail .product-detail-info button:nth-of-type(2)");
+  const buyBtn  = document.querySelector(".product-detail .buy-btn");
+
+  if (likeBtn) {
+    likeBtn.addEventListener("click", () => {
+      likeBtn.classList.toggle("active");
+      // 한쪽만 선택되게 하고 싶으면:
+      if (likeBtn.classList.contains("active")) hateBtn && hateBtn.classList.remove("active");
+    });
+  }
+  if (hateBtn) {
+    hateBtn.addEventListener("click", () => {
+      hateBtn.classList.toggle("active");
+      if (hateBtn.classList.contains("active")) likeBtn && likeBtn.classList.remove("active");
+    });
+  }
+  if (buyBtn) {
+    buyBtn.addEventListener("click", () => {
+      // TODO: 실제 구매 링크로 교체
+      alert("공식 몰 또는 최저가 페이지로 이동합니다. (링크 연결 예정)");
+      // window.location.href = "https://example.com/product/{{ slug }}";
+    });
+  }
+})();
+</script>
+{% endblock script %}
