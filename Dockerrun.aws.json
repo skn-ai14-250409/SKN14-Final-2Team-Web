@@ -11,9 +11,11 @@
     }
   ],
   "Environment": {
-    "DATABASE_HOST": "$DATABASE_HOST",
-    "DATABASE_USER": "$DATABASE_USER",
-    "DATABASE_PASSWORD": "$DATABASE_PASSWORD"
+    "DB_HOST": "$DB_HOST",
+    "DB_USER": "$DB_USER",
+    "DB_PASSWORD": "$DB_PASSWORD",
+    "DB_NAME": "$DB_NAME",
+    "DB_PORT": "$DB_PORT"
   },
   "Volumes": [],
   "Logging": "/var/log/nginx"
