@@ -19,5 +19,5 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . .
 
 # Gunicorn으로 Django 실행
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "django_app.wsgi:application"]
+CMD ["gunicorn", "-c", "gunicorn.conf.py"]
 EXPOSE 8000
