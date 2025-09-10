@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "jung33010/django-cicd-app:latest",
+    "Name": "${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest",
     "Update": "true"
   },
   "Ports": [
