@@ -1,91 +1,641 @@
 {% extends "scentpick/base.html" %}
 {% block title %}오프라인 매장 찾기 - ScentPick{% endblock %}
+
 {% block content %}
+<h2 style="margin-bottom:24px;color:#111827;">오프라인 매장 찾기</h2>
 
-<h2 style="margin-bottom:30px;color:#2d3748;">오프라인 매장 찾기</h2>
+<!-- 해시태그(추천 키워드) 스타일 개선 -->
+<style>
+  .chip{
+    padding:8px 12px;
+    border:none;
+    border-radius:999px;
+    background:#f3f4f6;           /* 밝은 회색 */
+    color:#1f2937;                 /* 진한 글자 */
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip:hover{
+    background:#e5e7eb;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    transform:translateY(-1px);
+  }
+</style>
 
-<div class="map-container">
-  <div class="map-view">
-    <div class="map-controls">
-      <button class="map-btn">+</button>
-      <button class="map-btn">-</button>
-      <button class="map-btn">🎯</button>
+<div style="display:grid;grid-template-columns:1.7fr 1fr;gap:16px;">
+  <!-- 지도 -->
+  <section id="mapSection" style="position:relative;border-radius:16px;overflow:hidden;background:#f1f5f9;min-height:560px;">
+    <div id="map" style="height:560px;"></div>
+
+    <!-- 빠른탭: 지도 위 오버레이 -->
+    <div id="presetBar" style="position:absolute;left:12px;top:12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:6px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:1000;box-shadow:0 6px 16px rgba(0,0,0,.05);">
+      <button class="preset" data-q="__ALL__" style="padding:6px 10px;border-radius:10px;border:1px solid #e5e7eb;background:#eef2ff;">전체</button>
+      <button class="preset" data-q="올리브영" style="padding:6px 10px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;">올리브영</button>
+      <button class="preset" data-q="향수공방" style="padding:6px 10px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;">향수공방</button>
+      <button class="preset" data-q="조말론|딥디크|샤넬|디올|바이레도|이솝|탬버린즈|톰포드|프라다" style="padding:6px 10px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;">브랜드 매장</button>
     </div>
-    <div class="map-placeholder">지도 영역 (GPS 기반 주변 매장 표시)</div>
-  </div>
 
-  <div class="map-sidebar">
-    <div class="map-filters">
-      <button class="map-filter-btn active">전체</button>
-      <button class="map-filter-btn">올리브영</button>
-      <button class="map-filter-btn">향수공방</button>
-      <button class="map-filter-btn">브랜드 매장</button>
+    <!-- 범례 (조금 키운 버전) -->
+    <div id="legend"
+        style="position:absolute;right:12px;bottom:12px;background:#fff;border:1px solid #e5e7eb;
+                border-radius:12px;padding:8px 12px;display:flex;gap:14px;align-items:center;
+                z-index:999;box-shadow:0 6px 16px rgba(0,0,0,.05);">
+      <span style="display:flex;gap:8px;align-items:center;">
+        <i style="width:12px;height:12px;border-radius:999px;background:#2563eb;display:inline-block;"></i>
+        <em style="font-style:normal;font-size:13px;color:#475569;">브랜드</em>
+      </span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <i style="width:12px;height:12px;border-radius:999px;background:#10b981;display:inline-block;"></i>
+        <em style="font-style:normal;font-size:13px;color:#475569;">올리브영</em>
+      </span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <i style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></i>
+        <em style="font-style:normal;font-size:13px;color:#475569;">향수공방</em>
+      </span>
     </div>
 
-    <ul class="store-list">
-      <li class="store-item">
-        <div class="store-name">올리브영 강남점</div>
-        <div class="store-address">서울 강남구 테헤란로 123</div>
-        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 5분 • 영업중</div>
-      </li>
-      <li class="store-item">
-        <div class="store-name">샤넬 뷰티 부티크</div>
-        <div class="store-address">서울 강남구 압구정로 456</div>
-        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 12분 • 영업중</div>
-      </li>
-      <li class="store-item">
-        <div class="store-name">향수공방 르플랑</div>
-        <div class="store-address">서울 강남구 신사동 789</div>
-        <div style="color:#6366f1;font-size:12px;margin-top:5px;">도보 8분 • 영업중</div>
-      </li>
-      <li class="store-item">
-        <div class="store-name">롯데백화점 면세점</div>
-        <div class="store-address">서울 중구 소공동 1</div>
-        <div style="color:#718096;font-size:12px;margin-top:5px;">지하철 15분 • 영업중</div>
-      </li>
-    </ul>
-  </div>
+  </section>
+
+  <!-- 사이드바 -->
+  <aside id="side" style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <span id="count" style="color:#64748b;font-size:12px;">0건</span>
+    </div>
+
+    <!-- 검색 -->
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="q" placeholder="예: 올리브영 강남, 딥디크, 샤넬"
+             style="flex:1;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;outline:none;">
+      <button id="btnSearch" style="padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;">검색</button>
+    </div>
+
+    <!-- 컨트롤 -->
+    <div style="display:flex;gap:10px;align-items:center;color:#64748b;font-size:12px;margin-bottom:10px;flex-wrap:wrap;">
+      <span>범위: 지도 중심 <strong>10km</strong></span>
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer;">
+        <input type="checkbox" id="autoRefresh" checked> 자동 새로고침
+      </label>
+      <button id="btnRequery" style="margin-left:auto;padding:6px 8px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;cursor:pointer;">현 지도에서 다시 검색</button>
+    </div>
+
+    <!-- 추천 키워드 (새 스타일 적용) -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="chip" data-q="올리브영"># 올리브영</button>
+      <button class="chip" data-q="향수공방"># 향수공방</button>
+      <button class="chip" data-q="향수 매장"># 향수 매장</button>
+      <button class="chip" data-q="조말론"># 조말론</button>
+      <button class="chip" data-q="딥디크"># 딥디크</button>
+      <button class="chip" data-q="샤넬"># 샤넬</button>
+    </div>
+
+    <!-- 상태 -->
+    <div id="status" style="font-size:12px;color:#64748b;margin-bottom:8px;">검색 대기 중…</div>
+
+    <!-- 결과 리스트 -->
+    <ul id="list" style="display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;max-height:420px;overflow:auto;border-top:1px solid #f1f5f9;padding-top:8px;"></ul>
+
+    <!-- 더보기 -->
+    <div id="moreWrap" style="display:none;margin-top:8px;">
+      <button id="btnMore" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa;cursor:pointer;">더보기</button>
+    </div>
+  </aside>
 </div>
 
+<!-- 길찾기 모달 -->
+<div id="dirModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:1200;">
+  <div style="background:#fff;border-radius:16px;max-width:520px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;">
+      <strong>길찾기</strong>
+      <button id="dirClose" style="border:none;background:transparent;font-size:22px;line-height:1;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <label style="display:flex;gap:8px;align-items:center;">
+        <span style="min-width:58px;color:#374151;">출발지</span>
+        <input id="dirStart" placeholder="비워두면 내 위치 사용"
+               style="flex:1;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;outline:none;">
+      </label>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="min-width:58px;color:#374151;">이동수단</span>
+        <label><input type="radio" name="dirMode" value="PUBLICTRANSIT" checked> 대중교통</label>
+        <label><input type="radio" name="dirMode" value="CAR"> 자동차</label>
+        <label><input type="radio" name="dirMode" value="FOOT"> 도보</label>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+        <button id="openKakaoDir" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;">카카오맵으로 열기</button>
+        <button id="openGoogleDir" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;">구글지도로 열기</button>
+      </div>
+      <div id="dirHint" style="font-size:12px;color:#6b7280;">위치권한을 허용하면 출발지를 자동으로 채워줄 수 있어요.</div>
+    </div>
+  </div>
+</div>
 {% endblock content %}
 
 {% block script %}
 <script>
-  (() => {
-    const mapEl = document.querySelector(".map-placeholder");
-    const btns = document.querySelectorAll(".map-controls .map-btn");
-    if (!mapEl || !btns.length) return;
+  const KAKAO_JS_KEY = "{{ KAKAO_JS_KEY|escapejs }}";
 
-    let zoom = 12;
-    function render() {
-      mapEl.textContent = `지도 영역 (가상 줌: ${zoom})`;
+  /* ===== 설정/상태 ===== */
+  const SEARCH_RADIUS_M = 10000; // 10km
+  let map, places, geocoder, clusterer;
+  let markers = [];
+  let markersById = new Map();
+
+  let detailOverlay = null;
+  let hoverOverlay  = null;
+
+  let autoRefreshOn = true;
+  let suppressAutoOnce = false;
+  let lastViewportKey = '';
+  let idleTimer = null;
+
+  let currentQuery = '';
+  let currentResults = [];
+  let currentPagination = null;
+  let isAppending = false;
+  let lastSearch = null;
+
+  // 길찾기 대상
+  let dirTarget = null;
+
+  const $  = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const setCount  = n => $('#count').textContent = n + '건';
+  const setStatus = m => $('#status').textContent = m;
+
+  function viewportKey(){
+    const c = map.getCenter();
+    return c.getLat().toFixed(5) + ',' + c.getLng().toFixed(5) + '|' + map.getLevel();
+  }
+
+  /* === 지도 높이를 사이드바와 동일하게 맞추기 === */
+  function syncMapHeight(){
+    const asideH = $('#side').offsetHeight;
+    const h = Math.max(560, asideH);
+    const mapEl = $('#map');
+    if (mapEl.style.height !== h + 'px') {
+      mapEl.style.height = h + 'px';
+      if (window.kakao && map) setTimeout(() => map.relayout(), 0);
+    }
+  }
+
+  /* ===== 분류/색상 ===== */
+  function catOf(name, categoryName='') {
+    if (/올리브영/i.test(name)) return 'OLIVE';
+    if (/(조말론|딥디크|샤넬|디올|끌로에|구찌|입생|이솝|바이레도|탬버린즈|에르메스|샹테카이|톰포드|프라도|프라다)/i.test(name+categoryName)) return 'BRAND';
+    return 'WORK'; // 나머지는 향수공방 취급
+  }
+  const CAT_COLOR = { BRAND:'#2563eb', OLIVE:'#10b981', WORK:'#f59e0b' };
+  const CAT_TEXT  = { BRAND:'브랜드',   OLIVE:'올리브영', WORK:'향수공방' };
+
+  function markerImage(color) {
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'>"
+              + "<circle cx='14' cy='14' r='10' fill='"+color+"'/><circle cx='14' cy='14' r='4' fill='#fff'/></svg>";
+    return new kakao.maps.MarkerImage(
+      'data:image/svg+xml;base64,' + btoa(svg),
+      new kakao.maps.Size(28, 28),
+      { offset: new kakao.maps.Point(14, 14) }
+    );
+  }
+
+  /* ====== (중요) 뷰티/향수 필터링 규칙 + 브랜드 쿼리 확장 ====== */
+  const BRAND_TOKENS = ['샤넬','딥디크','조말론','디올','바이레도','이솝','탬버린즈','프라다','톰포드','겐조','구찌','끌로에'];
+  const BEAUTY_HINT_RE = /(향수|화장품|뷰티|드러그|매장|스토어|부티크|플래그십|백화점|면세|올리브영)/i;
+  const EXCLUDE_RE = /(미용실|헤어|네일|왁싱|마사지|스파|피부관리|에스테틱|피부과|치과|안과|의원|병원|약국|카페|식당|음식점|숙박|학원|부동산|세탁|수선|자동차|주유소|주차장|공업사|PC방|노래방|당구|골프|인테리어)/i;
+
+  function isBeautyPlace(d, q='') {
+    const name = d.place_name || '';
+    const cat  = d.category_name || '';
+    const hay  = `${name} ${cat}`;
+
+    if (EXCLUDE_RE.test(hay)) return false; // 1) 명백한 제외
+
+    const qHasBrand = BRAND_TOKENS.some(b => q.includes(b));
+    const qHasBeautyWord = /(향수|화장품|뷰티)/i.test(q);
+
+    // 2) 브랜드/뷰티 기반 검색이면 '뷰티 힌트'가 있는 것만
+    if (qHasBrand || qHasBeautyWord) return BEAUTY_HINT_RE.test(hay);
+
+    // 3) 그 외(빠른검색 등)는 힌트가 있는 장소만
+    return BEAUTY_HINT_RE.test(hay);
+  }
+
+  function maybeExpandBrandQuery(q) {
+    const hit = BRAND_TOKENS.find(b => q.includes(b));
+    const hasBeautyWord = /(향수|화장품|뷰티|매장|스토어|부티크|백화점|면세)/i.test(q);
+    if (hit && !hasBeautyWord) {
+      return [`${hit} 향수`, `${hit} 뷰티`, `${hit} 화장품`, `${hit} 매장`];
+    }
+    return null;
+  }
+
+  function toStore(d){
+    const cat = catOf(`${d.place_name} ${d.category_name||''}`);
+    return {
+      id: d.id,
+      name: d.place_name,
+      addr: d.road_address_name || d.address_name || '',
+      phone: d.phone || '',
+      lat: parseFloat(d.y),
+      lng: parseFloat(d.x),
+      place_url: d.place_url || '#',
+      cat
+    };
+  }
+
+  /* ===== 오버레이 ===== */
+  function closeDetail(){ if (detailOverlay) { detailOverlay.setMap(null); detailOverlay = null; } }
+  function closeHover(){ if (hoverOverlay) { hoverOverlay.setMap(null); hoverOverlay = null; } }
+
+  function openDetail(r, marker){
+    closeDetail(); closeHover();
+    const el = document.createElement('div');
+    el.style.cssText = "background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px 12px;min-width:220px;max-width:260px;";
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+        <div style="font-weight:700">${r.name}</div>
+        <button type="button" class="sp-close" style="border:none;background:transparent;font-size:18px;line-height:1;cursor:pointer;">×</button>
+      </div>
+      ${r.addr ? `<div style="color:#6b7280;margin-top:4px;">${r.addr}</div>` : ""}
+      ${r.phone ? `<div style="color:#6b7280;margin-top:2px;">${r.phone}</div>` : ""}
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+        <span style="display:inline-flex;gap:6px;align-items:center;font-size:12px;color:#334155">
+          <i style="width:8px;height:8px;border-radius:999px;background:${CAT_COLOR[r.cat]}"></i>${CAT_TEXT[r.cat]}
+        </span>
+        <a href="${r.place_url}" target="_blank" rel="noreferrer" style="margin-left:auto;color:#2563eb;text-decoration:underline;white-space:nowrap;">카카오 페이지 열기</a>
+      </div>
+    `;
+    el.querySelector('.sp-close').onclick = closeDetail;
+
+    detailOverlay = new kakao.maps.CustomOverlay({
+      position: marker.getPosition(),
+      content: el,
+      xAnchor: 0.5,
+      yAnchor: 1.2,
+      zIndex: 7,
+      clickable: true
+    });
+    detailOverlay.setMap(map);
+  }
+
+  function showHover(r, marker){
+    closeHover();
+    const el = document.createElement('div');
+    el.style.cssText = "background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.1);padding:6px 8px;font-size:12px;max-width:240px;";
+    el.innerHTML = `
+      <div style="font-weight:600;margin-bottom:2px;">${r.name}</div>
+      ${r.addr ? `<div style="color:#6b7280">${r.addr}</div>` : ""}
+      ${r.phone ? `<div style="color:#6b7280;margin-top:2px;">${r.phone}</div>` : ""}
+    `;
+    hoverOverlay = new kakao.maps.CustomOverlay({
+      position: marker.getPosition(),
+      content: el,
+      xAnchor: 0.5,
+      yAnchor: 1.2,
+      zIndex: 6,
+      clickable: false
+    });
+    hoverOverlay.setMap(map);
+  }
+
+  /* ===== 렌더링 ===== */
+  function clearMarkers(){
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    markersById.clear();
+    clusterer.clear();
+  }
+
+  function renderRows(rows, append=false){
+    const ul = $('#list');
+    if (!append) ul.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    rows.forEach(r => {
+      const li = document.createElement('li');
+      li.style.cssText = 'border:1px solid #e5e7eb;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer;';
+      li.innerHTML = `
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+          <div style="color:#64748b;font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.addr || ''}</div>
+          ${r.phone ? `<div style="color:#64748b;font-size:12px;margin-top:2px;">${r.phone}</div>` : ''}
+          <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+            <i style="width:8px;height:8px;border-radius:999px;background:${CAT_COLOR[r.cat]};display:inline-block;"></i>
+            <span style="font-size:12px;color:#334155">${CAT_TEXT[r.cat]}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn-dir" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;">길찾기</button>
+          <a class="btn-mini" href="${r.place_url}" target="_blank" rel="noreferrer"
+             style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;display:inline-block;text-decoration:none;color:#111827;">페이지</a>
+        </div>
+      `;
+      // 리스트 클릭 -> 지도 포커스
+      li.addEventListener('click', (e) => {
+        if (e.target.closest('a') || e.target.closest('.btn-dir')) return;
+        const marker = markersById.get(r.id);
+        if (!marker) return;
+        suppressAutoOnce = true;
+        map.panTo(new kakao.maps.LatLng(r.lat, r.lng));
+        setTimeout(() => openDetail(r, marker), 350);
+      });
+      // 길찾기 버튼
+      li.querySelector('.btn-dir').addEventListener('click', (e) => {
+        e.stopPropagation();
+        dirTarget = r;
+        openDirModal();
+      });
+
+      frag.appendChild(li);
+    });
+    ul.appendChild(frag);
+
+    if (!append) clearMarkers();
+    const ms = rows.map(r => {
+      const m = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(r.lat, r.lng),
+        image: markerImage(CAT_COLOR[r.cat]),
+        title: r.name
+      });
+      kakao.maps.event.addListener(m, 'mouseover', () => showHover(r, m));
+      kakao.maps.event.addListener(m, 'mouseout',  closeHover);
+      kakao.maps.event.addListener(m, 'click',     () => openDetail(r, m));
+      m.__sid = r.id;
+      markersById.set(r.id, m);
+      return m;
+    });
+    markers.push(...ms);
+    clusterer.addMarkers(ms);
+
+    setCount($('#list').children.length);
+    syncMapHeight();
+  }
+
+  /* ===== 검색 ===== */
+  function handleSearch(data, status, pagination){
+    if (status === kakao.maps.services.Status.OK) {
+      // 🔎 결과 필터링 후 렌더
+      const filtered = data.filter(d => isBeautyPlace(d, currentQuery));
+      const rows = filtered.map(toStore);
+
+      if (isAppending) {
+        currentResults.push(...rows);
+        renderRows(rows, true);
+      } else {
+        currentResults = rows.slice();
+        renderRows(rows, false);
+      }
+      currentPagination = pagination;
+      setStatus(`"${currentQuery}" 결과: ${currentResults.length}건`);
+      $('#moreWrap').style.display = (pagination.current < pagination.last) ? 'block' : 'none';
+      isAppending = false;
+    } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+      if (!isAppending) {
+        $('#list').innerHTML = '';
+        clearMarkers(); setCount(0);
+        setStatus(`"${currentQuery}" 검색 결과 없음`);
+        $('#moreWrap').style.display = 'none';
+        syncMapHeight();
+      }
+      isAppending = false;
+    } else {
+      setStatus('검색 실패: 권한/키/네트워크를 확인해주세요.');
+      $('#moreWrap').style.display = 'none';
+      isAppending = false;
+      syncMapHeight();
+    }
+  }
+
+  function searchOptions(){
+    const c = map.getCenter();
+    return { x:c.getLng(), y:c.getLat(), radius:SEARCH_RADIUS_M, size:15 };
+  }
+
+  function startSearch(query){
+    // ✨ 브랜드 단어만 있을 때는 자동 다중 검색으로 확장
+    const expanded = maybeExpandBrandQuery(query);
+    if (expanded) return multiSearch(expanded);
+
+    lastSearch = { type:'single', query };
+    currentQuery = query;
+    currentPagination = null;
+    isAppending = false;
+    closeDetail(); closeHover();
+    setStatus('검색 중…');
+    $('#moreWrap').style.display = 'none';
+    places.keywordSearch(query, handleSearch, searchOptions());
+  }
+
+  function multiSearch(keywords){
+    lastSearch = { type:'multi', keywords: keywords.slice() };
+    closeDetail(); closeHover();
+    setStatus('빠른 검색 중…');
+    $('#moreWrap').style.display = 'none';
+
+    const bag = new Map();
+    let pending = keywords.length;
+    if (!pending) { setStatus('검색 키워드 없음'); return; }
+
+    keywords.forEach(q => {
+      places.keywordSearch(q, (data, status) => {
+        if (status === kakao.maps.services.Status.OK) {
+          data.forEach(d => {
+            if (isBeautyPlace(d, q) && !bag.has(d.id)) bag.set(d.id, toStore(d));
+          });
+        }
+        if (--pending === 0) {
+          currentQuery   = '빠른검색';
+          currentResults = Array.from(bag.values());
+          currentPagination = null;
+          renderRows(currentResults, false);
+          setStatus(`결과: ${currentResults.length}건`);
+          $('#moreWrap').style.display = 'none';
+        }
+      }, searchOptions());
+    });
+  }
+
+  function runLastSearch(){
+    closeDetail(); closeHover();
+    if (!lastSearch) { $('.preset[data-q="__ALL__"]').click(); return; }
+    if (lastSearch.type === 'single') startSearch(lastSearch.query);
+    else multiSearch(lastSearch.keywords);
+  }
+
+  function more(){
+    if (!currentPagination) return;
+    if (currentPagination.current >= currentPagination.last) return;
+    isAppending = true;
+    setStatus('더 불러오는 중…');
+    currentPagination.nextPage();
+  }
+
+  /* ===== 길찾기 모달 & 링크 ===== */
+  function openDirModal(){ $('#dirModal').style.display = 'flex'; $('#dirStart').focus(); }
+  function closeDirModal(){ $('#dirModal').style.display = 'none'; }
+  $('#dirClose').addEventListener('click', closeDirModal);
+  $('#dirModal').addEventListener('click', (e)=>{ if(e.target.id==='dirModal') closeDirModal(); });
+
+  function getSelectedMode(){
+    const v = (document.querySelector('input[name="dirMode"]:checked')||{}).value || 'PUBLICTRANSIT';
+    return v; // PUBLICTRANSIT | CAR | FOOT
+  }
+  const googleMode = { PUBLICTRANSIT:'transit', CAR:'driving', FOOT:'walking' };
+
+  function geolocate(){
+    return new Promise((resolve, reject)=>{
+      if (!navigator.geolocation) return reject(new Error('GEO_UNSUPPORTED'));
+      const opt = { enableHighAccuracy:false, timeout:6000, maximumAge:300000 };
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, name:'내 위치' }),
+        err => reject(err),
+        opt
+      );
+    });
+  }
+
+  function geocodeByText(text){
+    return new Promise((resolve, reject)=>{
+      geocoder.addressSearch(text, (res, status)=>{
+        if (status === kakao.maps.services.Status.OK && res[0]) {
+          const r = res[0]; return resolve({ lat: parseFloat(r.y), lng: parseFloat(r.x), name:text });
+        }
+        places.keywordSearch(text, (data, s)=>{
+          if (s === kakao.maps.services.Status.OK && data[0]) {
+            const d = data[0]; return resolve({ lat: parseFloat(d.y), lng: parseFloat(d.x), name:text });
+          }
+          reject(new Error('GEOCODE_FAIL'));
+        }, { size:1 });
+      });
+    });
+  }
+
+  async function resolveStart(){
+    const txt = $('#dirStart').value.trim();
+    if (!txt) {
+      try { return await geolocate(); }
+      catch(_) { throw new Error('NEED_START'); }
+    }
+    return await geocodeByText(txt);
+  }
+
+  function openKakaoDirections(start, dest, mode){
+    const scheme = `kakaomap://route?ep=${dest.lat},${dest.lng}${start ? `&sp=${start.lat},${start.lng}`:''}&by=${mode}`;
+    const fromPart = start ? `/from/${encodeURIComponent(start.name)},${start.lat},${start.lng}` : '';
+    const url = `https://map.kakao.com/link${fromPart}/to/${encodeURIComponent(dest.name)},${dest.lat},${dest.lng}`;
+    try { window.location.href = scheme; } catch(_) {}
+    setTimeout(()=> window.open(url, '_blank'), 400);
+  }
+
+  function openGoogleDirections(start, dest, mode){
+    const base = 'https://www.google.com/maps/dir/?api=1';
+    const params = new URLSearchParams({
+      destination: `${dest.lat},${dest.lng}`,
+      travelmode: ( { PUBLICTRANSIT:'transit', CAR:'driving', FOOT:'walking' }[mode] || 'transit')
+    });
+    if (start) params.set('origin', `${start.lat},${start.lng}`);
+    window.open(`${base}&${params.toString()}`, '_blank');
+  }
+
+  async function handleOpenDirections(provider){
+    if (!dirTarget) return;
+    const dest = { lat: dirTarget.lat, lng: dirTarget.lng, name: dirTarget.name };
+    const mode = getSelectedMode();
+    let start = null;
+
+    try { start = await resolveStart(); }
+    catch (e) {
+      if (e.message === 'NEED_START') { alert('출발지를 입력하거나 위치 권한을 허용해주세요.'); return; }
+      start = null; // 지오코딩 실패 시 목적지만 열기
     }
 
-    btns.forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const val = btn.textContent.trim();
-        if (val === "+") {
-          zoom = Math.min(20, zoom + 1);
-          render();
-        } else if (val === "-") {
-          zoom = Math.max(1, zoom - 1);
-          render();
+    if (provider === 'kakao') openKakaoDirections(start, dest, mode);
+    else openGoogleDirections(start, dest, mode);
+
+    closeDirModal();
+  }
+
+  $('#openKakaoDir').addEventListener('click', ()=>handleOpenDirections('kakao'));
+  $('#openGoogleDir').addEventListener('click', ()=>handleOpenDirections('google'));
+
+  /* ===== 이벤트 ===== */
+  function bindEvents(){
+    $$('.preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.preset').forEach(b => b.style.background = '#fff');
+        btn.style.background = '#eef2ff';
+        const q = btn.dataset.q;
+        if (q === '__ALL__') {
+          multiSearch(['올리브영','향수공방','향수 매장','조말론','딥디크','샤넬','디올','탬버린즈','이솝','바이레도']);
+        } else if (q.includes('|')) {
+          multiSearch(q.split('|'));
         } else {
-          // 현재 위치
-          if (!navigator.geolocation) return alert("Geolocation을 지원하지 않는 브라우저입니다.");
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              const { latitude, longitude } = pos.coords;
-              mapEl.textContent = `현재 위치: (${latitude.toFixed(4)}, ${longitude.toFixed(4)}) • 가상 줌: ${zoom}`;
-            },
-            (err) => alert("위치 정보를 가져오지 못했습니다: " + err.message),
-            { enableHighAccuracy: true, timeout: 5000 }
-          );
+          startSearch(q);
         }
       });
     });
 
-    render();
+    $('#btnSearch').addEventListener('click', () => {
+      const q = $('#q').value.trim();
+      if (!q) { $('.preset[data-q="__ALL__"]').click(); return; }
+      startSearch(q);
+    });
+    $('#q').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btnSearch').click(); });
+
+    $$('.chip').forEach(ch => ch.addEventListener('click', () => {
+      const q = ch.dataset.q;
+      $('#q').value = q;
+      startSearch(q);
+    }));
+
+    $('#autoRefresh').addEventListener('change', (e) => { autoRefreshOn = e.target.checked; });
+
+    $('#btnRequery').addEventListener('click', runLastSearch);
+    $('#btnMore').addEventListener('click', more);
+
+    kakao.maps.event.addListener(map, 'click', () => { closeDetail(); closeHover(); });
+    window.addEventListener('resize', () => { syncMapHeight(); });
+  }
+
+  /* ===== Kakao SDK 로더 & 초기화 ===== */
+  (function loadKakaoSDK(){
+    const sdkUrl =
+      'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' +
+      encodeURIComponent(KAKAO_JS_KEY) +
+      '&libraries=services,clusterer&autoload=false';
+    const s = document.createElement('script');
+    s.src = sdkUrl; s.async = true; s.defer = true;
+    s.onload = () => {
+      if (!(window.kakao && window.kakao.maps)) { $('#map').innerHTML = '지도를 불러오지 못했습니다.'; return; }
+      kakao.maps.load(initMap);
+    };
+    s.onerror = () => { $('#map').innerHTML = '지도를 불러오지 못했습니다. (SDK 로드 실패)'; };
+    document.head.appendChild(s);
   })();
+
+  function initMap(){
+    const center = new kakao.maps.LatLng(37.498095, 127.027610); // 강남역
+    map = new kakao.maps.Map(document.getElementById('map'), { center, level:5 });
+    places = new kakao.maps.services.Places();
+    geocoder = new kakao.maps.services.Geocoder();
+    clusterer = new kakao.maps.MarkerClusterer({ map, averageCenter:true, minLevel:7 });
+
+    bindEvents();
+
+    kakao.maps.event.addListener(map, 'idle', () => {
+      if (suppressAutoOnce) { suppressAutoOnce = false; lastViewportKey = viewportKey(); return; }
+      const vk = viewportKey();
+      if (vk === lastViewportKey) return;
+      lastViewportKey = vk;
+      if (!autoRefreshOn) return;
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(runLastSearch, 400);
+    });
+
+    lastViewportKey = viewportKey();
+    $('.preset[data-q="__ALL__"]').click();
+    syncMapHeight();
+  }
 </script>
 {% endblock script %}

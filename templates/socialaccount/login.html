@@ -1,0 +1,20 @@
+{% extends "scentpick/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ provider.name }} 로그인{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 50px;">
+  <h3>{{ provider.name }}로 로그인 중...</h3>
+  <p>잠시만 기다려주세요.</p>
+</div>
+
+<form method="post" id="auto-submit-form" style="display: none;">
+  {% csrf_token %}
+</form>
+
+<script>
+// 팝업에서 자동으로 폼 제출
+document.getElementById('auto-submit-form').submit();
+</script>
+{% endblock %}
