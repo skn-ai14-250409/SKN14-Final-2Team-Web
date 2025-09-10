@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
-from dotenv import load_dotenv
-load_dotenv()  # 로컬 개발 시 .env 읽기
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=False)  # 로컬 개발 시 .env 읽기
 
 from pathlib import Path
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,10 +43,70 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # allauth
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.naver',
+    'allauth.socialaccount.providers.kakao',
+
     'app',
     'scentpick',
-    'uauth',
+    "uauth.apps.UauthConfig",
 ]
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# 로그인/로그아웃 후 이동할 경로
+LOGIN_URL = reverse_lazy("uauth:login")
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
+
+ACCOUNT_SIGNUP_REDIRECT_URL = reverse_lazy("uauth:complete_profile")
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGIN_METHODS = {"username"}   # 일반 로그인은 username 기반
+ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*", "email*"]
+ACCOUNT_UNIQUE_EMAIL = False
+
+ACCOUNT_ADAPTER = "uauth.adapters.CustomAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "uauth.adapters.CustomSocialAccountAdapter"
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "secret": os.getenv("GOOGLE_CLIENT_SECRET", ""),
+            "key": "",
+        },
+    },
+    "naver": {
+        "APP": {
+            "client_id": os.getenv("NAVER_CLIENT_ID", ""),
+            "secret": os.getenv("NAVER_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        # 옵션: scope 확장 (성별, 나이)
+        "SCOPE": ["name", "email", "gender", "age"],
+    },  
+    "kakao": {
+        "APP": {
+            "client_id": os.getenv("KAKAO_CLIENT_ID"),  
+            "secret": os.getenv("KAKAO_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": ["account_email", "profile_nickname"],  # 이메일 + 닉네임 강제 요청
+        "AUTH_PARAMS": {"prompt": "consent"},            # 동의창 매번 표시
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -53,6 +114,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -62,7 +124,7 @@ ROOT_URLCONF = 'django_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR / 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,10 +138,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'django_app.wsgi.application'
+ASGI_APPLICATION = "django_app.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 
 # 운영 db
 DATABASES = {
@@ -90,6 +152,9 @@ DATABASES = {
         'PASSWORD': os.environ.get("DB_PASSWORD", "yourpassword"),
         'HOST': os.environ.get("DB_HOST", "scentpickdb.ctcauieck9iz.ap-northeast-2.rds.amazonaws.com"),
         'PORT': os.environ.get("DB_PORT", "3306"),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -148,3 +213,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "django-web-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com",
 ]
+
+# S3 storage settings (used by uauth.utils upload)
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "")

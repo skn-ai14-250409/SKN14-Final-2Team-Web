@@ -1,0 +1,71 @@
+<!-- perfumes_grid.html -->
+<div style="display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:20px;">
+  {% for p in page_obj %}
+    <a href="{% url 'scentpick:product_detail' p.id %}" style="text-decoration:none;color:inherit;">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.08);overflow:hidden;
+                  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+                  padding:16px;transition:transform 0.2s;height:360px;">  <!-- ✅ 카드 높이 고정 -->
+
+        <!-- 이미지 -->
+        <div style="width:100%;height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <img src="{{ p.image_url }}" alt="{{ p.name }}"
+               style="max-width:100%;max-height:100%;object-fit:contain;">
+        </div>
+
+        <!-- 텍스트 정보 -->
+        <div style="text-align:center;flex-grow:1;display:flex;flex-direction:column;justify-content:flex-start;">
+          <div style="font-size:14px;font-weight:600;color:#374151;">{{ p.brand }}</div>
+          <div style="font-size:13px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">{{ p.name }}</div>
+          <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:48px;overflow:hidden;">
+            {% for acc in p.accord_list %}
+              <span style="background:#f3f4f6;padding:2px 6px;border-radius:8px;font-size:11px;color:#374151;">{{ acc }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 사이즈 -->
+        <div style="margin-top:6px;font-size:12px;color:#6b7280;">
+          {{ p.sizes|join:", " }}ml
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <p style="grid-column:1/-1;text-align:center;color:#6b7280;">향수가 없습니다.</p>
+  {% endfor %}
+</div>
+
+<!-- 페이지네이션 -->
+<div style="text-align:center;margin-top:24px;">
+  <div style="display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;">
+    {% if page_obj.has_previous %}
+      <a data-ajax-pg href="?page={{ page_obj.previous_page_number }}"
+         style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:50%;text-decoration:none;color:#111827;">
+        &lt;
+      </a>
+    {% else %}
+      <span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:50%;color:#cbd5e1;">&lt;</span>
+    {% endif %}
+
+    {% for num in page_range_custom %}
+      {% if num == "..." %}
+        <span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#94a3b8;">…</span>
+      {% elif num == page_obj.number %}
+        <span style="background:#6366f1;color:#fff;border-radius:50%;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;">{{ num }}</span>
+      {% else %}
+        <a data-ajax-pg href="?page={{ num }}"
+           style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:50%;text-decoration:none;color:#111827;">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a data-ajax-pg href="?page={{ page_obj.next_page_number }}"
+         style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:50%;text-decoration:none;color:#111827;">
+        &gt;
+      </a>
+    {% else %}
+      <span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:50%;color:#cbd5e1;">&gt;</span>
+    {% endif %}
+  </div>
+</div>

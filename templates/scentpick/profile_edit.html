@@ -1,8 +1,8 @@
 {% extends "scentpick/base.html" %}
-{% block title %}회원가입 - ScentPick{% endblock %}
+{% block title %}회원정보 수정 - ScentPick{% endblock %}
 {% block content %}
 <div class="auth-container">
-  <h2 style="text-align:center;margin-bottom:30px;color:#2d3748;">회원가입</h2>
+  <h2 style="text-align:center;margin-bottom:30px;color:#2d3748;">회원정보 수정</h2>
 
   {% if errors %}
     <div style="background-color: #fed7d7; border: 1px solid #e53e3e; color: #c53030; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
@@ -14,54 +14,33 @@
     </div>
   {% endif %}
 
-  <form method="post" enctype="multipart/form-data" id="register-form">
+  <form method="post" enctype="multipart/form-data" id="profile-form">
     {% csrf_token %}
 
     <div class="form-group">
-      <label>아이디</label>
-      <input type="text" name="username" id="username-input" value="{{ form_data.username|default:'' }}" placeholder="아이디를 입력하세요" required>
-      <div id="username-feedback" style="margin-top: 5px; font-size: 14px; min-height: 20px;"></div>
-    </div>
-
-    <div class="form-group">
-      <label>비밀번호</label>
-      <input type="password" name="password1" placeholder="비밀번호를 입력하세요 (8자 이상)" required>
-    </div>
-
-    <div class="form-group">
-      <label>비밀번호 확인</label>
-      <input type="password" name="password2" placeholder="비밀번호를 다시 입력하세요" required>
-    </div>
-
-    <div class="form-group">
-      <label>이름</label>
-      <input type="text" name="name" value="{{ form_data.name|default:'' }}" placeholder="이름을 입력하세요" required>
-    </div>
-
-    <div class="form-group">
       <label>이메일</label>
-      <input type="email" name="email" value="{{ form_data.email|default:'' }}" placeholder="이메일을 입력하세요" required>
+      <input type="email" name="email" value="{{ form_data.email|default:user.email }}" placeholder="이메일을 입력하세요" required>
     </div>
 
     <div class="form-group">
       <label>출생연도</label>
-      <input type="number" name="birth_year" value="{{ form_data.birth_year|default:'' }}" min="1900" max="2100" placeholder="예: 1995" required>
+      <input type="number" name="birth_year" value="{{ form_data.birth_year|default:detail.birth_year }}" min="1900" max="2100" placeholder="예: 1995">
     </div>
 
     <div class="form-group">
       <label>성별</label>
       <div class="gender-selection">
-        <button type="button" class="gender-btn {% if form_data.gender == 'Male' %}selected{% endif %}" data-gender="Male">남성</button>
-        <button type="button" class="gender-btn {% if form_data.gender == 'Female' %}selected{% endif %}" data-gender="Female">여성</button>
+        <button type="button" class="gender-btn {% if form_data.gender|default:detail.gender == 'Male' %}selected{% endif %}" data-gender="Male">남성</button>
+        <button type="button" class="gender-btn {% if form_data.gender|default:detail.gender == 'Female' %}selected{% endif %}" data-gender="Female">여성</button>
       </div>
-      <input type="hidden" name="gender" id="gender-input" value="{{ form_data.gender|default:'' }}" required>
+      <input type="hidden" name="gender" id="gender-input" value="{{ form_data.gender|default:detail.gender }}">
     </div>
 
     <div class="form-group">
       <label>프로필 사진 (JPG, PNG, GIF, 최대 5MB)</label>
       <input type="file" name="profile_image" id="profile-image" accept="image/jpeg,image/png,image/gif">
-      <div id="avatar-editor" style="margin-top:12px; width:300px; height:300px; border-radius:50%; overflow:hidden; border:1px solid #e5e7eb; position:relative; background:#f9fafb; display:none;">
-        <img id="avatar-image" alt="preview" style="position:absolute; left:0; top:0; transform-origin: top left; user-select:none; -webkit-user-drag:none;">
+      <div id="avatar-editor" style="margin-top:12px; width:300px; height:300px; border-radius:50%; overflow:hidden; border:1px solid #e5e7eb; position:relative; background:#f9fafb; {% if not detail.profile_image_url %}display:none;{% endif %}">
+        <img id="avatar-image" alt="preview" src="{{ detail.avatar_url }}" style="position:absolute; left:0; top:0; transform-origin: top left; user-select:none; -webkit-user-drag:none;">
       </div>
       <div id="avatar-controls" style="display:none; margin-top:8px;">
         <label style="font-size:12px; color:#6b7280;">확대/축소</label>
@@ -74,11 +53,7 @@
       <p style="color:#6b7280; font-size:12px; margin-top:6px;">원형 영역 안에 사진을 드래그하여 위치를 조정하세요.</p>
     </div>
 
-    <button type="submit" class="btn-primary">회원가입</button>
-
-    <div style="text-align:center;margin-top:20px;">
-      <a href="{% url 'uauth:login' %}" style="color:#718096;text-decoration:none;font-size:14px;">이미 계정이 있으신가요? 로그인</a>
-    </div>
+    <button type="submit" class="btn-primary">저장</button>
   </form>
 </div>
 
@@ -86,22 +61,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const genderButtons = document.querySelectorAll(".gender-btn");
   const genderInput = document.getElementById("gender-input");
-  const usernameInput = document.getElementById("username-input");
-  const usernameFeedback = document.getElementById("username-feedback");
   const fileInput = document.getElementById("profile-image");
   const editor = document.getElementById("avatar-editor");
   const img = document.getElementById("avatar-image");
   const zoom = document.getElementById("avatar-zoom");
   const controls = document.getElementById("avatar-controls");
-  const form = document.getElementById("register-form");
+  const form = document.getElementById("profile-form");
   const cropX = document.getElementById("crop_x");
   const cropY = document.getElementById("crop_y");
   const cropSize = document.getElementById("crop_size");
   const cropScale = document.getElementById("crop_scale");
-
-  let debounceTimer;
-  let imgLeft = 0, imgTop = 0;
-  let naturalW = 0, naturalH = 0;
 
   // 성별 선택 기능
   genderButtons.forEach((btn) => {
@@ -111,57 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
       genderInput.value = this.dataset.gender;
     });
   });
-  // 초기 선택 반영 (서버에서 selected가 렌더된 경우)
   const initiallySelected = document.querySelector('.gender-btn.selected');
   if (initiallySelected) {
     genderInput.value = initiallySelected.dataset.gender;
   }
-
-  // 아이디 중복 확인
-  async function checkUsername(username) {
-    if (username.length < 3) {
-      usernameFeedback.innerHTML = '<span style="color: #6b7280;">아이디는 3자 이상 입력하세요.</span>';
-      return;
-    }
-
-    usernameFeedback.innerHTML = '<span style="color: #6b7280;">확인 중...</span>';
-
-    try {
-      const response = await fetch('/uauth/check-username/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({username: username})
-      });
-
-      const data = await response.json();
-      
-      if (data.available) {
-        usernameFeedback.innerHTML = '<span style="color: #10b981;">✓ 사용 가능한 아이디입니다.</span>';
-      } else {
-        usernameFeedback.innerHTML = '<span style="color: #ef4444;">✗ 이미 사용 중인 아이디입니다.</span>';
-      }
-    } catch (error) {
-      usernameFeedback.innerHTML = '<span style="color: #ef4444;">확인 중 오류가 발생했습니다.</span>';
-    }
-  }
-
-  // 아이디 입력 이벤트
-  usernameInput.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    const username = this.value.trim();
-    
-    if (username === '') {
-      usernameFeedback.innerHTML = '';
-      return;
-    }
-
-    debounceTimer = setTimeout(() => {
-      checkUsername(username);
-    }, 500);
-  });
 
   function updateImage(){
     const s = parseFloat(zoom.value || '1');
@@ -180,7 +102,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      naturalW = img.naturalWidth; naturalH = img.naturalHeight;
       imgLeft = 0; imgTop = 0; zoom.value = '1'; cropScale.value = '1';
       editor.style.display='block'; controls.style.display='block';
       updateImage();
@@ -190,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   zoom?.addEventListener('input', updateImage);
 
-  let dragging = false; let startX = 0; let startY = 0;
+  let dragging = false; let startX = 0; let startY = 0; let imgLeft = 0; let imgTop = 0;
   function startDrag(e){
     dragging = true;
     const p = e.touches?.[0] || e;
