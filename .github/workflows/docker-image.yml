@@ -26,6 +26,19 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
 
+      - name: Generate Dockerrun.aws.json
+        run: |
+          echo '{
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest",
+              "Update": "true"
+            },
+            "Ports": [
+              { "ContainerPort": 8000 }
+            ]
+          }' > Dockerrun.aws.json  
+
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v20
         with:
