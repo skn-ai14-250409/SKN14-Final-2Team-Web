@@ -1,0 +1,151 @@
+{% extends "scentpick/base.html" %}
+{% block title %}추가 정보 입력 - ScentPick{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <h2 style="text-align:center;margin-bottom:30px;color:#2d3748;">추가 정보 입력</h2>
+
+  <form method="post" enctype="multipart/form-data" id="profile-form">
+    {% csrf_token %}
+
+    {% if error %}
+      <p style="color: red; text-align:center;">{{ error }}</p>
+    {% endif %}
+
+    <div class="form-group">
+      <label>출생연도</label>
+      <input type="number" name="birth_year" min="1900" max="2100" value="{{ detail.birth_year }}" placeholder="예: 1995" required>
+    </div>
+
+    <div class="form-group">
+      <label>성별</label>
+      <div class="gender-selection">
+        <button type="button" class="gender-btn {% if detail.gender == 'Male' %}selected{% endif %}" data-gender="Male">남성</button>
+        <button type="button" class="gender-btn {% if detail.gender == 'Female' %}selected{% endif %}" data-gender="Female">여성</button>
+      </div>
+      <input type="hidden" name="gender" id="gender-input" value="{{ detail.gender }}">
+    </div>
+
+    <div class="form-group">
+      <label>프로필 사진 (JPG, PNG, GIF, 최대 5MB)</label>
+      <input type="file" name="profile_image" id="profile-image" accept="image/jpeg,image/png,image/gif">
+      <div id="avatar-editor" style="margin-top:12px; width:300px; height:300px; border-radius:50%; overflow:hidden; border:1px solid #e5e7eb; position:relative; background:#f9fafb; display:none;">
+        <img id="avatar-image" alt="preview" style="position:absolute; left:0; top:0; transform-origin: top left; user-select:none; -webkit-user-drag:none;">
+      </div>
+      <div id="avatar-controls" style="display:none; margin-top:8px;">
+        <label style="font-size:12px; color:#6b7280;">확대/축소</label>
+        <input type="range" id="avatar-zoom" min="1" max="3" step="0.01" value="1" style="width:300px;">
+      </div>
+      <input type="hidden" name="crop_x" id="crop_x">
+      <input type="hidden" name="crop_y" id="crop_y">
+      <input type="hidden" name="crop_size" id="crop_size" value="300">
+      <input type="hidden" name="crop_scale" id="crop_scale" value="1">
+      <p style="color:#6b7280; font-size:12px; margin-top:6px;">원형 영역 안에 사진을 드래그하여 위치를 조정하세요.</p>
+    </div>
+
+    <button type="submit" class="btn-primary" style="margin-top: 20px;">저장</button>
+  </form>
+
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const genderButtons = document.querySelectorAll(".gender-btn");
+    const genderInput = document.getElementById("gender-input");
+
+    const fileInput = document.getElementById("profile-image");
+    const editor = document.getElementById("avatar-editor");
+    const img = document.getElementById("avatar-image");
+    const zoom = document.getElementById("avatar-zoom");
+    const controls = document.getElementById("avatar-controls");
+    const form = document.getElementById("profile-form");
+    const cropX = document.getElementById("crop_x");
+    const cropY = document.getElementById("crop_y");
+    const cropSize = document.getElementById("crop_size");
+    const cropScale = document.getElementById("crop_scale");
+
+    genderButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        // 모든 버튼에서 선택 클래스 제거
+        genderButtons.forEach((b) => b.classList.remove("selected"));
+
+        // 현재 버튼에만 선택 클래스 추가
+        this.classList.add("selected");
+
+        // hidden input에 선택된 gender 값 설정
+        genderInput.value = this.dataset.gender;
+      });
+    });
+    // 초기 선택 반영
+    const initiallySelected = document.querySelector('.gender-btn.selected');
+    if (initiallySelected) {
+      genderInput.value = initiallySelected.dataset.gender;
+    }
+
+    function updateImage(){
+      const s = parseFloat(zoom.value || '1');
+      cropScale.value = String(s);
+      img.style.transform = `scale(${s})`;
+      img.style.left = imgLeft + 'px';
+      img.style.top = imgTop + 'px';
+    }
+
+    // 프로필 이미지 미리보기 + 간단한 확대/이동
+    fileInput?.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) { editor.style.display='none'; controls.style.display='none'; return; }
+      if (!/image\/(jpeg|png|gif)/.test(file.type)) { alert('JPG/PNG/GIF만 가능합니다.'); fileInput.value=''; return; }
+      if (file.size > 5 * 1024 * 1024) { alert('최대 5MB까지 가능합니다.'); fileInput.value=''; return; }
+
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        imgLeft = 0; imgTop = 0; zoom.value = '1'; cropScale.value = '1';
+        editor.style.display='block'; controls.style.display='block';
+        updateImage();
+      };
+      img.src = url;
+    });
+
+    zoom?.addEventListener('input', updateImage);
+
+    let dragging = false; let startX = 0; let startY = 0; let imgLeft = 0; let imgTop = 0;
+    function startDrag(e){
+      dragging = true;
+      const p = e.touches?.[0] || e;
+      startX = p.clientX - imgLeft;
+      startY = p.clientY - imgTop;
+      e.preventDefault();
+    }
+    function moveDrag(e){
+      if (!dragging) return;
+      const p = e.touches?.[0] || e;
+      imgLeft = p.clientX - startX;
+      imgTop = p.clientY - startY;
+      updateImage();
+    }
+    function endDrag(){ dragging = false; }
+
+    editor.addEventListener('mousedown', startDrag);
+    editor.addEventListener('mousemove', moveDrag);
+    document.addEventListener('mouseup', endDrag);
+    editor.addEventListener('touchstart', startDrag, {passive:false});
+    editor.addEventListener('touchmove', moveDrag, {passive:false});
+    editor.addEventListener('touchend', endDrag);
+
+    // 전송 전 crop 좌표 계산
+    form.addEventListener('submit', () => {
+      if (!img.src) return; // 이미지 선택 안한 경우 스킵
+      const s = parseFloat(zoom.value || '1');
+      const box = 300; // editor size
+      const viewLeft = -imgLeft; // 스케일 적용 후 화면에서의 좌상단 여백
+      const viewTop = -imgTop;
+      const x = viewLeft / s;
+      const y = viewTop / s;
+      const size = box / s;
+      cropX.value = Math.max(0, Math.round(x));
+      cropY.value = Math.max(0, Math.round(y));
+      cropSize.value = Math.round(size);
+      cropScale.value = s.toFixed(2);
+    });
+  });
+</script>
+{% endblock %}

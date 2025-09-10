@@ -7,14 +7,14 @@
 <div class="mypage-container">
   <!-- 좌측: 프로필 -->
   <div class="profile-section">
-    <div class="profile-avatar"></div>
-    <div class="profile-name">김향수님</div>
+    <div class="profile-avatar" style="width:120px;height:120px;border-radius:50%;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:12px;display:flex;align-items:center;justify-content:center;background:#f9fafb;">
+      <img src="{{ request.user.detail.avatar_url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="profile-name">{{ request.user.detail.name|default:request.user.username }}님</div>
     <ul class="profile-menu">
-      <li>회원정보 수정</li>
-      <li>비밀번호 변경</li>
-      <li>알림 설정</li>
-      <li>개인정보 처리방침</li>
-      <li>로그아웃</li>
+      <li><a href="{% url 'scentpick:profile_edit' %}">회원정보 수정</a></li>
+      <li><a href="{% url 'scentpick:password_change' %}">비밀번호 변경</a></li>
+      <li><a class="danger" href="{% url 'uauth:logout' %}">로그아웃</a></li>
     </ul>
   </div>
 
