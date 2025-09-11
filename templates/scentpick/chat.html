@@ -19,7 +19,7 @@
       <div class="message"><div class="message-content">안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?</div></div>
     </div>
     <div class="chat-input">
-      <input type="text" placeholder="메시지를 입력하세요..." id="chatInput">
+      <input type="text" placeholder="메시지를 입력하세요..." id="chatInput" autocomplete="off">
       <button class="send-btn" id="chatSendBtn">전송</button>
     </div>
   </div>
@@ -32,7 +32,7 @@
     <div class="user-info">
       <h4>사용자 정보</h4><p>👤 20대 남성</p>
       <p style="font-size:14px;color:#718096;">젊고 활동적인 향수를 추천!</p>
-    </div>
+    {% comment %} </div>
     <div>
       <h4>추천 향수</h4>
       <div class="recommended-perfumes">
@@ -48,7 +48,7 @@
           <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">톰포드 옴므</div>
           <a class="more-btn" href="{% url 'scentpick:product_detail' slug='tomford-homme' %}">더보기</a>
         </div>
-      </div>
+      </div> {% endcomment %}
     </div>
   </div>
 </div>
@@ -56,33 +56,110 @@
 
 {% block scripts %}
 <script>
-  window.SC_HIDE_BUBBLE_ON_CHAT = true;
+  // CSRF 토큰
+  function getCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+  }
+  const CSRF_TOKEN = getCookie('csrftoken');
 
-  (() => {
+  (function () {
     const sendBtn = document.getElementById("chatSendBtn");
     const input   = document.getElementById("chatInput");
     const box     = document.getElementById("chatMessages");
-    if (!sendBtn || !input || !box) return; // 다른 페이지에서 안전 종료
+    const newBtn  = document.querySelector(".new-chat-btn");
+    if (!sendBtn || !input || !box) return;
 
-    function add(msg, isUser) {
-      const div = document.createElement("div");
-      div.className = "message" + (isUser ? " user" : "");
-      div.innerHTML = '<div class="message-content">' + msg + "</div>";
-      box.appendChild(div);
+    // 서버에서 내려준 초기 컨텍스트(없을 수 있음)
+    let conversationId   = {{ conversation_id|default:"null" }};
+    let externalThreadId = {% if external_thread_id %}"{{ external_thread_id }}"{% else %}null{% endif %};
+
+    function addMessage(msg, isUser = false) {
+      const wrap  = document.createElement("div");
+      wrap.className = "message" + (isUser ? " user" : "");
+      const inner = document.createElement("div");
+      inner.className = "message-content";
+      inner.textContent = msg; // XSS 방지
+      wrap.appendChild(inner);
+      box.appendChild(wrap);
       box.scrollTop = box.scrollHeight;
+      return { wrap, inner };
     }
-    function send() {
+
+    function addLoading() {
+      return addMessage("생각 중...", false);
+    }
+
+    async function send() {
       const txt = (input.value || "").trim();
       if (!txt) return;
+
+      // UI 먼저 반응
       input.value = "";
-      add(txt, true);
-      setTimeout(() => {
-        add("네, 30대 남성분에게 인기 있는 향수를 추천해드릴게요! 샤넬 블루 드 샤넬, 디올 소바쥬, 톰포드 옴므 등이 인기가 높습니다. 어떤 스타일의 향을 선호하시나요?", false);
-      }, 600);
+      addMessage(txt, true);
+      sendBtn.disabled = true;
+      input.disabled = true;
+      const loader = addLoading();
+
+      try {
+        const resp = await fetch("{% url 'scentpick:chat_submit_api' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": CSRF_TOKEN
+          },
+          body: JSON.stringify({
+            content: txt,
+            conversation_id: conversationId || null
+          })
+        });
+
+        if (!resp.ok) {
+          let errText = `HTTP ${resp.status}`;
+          try {
+            const j = await resp.json();
+            if (j && j.error) errText = j.error;
+          } catch (_e) {}
+          loader.inner.textContent = `오류: ${errText}`;
+          return;
+        }
+
+        const data = await resp.json();
+
+        // 최신 상태 반영
+        conversationId   = data.conversation_id;
+        externalThreadId = data.external_thread_id;
+
+        // 최종 답변으로 교체
+        loader.inner.textContent = data.final_answer || "(응답이 비어있습니다)";
+
+        // LangGraph 이벤트 전체를 그리고 싶다면 아래 주석 해제
+        /*
+        loader.wrap.remove();
+        (data.messages_appended || []).forEach(m => {
+          addMessage(m.content || "", m.role === "user");
+        });
+        */
+
+      } catch (e) {
+        loader.inner.textContent = `오류: ${e && e.message ? e.message : e}`;
+      } finally {
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
     }
 
     sendBtn.addEventListener("click", send);
     input.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
+
+    // 새 채팅(프론트 초기화)
+    newBtn && newBtn.addEventListener("click", () => {
+      conversationId = null; // 서버 세션 thread_uuid는 유지(완전 초기화는 별도 API로)
+      box.innerHTML = "";
+      addMessage("새 대화를 시작합니다. 어떤 향수를 찾고 계신가요?");
+      input.focus();
+    });
   })();
 </script>
 {% endblock %}

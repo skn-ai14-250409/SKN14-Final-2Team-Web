@@ -37,7 +37,12 @@ def register(request):
 
 @login_required
 def chat(request):
-    return render(request, "scentpick/chat.html")
+    if "thread_uuid" not in request.session:
+        request.session["thread_uuid"] = str(uuid.uuid4())
+    return render(request, "scentpick/chat.html", {
+        "conversation_id": request.session.get("conversation_id"),
+        "external_thread_id": request.session.get("thread_uuid"),
+    })
 
 @login_required
 def recommend(request):
@@ -689,6 +694,133 @@ def fetch_random_by_accords(accords, pool=60, k=3, exclude_ids=None):
     attach_image_urls(picked)
     return picked
 
+
+# scentpick/views.py (예시)
+import os, uuid, requests
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+FASTAPI_CHAT_URL = os.environ.get("FASTAPI_CHAT_URL")  # e.g., http://<fastapi-host>:8000/chat.run
+SERVICE_TOKEN = os.environ.get("SERVICE_TOKEN")
+
+
+@login_required
+def chat_submit(request):
+    if request.method == "POST":
+        user = request.user
+        content = request.POST.get("content", "").strip()
+
+        # 세션에서 thread_uuid 사용(없으면 생성)
+        thread_uuid = request.session.get("thread_uuid")
+        if not thread_uuid:
+            thread_uuid = str(uuid.uuid4())
+            request.session["thread_uuid"] = thread_uuid
+
+        # 기존 대화 이어가기: 템플릿 hidden 또는 세션에서 가져옴
+        conversation_id_raw = request.POST.get("conversation_id") or request.session.get("conversation_id")
+        conversation_id = int(conversation_id_raw) if conversation_id_raw else None
+
+        idem_key = str(uuid.uuid4())
+
+        payload = {
+            "user_id": user.id,
+            "conversation_id": conversation_id,         # 있으면 그대로
+            "external_thread_id": thread_uuid,          # ✅ 장고가 만든 UUID 고정 사용
+            "title": None,
+            "message": {
+                "content": content,
+                "idempotency_key": idem_key,
+                "metadata": {"source": "django-web"},
+            }
+        }
+        headers = {
+            "X-Service-Token": SERVICE_TOKEN,
+            "X-Idempotency-Key": idem_key,
+            "Content-Type": "application/json",
+        }
+
+        r = requests.post(FASTAPI_CHAT_URL, json=payload, headers=headers, timeout=30)
+        r.raise_for_status()
+        data = r.json()
+
+        # 세션에 최신 conversation_id / external_thread_id 저장(재시도/재진입 대비)
+        request.session["conversation_id"] = data["conversation_id"]
+        request.session["thread_uuid"] = data["external_thread_id"]
+
+        return render(request, "scentpick/chat.html", {
+            "conversation_id": data["conversation_id"],
+            "external_thread_id": data["external_thread_id"],
+            "final_answer": data["final_answer"],
+            "appended": data["messages_appended"],
+        })
+
+    # GET이면 chat()로 돌려도 됨
+    return redirect("scentpick:chat")
+
+# views.py (추가)
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import uuid, os, json, requests
+from django.utils.decorators import method_decorator
+
+FASTAPI_CHAT_URL = os.environ.get("FASTAPI_CHAT_URL")  # 예: http://<fastapi-host>:8000/chatbot/chat.run
+SERVICE_TOKEN    = os.environ.get("SERVICE_TOKEN")
+
+@login_required
+@require_POST
+def chat_submit_api(request):
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+        content = (body.get("content") or "").strip()
+        if not content:
+            return JsonResponse({"error": "내용이 비었습니다."}, status=400)
+
+        # 세션의 thread_uuid 보장(없으면 생성)
+        thread_uuid = request.session.get("thread_uuid")
+        if not thread_uuid:
+            thread_uuid = str(uuid.uuid4())
+            request.session["thread_uuid"] = thread_uuid
+
+        # 대화 이어가기: 세션 또는 요청에서 conversation_id 사용
+        conv_id = body.get("conversation_id") or request.session.get("conversation_id")
+        conv_id = int(conv_id) if conv_id else None
+
+        idem = str(uuid.uuid4())
+        payload = {
+            "user_id": request.user.id,
+            "conversation_id": conv_id,
+            "external_thread_id": thread_uuid,  # ✅ 장고가 만든 UUID 고정 사용
+            "title": None,
+            "message": {
+                "content": content,
+                "idempotency_key": idem,
+                "metadata": {"source": "django-web"},
+            },
+        }
+        headers = {
+            "X-Service-Token": SERVICE_TOKEN,
+            "X-Idempotency-Key": idem,
+            "Content-Type": "application/json",
+        }
+        r = requests.post(FASTAPI_CHAT_URL, json=payload, headers=headers, timeout=30)
+        r.raise_for_status()
+        data = r.json()
+
+        # 세션 갱신(재요청/새로고침 대비)
+        request.session["conversation_id"] = data["conversation_id"]
+        request.session["thread_uuid"]     = data["external_thread_id"]
+
+        # 프론트에 필요한 최소 데이터만 반환
+        return JsonResponse({
+            "conversation_id": data["conversation_id"],
+            "external_thread_id": data["external_thread_id"],
+            "final_answer": data["final_answer"],
+            "messages_appended": data.get("messages_appended", []),
+        })
+    except requests.HTTPError as e:
+        return JsonResponse({"error": f"FastAPI 오류: {e.response.text}"}, status=502)
+    except Exception as e:
+        return JsonResponse({"error": f"서버 오류: {e}"}, status=500)
 
 # 노트 한국어 번역 딕셔너리
 NOTE_TRANSLATIONS = {
