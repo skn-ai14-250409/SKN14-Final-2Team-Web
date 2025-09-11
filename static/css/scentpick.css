@@ -44,8 +44,13 @@ body {
 .nav-menu {
     display: flex;
     list-style: none;
-    gap: 40px;
+    gap: 28px;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
+
+.nav-item { display:flex; align-items:center; }
 
 .nav-item a {
     text-decoration: none;
@@ -55,6 +60,8 @@ body {
     border-radius: 25px;
     transition: all 0.3s ease;
     position: relative;
+    display: inline-flex;
+    align-items: center;
 }
 
 .nav-item a:hover {
@@ -66,6 +73,12 @@ body {
     color: #6366f1;
     background: rgba(99, 102, 241, 0.15);
 }
+
+/* Right-side auth area inside nav */
+.nav-auth { margin-left: 8px; gap: 10px; }
+.nav-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; margin-right: 6px; }
+.user-info { background:#f1f5f9; padding:6px 10px; border-radius:8px; font-size:14px; }
+.user-menu-btn { margin-left: 6px; }
 
 /* Main Content */
 .main-content {
@@ -196,11 +209,12 @@ body {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    justify-content: center;
 }
 
 .social-btn {
     flex: 1;
-    padding: 10px;
+    padding: 10px 14px;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     background: white;
@@ -208,12 +222,22 @@ body {
     transition: all 0.3s ease;
     text-align: center;
     font-weight: 500;
+    text-transform: lowercase;
+    min-width: 110px;
 }
 
 .social-btn:hover {
     border-color: #6366f1;
     background: rgba(99, 102, 241, 0.05);
 }
+
+/* Brand accents */
+.social-btn.brand-naver { color:#03C75A; border-color:#b9f3cb; }
+.social-btn.brand-naver:hover { background:#ecfff3; }
+.social-btn.brand-kakao { color:#000; border-color:#FEE500; }
+.social-btn.brand-kakao:hover { background:#fffbea; }
+.social-btn.brand-google { color:#4285F4; border-color:#cfe0ff; }
+.social-btn.brand-google:hover { background:#f3f7ff; }
 
 /* Chat Page */
 .chat-container {
@@ -729,14 +753,32 @@ body {
     list-style: none;
 }
 
-.profile-menu li {
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
+.profile-menu li { margin-bottom: 8px; }
+.profile-menu a {
+    display: block;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #2d3748;
+    text-decoration: none;
+    font-weight: 500;
+    background: #fff;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
 }
-
-.profile-menu li:hover {
-    color: #6366f1;
+.profile-menu a:hover {
+    border-color: #6366f1;
+    background: rgba(99,102,241,0.06);
+    color: #2d3748;
+    transform: translateY(-1px);
+}
+.profile-menu a:visited { color: #2d3748; }
+.profile-menu a:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.profile-menu a.danger {
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+.profile-menu a.danger:hover {
+    background: #fee2e2;
 }
 
 .recommendations-section {
