@@ -16,14 +16,13 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import RedirectView
-from django.views.generic import RedirectView
+from django.views.generic import TemplateView
+from scentpick import views as scentpick_views
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
-    # path('app/', include('app.urls')),
-    # path('', RedirectView.as_view(url='app/')),
-    path('scentpick/', include(('scentpick.urls'))),
-    path('uauth/', include(('uauth.urls', 'uauth'), namespace='uauth')),
-    path('', RedirectView.as_view(url='/scentpick/', permanent=False), name='index'),
+    path('accounts/login/redirect/', TemplateView.as_view(template_name='account/login_redirect.html'), name='account_login_redirect'),
+    path('accounts/', include('allauth.urls')),
+    path('uauth/', include('uauth.urls')),
+    path('', scentpick_views.home, name='home'),
+    path('', include('scentpick.urls')),
 ]
