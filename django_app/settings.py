@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     "uauth.apps.UauthConfig",
 ]
 
+SITE_ID = 1
+
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
@@ -217,3 +219,6 @@ ALLOWED_HOSTS = [
 # S3 storage settings (used by uauth.utils upload)
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "")
+
+# Kakao JS 키(.env에서 로드)
+KAKAO_JS_KEY = os.getenv("KAKAO_JS_KEY", "")
