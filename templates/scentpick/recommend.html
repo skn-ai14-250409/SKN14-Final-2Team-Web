@@ -1,8 +1,7 @@
 {% extends "scentpick/base.html" %}
-{% block title %}맞춤 추천 - ScentPick{% endblock title %}
+{% block title %}맞춤 추천 - ScentPick{% endblock %}
 {% block content %}
 
-{% if request.GET.lat and request.GET.lon %}
 <div class="page-container" style="max-width:1400px;margin:0 auto;padding:20px;">
   <div class="page-header" style="text-align:center;margin-bottom:40px;">
     <h1 style="color:#1e3a8a;font-size:32px;font-weight:900;margin-bottom:8px;">맞춤 향수 추천</h1>
@@ -259,10 +258,6 @@
             <input type="hidden" name="a" id="accord-input">
             <input type="hidden" name="t" id="time-input">
 
-            <!-- lat/lon도 hidden input으로 함께 넘김 -->
-            <input type="hidden" name="lat" value="{{ request.GET.lat }}">
-            <input type="hidden" name="lon" value="{{ request.GET.lon }}">
-
             {% if worldcup_candidates|length == 0 and wc_selected_gender and wc_selected_accord and wc_selected_time %}
               <div style="color:#ef4444;text-align:center;padding:16px;background:rgba(239,68,68,0.1);border-radius:12px;font-size:14px;margin-top:16px;">조건에 맞는 후보가 부족합니다. 다른 조합으로 시도해보세요.</div>
             {% endif %}
@@ -320,12 +315,6 @@
     </div>
   </div>
 </div>
-{% else %}
-<!-- lat/lon 없을 때: 로딩 화면 -->
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;">
-  <div style="color:#475569;font-size:18px;">📍현재 위치의 날씨를 불러오고 있어요...</div>
-</div>
-{% endif %}
 
 <style>
 .product-card {
@@ -418,29 +407,7 @@
 {% endblock content %}
 
 {% block script %}
-{% if not request.GET.lat or not request.GET.lon %}
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          window.location.replace(`/recommend?lat=${lat}&lon=${lon}`);
-        },
-        (err) => {
-          console.warn("위치 권한 없음 → 기본값 사용");
-          window.location.replace(`/recommend`);
-        }
-      );
-    } else {
-      window.location.replace(`/recommend`);
-    }
-    });
-  </script>
-{% endif %}
-
-  <script>
+<script>
   // 안전한 텍스트 출력용
   function escapeHTML(str){
     return (str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));

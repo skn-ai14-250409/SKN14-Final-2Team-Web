@@ -345,26 +345,22 @@ def tip_and_accords_by_code(code):
                 ["스파이시", "레진", "가죽", "우디", "앰버"])
     return ("오늘 기분에 맞는 향을 가볍게 시향해 보세요 :)", ["플로랄", "프루티", "그린", "머스크"])
 
-def fetch_weather_simple(city="Seoul", lat=None, lon=None):
-    # 1) 위경도 직접 받은 경우
-    if lat is not None and lon is not None:
-        pass  # 그대로 사용
+def fetch_weather_simple(city="Seoul"):
+    # 1) 지오코딩
+    g = requests.get(
+        "https://geocoding-api.open-meteo.com/v1/search",
+        params={"name": city, "count": 1, "language": "ko", "format": "json"},
+        timeout=5,
+    )
+    g.raise_for_status()
+    gj = g.json()
+    if gj.get("results"):
+        lat = gj["results"][0]["latitude"]
+        lon = gj["results"][0]["longitude"]
     else:
-        # city 이름 기반 지오코딩
-        g = requests.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params={"name": city, "count": 1, "language": "ko", "format": "json"},
-            timeout=5,
-        )
-        g.raise_for_status()
-        gj = g.json()
-        if gj.get("results"):
-            lat = gj["results"][0]["latitude"]
-            lon = gj["results"][0]["longitude"]
-        else:
-            lat, lon = 37.5665, 126.9780  # 서울 기본
+        lat, lon = 37.5665, 126.9780  # 서울 기본
 
-    # 2) 현재 날씨 조회
+    # 2) 현재 날씨
     r = requests.get(
         "https://api.open-meteo.com/v1/forecast",
         params={
@@ -527,8 +523,6 @@ def filter_worldcup_candidates(gender_ko: str, accord_ko: str, time_pref: str, n
 # =======================
 @login_required
 def recommend(request):
-    lat = request.GET.get("lat")
-    lon = request.GET.get("lon")
     city = request.GET.get("city", "Seoul")
 
     # 템플릿 라디오 옵션
@@ -541,10 +535,7 @@ def recommend(request):
 
     try:
         # ① 날씨 정보
-        if lat and lon:
-            line1, line2, code = fetch_weather_simple(lat=float(lat), lon=float(lon))
-        else:
-            line1, line2, code = fetch_weather_simple(city=city)
+        line1, line2, code = fetch_weather_simple(city)
         tip, target_accords = tip_and_accords_by_code(code)
         emoji = emoji_by_code(code)
 
