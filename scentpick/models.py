@@ -85,10 +85,12 @@ class NoteImage(models.Model):
 # -----------------------------
 class Conversation(models.Model):
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(
-        USER_MODEL, on_delete=models.CASCADE, related_name="conversations"
-    )
+    user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE, related_name="conversations")
     title = models.CharField(max_length=40, blank=True, null=True)
+    external_thread_id = models.CharField(
+        max_length=64, blank=True, null=True, db_index=True,
+        help_text="FastAPI/LangGraph thread_id (예: UUID)"
+    )
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -97,6 +99,14 @@ class Conversation(models.Model):
         indexes = [
             models.Index(fields=["user"]),
             models.Index(fields=["updated_at"]),
+            # 🔸 external_thread_id는 UniqueConstraint로 커버되므로 별도 Index 제거하는 걸 권장
+            # models.Index(fields=["external_thread_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["external_thread_id"],
+                name="uniq_conversations_external_thread_id"
+            )
         ]
 
     def __str__(self):
@@ -105,29 +115,33 @@ class Conversation(models.Model):
 
 class Message(models.Model):
     class Role(models.TextChoices):
-        SYSTEM = "system", "system" # 값(DB 저장용), 라벨(표시용)
+        SYSTEM = "system", "system"
         USER = "user", "user"
         ASSISTANT = "assistant", "assistant"
-        TOOL = "tool", "tool"  # user/assistant/tool
+        TOOL = "tool", "tool"
 
     id = models.BigAutoField(primary_key=True)
-    conversation = models.ForeignKey(
-        Conversation, on_delete=models.CASCADE, related_name="messages"
-    )
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     role = models.CharField(max_length=10, choices=Role.choices)
     content = models.TextField()
     model = models.CharField(max_length=120, blank=True, null=True)
+
+    state = models.JSONField(blank=True, null=True, help_text="LangGraph state snapshot")
+    idempotency_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+    tool_name = models.CharField(max_length=120, blank=True, null=True)
+    metadata = models.JSONField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "messages"
         indexes = [
             models.Index(fields=["conversation", "created_at"]),
+            models.Index(fields=["idempotency_key"]),
         ]
 
     def __str__(self):
         return f"{self.role}@{self.conversation_id}"
-
 
 # -----------------------------
 # Favorites
@@ -161,31 +175,23 @@ class Favorite(models.Model):
 class RecRun(models.Model):
     """
     추천 근거 로깅 (rec_runs)
-    한 번의 추천 수행(run)에 대한 메타 정보
     """
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(
-        USER_MODEL, on_delete=models.CASCADE, related_name="rec_runs"
-    )
-    conversation = models.ForeignKey(
-        Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name="rec_runs"
-    )
-    request_msg = models.ForeignKey(
-        Message, on_delete=models.SET_NULL, null=True, blank=True, related_name="as_request_of_rec_runs"
-    )
+    user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE, related_name="rec_runs")
+    conversation = models.ForeignKey(Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name="rec_runs")
+    request_msg = models.ForeignKey(Message, on_delete=models.SET_NULL, null=True, blank=True, related_name="as_request_of_rec_runs")
 
-    query_text = models.TextField                                   # 사용자 원문 질의
-    parsed_slots = models.JSONField(blank=True, null=True)          # 파싱된 슬롯
-    agent = models.CharField(max_length=120, blank=True, null=True) # 사용한 추천 agent명
-    model_version = models.CharField(max_length=120, blank=True, null=True)  # 모델/인덱스 버전
+    # ⚠️ 기존 마이그레이션 에러 방지: 우선 NULL 허용 후 데이터 채우고, 원하면 NOT NULL로 재조정
+    query_text = models.TextField(blank=True, null=True)  # ← 여기!
 
+    parsed_slots = models.JSONField(blank=True, null=True)
+    agent = models.CharField(max_length=120, blank=True, null=True)
+    model_version = models.CharField(max_length=120, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "rec_runs"
-        indexes = [
-            models.Index(fields=["user", "created_at"]),
-        ]
+        indexes = [models.Index(fields=["user", "created_at"])]
 
     def __str__(self):
         return f"RecRun#{self.pk} by {self.user_id}"
