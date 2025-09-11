@@ -1,16 +1,17 @@
-from datetime import datetime
+# --- Python 표준 라이브러리 ---
+import os
+import uuid
 import json
+import re
 import random
-
-from django.shortcuts import render, get_object_or_404 
-from .models import Perfume, Favorite, FeedbackEvent, NoteImage
-# from .models import Note
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-
-import requests
+import imghdr
+from datetime import datetime
 from zoneinfo import ZoneInfo
+
+# --- 외부 라이브러리 ---
+import requests
+
+# --- Django 기본 ---
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -19,11 +20,22 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_POST, require_GET
 
+# --- 프로젝트 내부 (app) ---
+from .models import (
+    Perfume,
+    Favorite,
+    FeedbackEvent,
+    NoteImage,
+    Conversation,
+    Message,
+)
 from uauth.models import UserDetail
 from uauth.utils import process_profile_image, upload_to_s3_and_get_url
-from .models import Perfume
 
 
 def home(request):
@@ -43,10 +55,6 @@ def chat(request):
         "conversation_id": request.session.get("conversation_id"),
         "external_thread_id": request.session.get("thread_uuid"),
     })
-
-@login_required
-def recommend(request):
-    return render(request, "scentpick/recommend.html")
 
 @login_required
 def perfumes(request):
@@ -194,91 +202,6 @@ def perfumes(request):
     
     return render(request, "scentpick/perfumes.html", ctx)
 
-# product_detail 함수 수정
-@login_required
-def product_detail(request, perfume_id):
-    perfume = get_object_or_404(Perfume, id=perfume_id)
-    image_url = f"https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{perfume.id}.jpg"
-    
-    def safe_process_json_field(field_data):
-        if not field_data:
-            return []
-        
-        try:
-            # Case 1: 이미 Python 리스트인 경우
-            if isinstance(field_data, list):
-                return field_data
-            
-            # Case 2: JSON 문자열인 경우 (예: '["레몬", "자몽"]')
-            if isinstance(field_data, str):
-                import json
-                try:
-                    parsed = json.loads(field_data)
-                    if isinstance(parsed, list):
-                        return parsed
-                except:
-                    # Case 3: JSON 파싱 실패시 공백으로 분리 (예: '레몬 자몽')
-                    return field_data.split()
-            
-            return []
-        except Exception as e:
-            print(f"Error processing field: {field_data}, Error: {e}")
-            return []
-    
-    main_accords = safe_process_json_field(perfume.main_accords)
-    top_notes = safe_process_json_field(perfume.top_notes)
-    middle_notes = safe_process_json_field(perfume.middle_notes)
-    base_notes = safe_process_json_field(perfume.base_notes)
-    
-    # 이전/다음 향수 가져오기
-    prev_perfume = Perfume.objects.filter(id__lt=perfume_id).order_by('-id').first()
-    next_perfume = Perfume.objects.filter(id__gt=perfume_id).order_by('id').first()
-
-    context = {
-        'perfume': perfume,
-        'image_url': image_url,
-        'main_accords': main_accords,
-        'top_notes': top_notes,
-        'middle_notes': middle_notes,
-        'base_notes': base_notes,
-        'sizes': perfume.sizes,
-        'gender': perfume.gender,
-        'prev_perfume': prev_perfume,
-        'next_perfume': next_perfume,
-    }
-    return render(request, 'scentpick/product_detail.html', context)
-
-
-@require_POST
-@login_required
-def toggle_favorite(request):
-    data = json.loads(request.body)
-    perfume_id = data.get('perfume_id')
-    
-    try:
-        perfume = Perfume.objects.get(id=perfume_id)
-        # Favorite 모델을 사용하여 즐겨찾기 토글
-        favorite, created = Favorite.objects.get_or_create(
-            user=request.user,
-            perfume=perfume
-        )
-        
-        if not created:
-            favorite.delete()
-            is_favorite = False
-        else:
-            is_favorite = True
-            
-        return JsonResponse({
-            'status': 'success',
-            'is_favorite': is_favorite
-        })
-    except Perfume.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': '향수를 찾을 수 없습니다.'
-        }, status=404)
-
 @login_required
 def offlines(request):
     return render(request, "scentpick/offlines.html", {"KAKAO_JS_KEY": settings.KAKAO_JS_KEY})
@@ -324,7 +247,6 @@ def profile_edit(request):
                 ctype = getattr(file, "content_type", "").lower()
                 allowed_ct = {"image/jpeg", "image/png", "image/gif"}
                 if ctype not in allowed_ct:
-                    import imghdr
                     file.seek(0)
                     kind = (imghdr.what(file) or "").lower()
                     if kind == "jpg":
@@ -695,11 +617,6 @@ def fetch_random_by_accords(accords, pool=60, k=3, exclude_ids=None):
     return picked
 
 
-# scentpick/views.py (예시)
-import os, uuid, requests
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
 FASTAPI_CHAT_URL = os.environ.get("FASTAPI_CHAT_URL")  # e.g., http://<fastapi-host>:8000/chat.run
 SERVICE_TOKEN = os.environ.get("SERVICE_TOKEN")
 
@@ -757,12 +674,6 @@ def chat_submit(request):
     # GET이면 chat()로 돌려도 됨
     return redirect("scentpick:chat")
 
-# views.py (추가)
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-import uuid, os, json, requests
-from django.utils.decorators import method_decorator
-
 FASTAPI_CHAT_URL = os.environ.get("FASTAPI_CHAT_URL")  # 예: http://<fastapi-host>:8000/chatbot/chat.run
 SERVICE_TOKEN    = os.environ.get("SERVICE_TOKEN")
 
@@ -785,12 +696,18 @@ def chat_submit_api(request):
         conv_id = body.get("conversation_id") or request.session.get("conversation_id")
         conv_id = int(conv_id) if conv_id else None
 
+        # 새로운 대화라면 제목 생성 (15글자)
+        title = None
+        if not conv_id:
+            title = content[:15] if len(content) > 15 else content
+
         idem = str(uuid.uuid4())
         payload = {
             "user_id": request.user.id,
             "conversation_id": conv_id,
             "external_thread_id": thread_uuid,  # ✅ 장고가 만든 UUID 고정 사용
-            "title": None,
+            "title": title,
+            "query": content,  # FastAPI가 기대하는 필드명
             "message": {
                 "content": content,
                 "idempotency_key": idem,
@@ -802,19 +719,57 @@ def chat_submit_api(request):
             "X-Idempotency-Key": idem,
             "Content-Type": "application/json",
         }
+        
         r = requests.post(FASTAPI_CHAT_URL, json=payload, headers=headers, timeout=30)
         r.raise_for_status()
         data = r.json()
 
+        # FastAPI 응답 구조에 맞게 필드 추출
+        final_answer = data.get("final_answer") or data.get("response") or data.get("answer") or "응답을 받지 못했습니다."
+        
+        # 기존 conversation이 있으면 사용, 없으면 새로 생성
+        if conv_id:
+            try:
+                conversation = Conversation.objects.get(id=conv_id, user=request.user)
+            except Conversation.DoesNotExist:
+                conversation = None
+        else:
+            conversation = None
+            
+        # 새 conversation 생성
+        if not conversation:
+            conversation = Conversation.objects.create(
+                user=request.user,
+                title=title,
+                external_thread_id=thread_uuid
+            )
+        
+        # 사용자 메시지 저장
+        user_message = Message.objects.create(
+            conversation=conversation,
+            role='user',
+            content=content,
+            idempotency_key=idem,
+            metadata={"source": "django-web"}
+        )
+        
+        # AI 응답 메시지 저장
+        ai_message = Message.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=final_answer,
+            model='fastapi-bot'
+        )
+
         # 세션 갱신(재요청/새로고침 대비)
-        request.session["conversation_id"] = data["conversation_id"]
-        request.session["thread_uuid"]     = data["external_thread_id"]
+        request.session["conversation_id"] = conversation.id
+        request.session["thread_uuid"] = thread_uuid
 
         # 프론트에 필요한 최소 데이터만 반환
         return JsonResponse({
-            "conversation_id": data["conversation_id"],
-            "external_thread_id": data["external_thread_id"],
-            "final_answer": data["final_answer"],
+            "conversation_id": conversation.id,
+            "external_thread_id": thread_uuid,
+            "final_answer": final_answer,
             "messages_appended": data.get("messages_appended", []),
         })
     except requests.HTTPError as e:
@@ -1085,6 +1040,46 @@ NOTE_TRANSLATIONS = {
     'Gasoline': '휘발유',
     'Rubber': '고무',
     'Plastic': '플라스틱',
+    
+    # 추가된 항목들
+    'Earthy': '얼디',
+    'Warm': '웜',
+    'Spicy': '스파이시',
+    'Aromatic': '아로마틱',
+    'Peach': '피치',
+    'May': '5월의',
+    'Pear': '페어',
+    'Sambac': '삼박',
+    'Tahitian': '타히티안',
+    'Australian': '호주산',
+    'Liquorice': '리코리스',
+    'Yellow': '옐로우',
+    'Floral': '플로랄',
+    'Tree': '트리',
+    'Seed': '씨드',
+    'Leaf': '리프',
+    'Madagascar': '마다가스카르',
+    'Coumarin': '쿠마린',
+    'Calabrian': '칼라브리안',
+    'Petitgrain': '페티그레인',
+    'Ginger': '진저',
+    'Cardamom': '카다멈',
+    'Solar': '솔라',
+    'Dry Flower': '드라이플라워',
+    'Absolute': '앱솔루트',
+    'Driftwood': '드리프트우드',
+    'Musk': '머스',
+    'Oud': '오드',
+    'Yuzu': '유주',
+    'Grape': '그레이프',
+    'Fruit': '프룻',
+    'Osmanthus': '오스만투스',
+    'Hedione': '헤디온',
+    'Pink': '핑크',
+    'Watery': '워터리',
+    'Wild': '와일드',
+    'Flower': '플라워',
+    'Tropical': '트로피칼',
 }
 
 def get_korean_note_name(english_name):
@@ -1377,18 +1372,14 @@ def get_note_image_url(note_name):
         # 한국어면 영어로 변환
         english_name = get_english_note_name(note_name)
         
-        print(f"Debug: 노트명 '{note_name}' -> 영어명 '{english_name}'")  # 디버깅용
-        
         # 1. 정확한 이름으로 검색
         note_image = NoteImage.objects.filter(note_name__iexact=english_name).first()
         if note_image:
-            print(f"Debug: 정확히 매칭됨 - {note_image.image_url}")
             return note_image.image_url
         
         # 2. 부분 매칭으로 검색 (대소문자 무시)
         note_image = NoteImage.objects.filter(note_name__icontains=english_name).first()
         if note_image:
-            print(f"Debug: 부분 매칭됨 - {note_image.image_url}")
             return note_image.image_url
         
         # 3. 공백으로 분리해서 각 단어로 검색
@@ -1397,23 +1388,17 @@ def get_note_image_url(note_name):
                 if len(word) > 2:  # 2글자 이상인 단어만
                     note_image = NoteImage.objects.filter(note_name__icontains=word).first()
                     if note_image:
-                        print(f"Debug: 단어 '{word}'로 매칭됨 - {note_image.image_url}")
                         return note_image.image_url
         
         # 4. 역방향 검색 - DB의 노트명이 한국어 노트명을 포함하는지
         notes_containing = NoteImage.objects.filter(note_name__icontains=note_name).first()
         if notes_containing:
-            print(f"Debug: 역방향 매칭됨 - {notes_containing.image_url}")
             return notes_containing.image_url
-            
-        print(f"Debug: 매칭 실패 - '{note_name}' ('{english_name}')")
         return None
         
     except Exception as e:
-        print(f"Error getting note image for {note_name}: {e}")
         return None
 
-# product_detail 함수 수정
 
 def product_detail(request, perfume_id):
     # DB 테스트 (개발용 - 나중에 제거)
@@ -1482,6 +1467,10 @@ def product_detail(request, perfume_id):
         'gender': perfume.gender,
         'prev_perfume': prev_perfume,
         'next_perfume': next_perfume,
+        'detail_url': perfume.detail_url,  # bysuco 링크 추가
+        'notes_score': perfume.notes_score,  # 노트 점수 추가
+        'season_score': perfume.season_score,  # 계절 점수 추가
+        'day_night_score': perfume.day_night_score,  # 낮/밤 점수 추가
     }
     return render(request, 'scentpick/product_detail.html', context)
 
@@ -1492,8 +1481,6 @@ def toggle_favorite(request):
         data = json.loads(request.body)
         perfume_id = data.get('perfume_id')
         
-        print(f"DEBUG: 받은 perfume_id = {perfume_id}")  # 디버깅
-        
         if not perfume_id:
             return JsonResponse({
                 'status': 'error',
@@ -1501,12 +1488,9 @@ def toggle_favorite(request):
             }, status=400)
         
         perfume = get_object_or_404(Perfume, id=perfume_id)
-        print(f"DEBUG: 찾은 향수 = {perfume.name}")  # 디버깅
         
         # admin 사용자 사용
-        from django.contrib.auth.models import User
         request.user = User.objects.get(username=request.user.username)
-        print(f"DEBUG: request.user ID = {request.user.id}")  # 디버깅
         
         # DB에서 즐겨찾기 확인
         favorite = Favorite.objects.filter(
@@ -1519,7 +1503,6 @@ def toggle_favorite(request):
             favorite.delete()
             is_favorite = False
             message = f'{perfume.name}이(가) 즐겨찾기에서 제거되었습니다.'
-            print(f"DEBUG: 즐겨찾기 제거됨")  # 디버깅
         else:
             # 즐겨찾기에 추가
             new_favorite = Favorite.objects.create(
@@ -1528,11 +1511,9 @@ def toggle_favorite(request):
             )
             is_favorite = True
             message = f'{perfume.name}이(가) 즐겨찾기에 추가되었습니다.'
-            print(f"DEBUG: 즐겨찾기 추가됨 - ID: {new_favorite.id}")  # 디버깅
         
         # 현재 즐겨찾기 개수 확인
         total_favorites = Favorite.objects.filter(user=request.user).count()
-        print(f"DEBUG: 총 즐겨찾기 개수 = {total_favorites}")  # 디버깅
         
         return JsonResponse({
             'status': 'success',
@@ -1542,13 +1523,11 @@ def toggle_favorite(request):
         })
         
     except User.DoesNotExist:
-        print("DEBUG: playdata2 사용자를 찾을 수 없음")  # 디버깅
         return JsonResponse({
             'status': 'error',
             'message': 'admin 사용자를 찾을 수 없습니다.'
         }, status=500)
     except Exception as e:
-        print(f"DEBUG: 오류 발생 - {str(e)}")  # 디버깅
         return JsonResponse({
             'status': 'error',
             'message': f'오류가 발생했습니다: {str(e)}'
@@ -1562,8 +1541,6 @@ def toggle_like_dislike(request):
         perfume_id = data.get('perfume_id')
         action = data.get('action')  # 'like' 또는 'dislike'
         
-        print(f"DEBUG: 받은 perfume_id = {perfume_id}, action = {action}")  # 디버깅
-        
         if not perfume_id or action not in ['like', 'dislike']:
             return JsonResponse({
                 'status': 'error',
@@ -1571,12 +1548,9 @@ def toggle_like_dislike(request):
             }, status=400)
         
         perfume = get_object_or_404(Perfume, id=perfume_id)
-        print(f"DEBUG: 찾은 향수 = {perfume.name}")  # 디버깅
         
         # admin 사용자 사용
-        from django.contrib.auth.models import User
         request.user = User.objects.get(username=request.user.username)
-        print(f"DEBUG: request.user ID = {request.user.id}")  # 디버깅
         
         # 기존 피드백 이벤트 확인
         existing_feedback = FeedbackEvent.objects.filter(
@@ -1586,13 +1560,11 @@ def toggle_like_dislike(request):
         ).first()
         
         if existing_feedback:
-            print(f"DEBUG: 기존 피드백 있음 - {existing_feedback.action}")  # 디버깅
             if existing_feedback.action == action:
                 # 같은 액션이면 삭제 (토글 off)
                 existing_feedback.delete()
                 current_action = None
                 message = f'{perfume.name}의 {action}가 취소되었습니다.'
-                print(f"DEBUG: 피드백 삭제됨")  # 디버깅
             else:
                 # 다른 액션이면 업데이트 (좋아요 ↔ 싫어요)
                 existing_feedback.action = action
@@ -1602,7 +1574,6 @@ def toggle_like_dislike(request):
                     message = f'{perfume.name}에 좋아요를 눌렀습니다!'
                 else:
                     message = f'{perfume.name}에 싫어요를 눌렀습니다.'
-                print(f"DEBUG: 피드백 업데이트됨 - {action}")  # 디버깅
         else:
             # 새로운 피드백 이벤트 생성
             new_feedback = FeedbackEvent.objects.create(
@@ -1617,12 +1588,10 @@ def toggle_like_dislike(request):
                 message = f'{perfume.name}에 좋아요를 눌렀습니다!'
             else:
                 message = f'{perfume.name}에 싫어요를 눌렀습니다.'
-            print(f"DEBUG: 새 피드백 생성됨 - ID: {new_feedback.id}, action: {action}")  # 디버깅
         
         # 현재 피드백 상태 확인
         total_likes = FeedbackEvent.objects.filter(user=request.user, action='like').count()
         total_dislikes = FeedbackEvent.objects.filter(user=request.user, action='dislike').count()
-        print(f"DEBUG: 총 좋아요 = {total_likes}, 총 싫어요 = {total_dislikes}")  # 디버깅
         
         return JsonResponse({
             'status': 'success',
@@ -1633,26 +1602,20 @@ def toggle_like_dislike(request):
         })
         
     except User.DoesNotExist:
-        print("DEBUG: playdata2 사용자를 찾을 수 없음")  # 디버깅
         return JsonResponse({
             'status': 'error',
             'message': 'admin 사용자를 찾을 수 없습니다.'
         }, status=500)
     except Exception as e:
-        print(f"DEBUG: 오류 발생 - {str(e)}")  # 디버깅
         return JsonResponse({
             'status': 'error',
             'message': f'오류가 발생했습니다: {str(e)}'
         }, status=500)
 
-def offlines(request):
-    return render(request, "scentpick/offlines.html")
-
 @login_required 
 def mypage(request):
     """마이페이지"""
     try:
-        from django.contrib.auth.models import User
         request.user = User.objects.get(username=request.user.username)
         
         # admin 사용자의 즐겨찾기한 향수들 가져오기
@@ -1697,3 +1660,50 @@ def mypage(request):
         }
     
     return render(request, "scentpick/mypage.html", context)
+
+@login_required
+@require_GET
+def conversations_api(request):
+    items = []
+    qs = Conversation.objects.filter(user=request.user).order_by('-updated_at')[:100]
+    for c in qs:
+        title = c.title
+        if not title:
+            # Fallback: derive from first user message
+            try:
+                first_user = c.messages.filter(role='user').order_by('created_at').first()
+                if first_user and first_user.content:
+                    title = first_user.content[:15]
+            except Exception:
+                pass
+        if not title:
+            title = f"대화 {c.id}"
+        items.append({
+            'id': c.id,
+            'title': title,
+            'updated_at': c.updated_at.isoformat(),
+        })
+    return JsonResponse({'items': items})
+
+@login_required
+@require_GET
+def conversation_messages_api(request, conv_id: int):
+    conv = get_object_or_404(Conversation, id=conv_id, user=request.user)
+    msgs = conv.messages.order_by('created_at')
+    data = []
+    for m in msgs:
+        data.append({
+            'role': m.role,
+            'content': m.content,
+            'created_at': m.created_at.isoformat(),
+        })
+    return JsonResponse({'conversation_id': conv.id, 'items': data})
+
+@login_required
+@require_POST
+def chat_new_api(request):
+    # Reset conversation and start a fresh thread for new chat
+    request.session['conversation_id'] = None
+    new_uuid = str(uuid.uuid4())
+    request.session['thread_uuid'] = new_uuid
+    return JsonResponse({'ok': True, 'external_thread_id': new_uuid})

@@ -33,14 +33,17 @@
     </div>
 
     <div style="margin-bottom: 20px;" class="action-buttons">
-      <button class="favorite-btn" data-perfume-id="{{ perfume.id }}" style="background:#4299e1;color:#fff;border:none;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">
+      <button class="favorite-btn" data-perfume-id="{{ perfume.id }}" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">
           <span class="favorite-icon">⭐</span> 즐겨찾기
       </button>
-      <button class="like-btn" data-perfume-id="{{ perfume.id }}" data-action="like" style="background:#e53e3e;color:#fff;border:none;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">👍 좋아요</button>
-      <button class="dislike-btn" data-perfume-id="{{ perfume.id }}" data-action="dislike" style="background:#f7fafc;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">👎 싫어요</button>
+      <button class="like-btn" data-perfume-id="{{ perfume.id }}" data-action="like" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">👍 좋아요</button>
+      <button class="dislike-btn" data-perfume-id="{{ perfume.id }}" data-action="dislike" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">👎 싫어요</button>
     </div>
 
-    <button class="buy-btn">구매 사이트 이동</button>
+    <button class="buy-btn" onclick="window.open('{{ detail_url|default:"#" }}', '_blank')" 
+            {% if not detail_url %}disabled{% endif %}>
+        구매 사이트 이동
+    </button>
   </div>
 </div>
 
@@ -69,10 +72,12 @@
       <h4>Top Notes</h4>
       <div class="note-items">
         {% for note in top_notes %}
+        {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" {% if note.image_url %}style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"{% endif %}></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
           <span>{{ note.korean_name }}</span>
         </div>
+        {% endif %}
         {% endfor %}
       </div>
     </div>
@@ -83,10 +88,12 @@
       <h4>Middle Notes</h4>
       <div class="note-items">
         {% for note in middle_notes %}
+        {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" {% if note.image_url %}style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"{% endif %}></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
           <span>{{ note.korean_name }}</span>
         </div>
+        {% endif %}
         {% endfor %}
       </div>
     </div>
@@ -97,16 +104,112 @@
       <h4>Base Notes</h4>
       <div class="note-items">
         {% for note in base_notes %}
+        {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" {% if note.image_url %}style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"{% endif %}></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
           <span>{{ note.korean_name }}</span>
         </div>
+        {% endif %}
         {% endfor %}
       </div>
     </div>
     {% endif %}
   </div>
 </div>
+
+<!-- 점수 시각화 섹션 추가 -->
+{% if notes_score or season_score or day_night_score %}
+<div class="scores-section" style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+  <h3 style="text-align: center; margin-bottom: 30px;">향수 분석 점수</h3>
+  
+  <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+    
+    <!-- 노트 점수 차트 -->
+    {% if notes_score %}
+    <div class="chart-wrapper">
+      <h4 style="text-align: center; margin-bottom: 15px;">노트 특성 점수</h4>
+      <canvas id="notesChart" width="300" height="200"></canvas>
+    </div>
+    {% endif %}
+    
+    <!-- 계절 점수 차트 -->
+    {% if season_score %}
+    <div class="chart-wrapper">
+      <h4 style="text-align: center; margin-bottom: 15px;">계절 적합성</h4>
+      <div class="horizontal-bar-chart">
+        {% for key, value in season_score.items %}
+          {% if key == 'spring' %}
+          <div class="bar-item">
+            <div class="bar-label">봄</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+              <div class="bar-value">{{ value|floatformat:1 }}%</div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% for key, value in season_score.items %}
+          {% if key == 'summer' %}
+          <div class="bar-item">
+            <div class="bar-label">여름</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+              <div class="bar-value">{{ value|floatformat:1 }}%</div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% for key, value in season_score.items %}
+          {% if key == 'fall' %}
+          <div class="bar-item">
+            <div class="bar-label">가을</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+              <div class="bar-value">{{ value|floatformat:1 }}%</div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% for key, value in season_score.items %}
+          {% if key == 'winter' %}
+          <div class="bar-item">
+            <div class="bar-label">겨울</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+              <div class="bar-value">{{ value|floatformat:1 }}%</div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- 낮/밤 점수 차트 -->
+    {% if day_night_score %}
+    <div class="chart-wrapper">
+      <h4 style="text-align: center; margin-bottom: 15px;">시간대 적합성</h4>
+      <div class="horizontal-bar-chart">
+        {% for key, value in day_night_score.items %}
+        <div class="bar-item">
+          <div class="bar-label">
+            {% if key == 'day' %}낮
+            {% elif key == 'night' %}밤
+            {% else %}{{ key }}{% endif %}
+          </div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+            <div class="bar-value">{{ value|floatformat:1 }}%</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+  </div>
+</div>
+{% endif %}
 
 <style>
 .pagination {
@@ -173,12 +276,14 @@
 
 /* 즐겨찾기 버튼 스타일 */
 .favorite-btn:hover {
-    background: #3182ce !important;
+    background: navy !important;
+    color: #fff !important;
     transform: translateY(-2px);
 }
 
 .favorite-btn.active {
-    background: #2c5282 !important;
+    background: navy !important;
+    color: #fff !important;
 }
 
 .favorite-btn.active .favorite-icon {
@@ -187,31 +292,123 @@
 
 /* 좋아요/싫어요 버튼 스타일 */
 .like-btn:hover {
-    background: #c53030 !important;
+    background: red !important;
+    color: #fff !important;
     transform: translateY(-2px);
 }
 
 .like-btn.active {
-    background: #9b2c2c !important;
-    box-shadow: 0 4px 12px rgba(155, 44, 44, 0.4);
+    background: red !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
 }
 
 .dislike-btn:hover {
-    background: #e2e8f0 !important;
+    background: gray !important;
+    color: #fff !important;
     transform: translateY(-2px);
 }
 
 .dislike-btn.active {
-    background: #718096 !important;
+    background: gray !important;
     color: #fff !important;
-    border-color: #718096 !important;
-    box-shadow: 0 4px 12px rgba(113, 128, 150, 0.4);
+    box-shadow: 0 4px 12px rgba(128, 128, 128, 0.4);
+}
+
+/* 수평 막대 차트 스타일 */
+.horizontal-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.bar-label {
+    min-width: 80px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.bar-container {
+    flex: 1;
+    position: relative;
+    height: 30px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 15px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.bar-value {
+    position: absolute;
+    right: 10px;
+    color: #333;
+    font-weight: 600;
+    font-size: 12px;
+    z-index: 2;
+}
+
+/* 노트 점수 차트는 기존 막대 차트 유지하되 스타일 개선 */
+#notesChart {
+    max-height: 400px;
+}
+
+/* 차트 컨테이너 반응형 개선 */
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.chart-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* 점수 섹션 전체 스타일 개선 */
+.scores-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.scores-section h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.chart-wrapper h4 {
+    color: #555;
+    font-size: 18px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 </style>
 
 {% endblock content %}
 
 {% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (() => {
     // CSRF 토큰 가져오기 함수
@@ -260,8 +457,6 @@
                         favoriteBtn.style.background = '#4299e1';
                         icon.style.color = '#fff';
                     }
-                    
-                    alert(data.status + ': ' + data.is_favorite);
                 } else {
                     const errorData = await response.json();
                     alert(errorData.message || '즐겨찾기 처리 중 오류가 발생했습니다.');
@@ -304,8 +499,6 @@
                 } else if (data.current_action === 'dislike') {
                     dislikeBtn.classList.add('active');
                 }
-                
-                alert(data.message);
             } else {
                 const errorData = await response.json();
                 alert(errorData.message || '피드백 처리 중 오류가 발생했습니다.');
@@ -323,6 +516,52 @@
     if (dislikeBtn) {
         dislikeBtn.addEventListener("click", () => handleLikeDislike(dislikeBtn, 'dislike'));
     }
+
+    // 노트 점수 차트만 생성 (기존 막대 차트)
+    function createNotesChart(data) {
+        const ctx = document.getElementById('notesChart').getContext('2d');
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        // 상위 10개만 표시
+        const sortedData = labels.map((label, index) => ({label, value: values[index]}))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10);
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedData.map(item => item.label),
+                datasets: [{
+                    label: '점수',
+                    data: sortedData.map(item => item.value),
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // 노트 차트만 초기화
+    {% if notes_score %}
+    createNotesChart({{ notes_score|safe }});
+    {% endif %}
+
 })();
 </script>
 {% endblock script %}

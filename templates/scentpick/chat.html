@@ -3,10 +3,9 @@
 {% block content %}
 <div class="chat-container">
   <div class="chat-sidebar">
-    <button class="new-chat-btn">새 채팅</button>
-    <ul class="chat-history">
-      <li>30대 남자 향수 추천</li><li>코튼 향의 향수</li><li>여름용 시트러스 향수</li>
-      <li>데이트용 향수 추천</li><li>사무실용 은은한 향수</li>
+    <button class="new-chat-btn" id="newChatBtn">새 채팅</button>
+    <ul class="chat-history" id="chatHistory">
+      <li class="loading">대화 목록 불러오는 중...</li>
     </ul>
   </div>
 
@@ -67,12 +66,124 @@
     const sendBtn = document.getElementById("chatSendBtn");
     const input   = document.getElementById("chatInput");
     const box     = document.getElementById("chatMessages");
-    const newBtn  = document.querySelector(".new-chat-btn");
-    if (!sendBtn || !input || !box) return;
+    const newBtn  = document.getElementById("newChatBtn");
+    const historyList = document.getElementById("chatHistory");
+    
+    if (!sendBtn || !input || !box || !historyList) return;
 
     // 서버에서 내려준 초기 컨텍스트(없을 수 있음)
     let conversationId   = {{ conversation_id|default:"null" }};
     let externalThreadId = {% if external_thread_id %}"{{ external_thread_id }}"{% else %}null{% endif %};
+
+    // 대화 목록 불러오기
+    async function loadConversations() {
+      try {
+        const resp = await fetch("{% url 'scentpick:conversations_api' %}", {
+          method: "GET",
+          headers: {
+            "X-CSRFToken": CSRF_TOKEN
+          }
+        });
+        
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        
+        const data = await resp.json();
+        historyList.innerHTML = '';
+        
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(conv => {
+            const li = document.createElement("li");
+            li.className = "conversation-item";
+            li.dataset.conversationId = conv.id;
+            li.textContent = conv.title || `대화 ${conv.id}`;
+            li.addEventListener('click', () => loadConversation(conv.id));
+            historyList.appendChild(li);
+          });
+        } else {
+          const li = document.createElement("li");
+          li.className = "no-conversations";
+          li.textContent = "아직 대화가 없습니다.";
+          historyList.appendChild(li);
+        }
+      } catch (e) {
+        console.error('대화 목록 불러오기 실패:', e);
+        historyList.innerHTML = '<li class="error">대화 목록 불러오기 실패</li>';
+      }
+    }
+
+    // 특정 대화의 메시지 불러오기
+    async function loadConversation(convId) {
+      try {
+        // 활성 대화 표시
+        document.querySelectorAll('.conversation-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        document.querySelector(`[data-conversation-id="${convId}"]`).classList.add('active');
+        
+        const resp = await fetch(`/api/conversations/${convId}/messages`, {
+          method: "GET",
+          headers: {
+            "X-CSRFToken": CSRF_TOKEN
+          }
+        });
+        
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        
+        const data = await resp.json();
+        conversationId = data.conversation_id;
+        
+        // 메시지 표시 영역 초기화
+        box.innerHTML = '';
+        
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(msg => {
+            addMessage(msg.content, msg.role === 'user');
+          });
+        } else {
+          addMessage("이 대화에는 아직 메시지가 없습니다.");
+        }
+        
+      } catch (e) {
+        console.error('대화 불러오기 실패:', e);
+        addMessage(`오류: 대화를 불러올 수 없습니다. ${e.message}`);
+      }
+    }
+
+    // 새 채팅 시작
+    async function startNewChat() {
+      try {
+        const resp = await fetch("{% url 'scentpick:chat_new_api' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": CSRF_TOKEN
+          }
+        });
+        
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        
+        const data = await resp.json();
+        
+        // 상태 초기화
+        conversationId = null;
+        externalThreadId = data.external_thread_id;
+        
+        // UI 초기화
+        box.innerHTML = "";
+        addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?");
+        
+        // 활성 대화 표시 해제
+        document.querySelectorAll('.conversation-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        
+        input.focus();
+        
+      } catch (e) {
+        console.error('새 채팅 시작 실패:', e);
+        addMessage(`오류: 새 채팅을 시작할 수 없습니다. ${e.message}`);
+      }
+    }
 
     function addMessage(msg, isUser = false) {
       const wrap  = document.createElement("div");
@@ -132,14 +243,9 @@
 
         // 최종 답변으로 교체
         loader.inner.textContent = data.final_answer || "(응답이 비어있습니다)";
-
-        // LangGraph 이벤트 전체를 그리고 싶다면 아래 주석 해제
-        /*
-        loader.wrap.remove();
-        (data.messages_appended || []).forEach(m => {
-          addMessage(m.content || "", m.role === "user");
-        });
-        */
+        
+        // 대화 목록 새로고침 (새 대화가 생성되었을 수 있음)
+        loadConversations();
 
       } catch (e) {
         loader.inner.textContent = `오류: ${e && e.message ? e.message : e}`;
@@ -150,16 +256,18 @@
       }
     }
 
+    // 이벤트 리스너 등록
     sendBtn.addEventListener("click", send);
     input.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
+    newBtn.addEventListener("click", startNewChat);
 
-    // 새 채팅(프론트 초기화)
-    newBtn && newBtn.addEventListener("click", () => {
-      conversationId = null; // 서버 세션 thread_uuid는 유지(완전 초기화는 별도 API로)
-      box.innerHTML = "";
-      addMessage("새 대화를 시작합니다. 어떤 향수를 찾고 계신가요?");
-      input.focus();
-    });
+    // 초기 대화 목록 로드
+    loadConversations();
+    
+    // 초기 환영 메시지 (대화가 없는 경우)
+    if (!conversationId) {
+      addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?");
+    }
   })();
 </script>
 {% endblock %}
