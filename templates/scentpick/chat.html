@@ -5,7 +5,17 @@
   <div class="chat-sidebar">
     <button class="new-chat-btn" id="newChatBtn">새 채팅</button>
     <ul class="chat-history" id="chatHistory">
-      <li class="loading">대화 목록 불러오는 중...</li>
+      {% if recent_conversations %}
+        {% for conversation in recent_conversations %}
+          <li class="conversation-item{% if conversation.id == current_conversation_id %} active{% endif %}" 
+              data-conversation-id="{{ conversation.id }}"
+              onclick="loadConversation({{ conversation.id }})">
+            {{ conversation.title|default:"대화"|truncatechars:25 }}
+          </li>
+        {% endfor %}
+      {% else %}
+        <li class="no-conversations">아직 대화가 없습니다.</li>
+      {% endif %}
     </ul>
   </div>
 
@@ -15,7 +25,17 @@
       <div class="chat-examples">💡 예시: "30대 남자가 자주 찾는 향수 알려줘", "코튼 향의 20만원 이하 향수"</div>
     </div>
     <div class="chat-messages" id="chatMessages">
-      <div class="message"><div class="message-content">안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?</div></div>
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message{% if message.role == 'user' %} user{% endif %}">
+            <div class="message-content">{{ message.content }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="message">
+          <div class="message-content">안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?</div>
+        </div>
+      {% endif %}
     </div>
     <div class="chat-input">
       <input type="text" placeholder="메시지를 입력하세요..." id="chatInput" autocomplete="off">
@@ -23,33 +43,6 @@
     </div>
   </div>
 
-  <div class="chat-info">
-    <div class="weather-info">
-      <h4>오늘의 날씨</h4><p>🌤️ 맑음, 22°C</p>
-      <p style="font-size:14px;color:#718096;">상쾌한 시트러스 계열을 추천해요!</p>
-    </div>
-    <div class="user-info">
-      <h4>사용자 정보</h4><p>👤 20대 남성</p>
-      <p style="font-size:14px;color:#718096;">젊고 활동적인 향수를 추천!</p>
-    {% comment %} </div>
-    <div>
-      <h4>추천 향수</h4>
-      <div class="recommended-perfumes">
-        <div class="perfume-card">
-          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">샤넬 블루</div>
-          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='bleu-de-chanel' %}">더보기</a>
-        </div>
-        <div class="perfume-card">
-          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">디올 소바쥬</div>
-          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='dior-sauvage' %}">더보기</a>
-        </div>
-        <div class="perfume-card">
-          <div class="perfume-img"></div><div style="font-size:12px;font-weight:600;">톰포드 옴므</div>
-          <a class="more-btn" href="{% url 'scentpick:product_detail' slug='tomford-homme' %}">더보기</a>
-        </div>
-      </div> {% endcomment %}
-    </div>
-  </div>
 </div>
 {% endblock content %}
 
@@ -261,13 +254,13 @@
     input.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
     newBtn.addEventListener("click", startNewChat);
 
-    // 초기 대화 목록 로드
-    loadConversations();
+    // 현재 대화 ID 설정 (서버에서 전달받은 값)
+    {% if current_conversation_id %}
+      conversationId = {{ current_conversation_id }};
+    {% endif %}
     
-    // 초기 환영 메시지 (대화가 없는 경우)
-    if (!conversationId) {
-      addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?");
-    }
+    // 초기 대화 목록은 서버에서 이미 렌더링됨
+    // 필요시에만 AJAX로 새로고침
   })();
 </script>
 {% endblock %}
