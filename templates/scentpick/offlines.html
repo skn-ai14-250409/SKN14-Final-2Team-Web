@@ -615,8 +615,8 @@
   })();
 
   function initMap(){
-     // 지도 기본 옵션 (위치 못가져올 때 fallback → 강남역)
-    const center = new kakao.maps.LatLng(37.498095, 127.027610); // 강남역
+     // 지도 기본 옵션 (위치 못가져올 때 fallback → 플레이데이터)
+    const center = new kakao.maps.LatLng(37.48642884662146, 127.02087044474453); // 플레이데이터
     map = new kakao.maps.Map(document.getElementById('map'), { center, level:5 });
     places = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();

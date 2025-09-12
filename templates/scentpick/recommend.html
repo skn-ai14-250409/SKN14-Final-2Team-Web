@@ -429,8 +429,10 @@
           window.location.replace(`/recommend?lat=${lat}&lon=${lon}`);
         },
         (err) => {
-          console.warn("위치 권한 없음 → 기본값 사용");
-          window.location.replace(`/recommend`);
+          console.warn("위치 권한 없음 → 플레이데이터 사용");
+          const lat = 37.48642884662146;
+          const lon = 127.02087044474453;
+          window.location.replace(`/recommend?lat=${lat}&lon=${lon}`);
         }
       );
     } else {
