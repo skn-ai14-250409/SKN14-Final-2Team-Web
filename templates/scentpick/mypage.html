@@ -15,7 +15,19 @@
     <div class="profile-name" style="font-size:14px;margin-bottom:15px;">{{ request.user.detail.name|default:request.user.username }}님</div>
     <ul class="profile-menu">
       <li><a href="{% url 'scentpick:profile_edit' %}" style="text-decoration:none!important;color:#4a5568!important;font-size:9px!important;display:block!important;padding:4px 6px!important;border-radius:4px!important;transition:background-color 0.2s!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;border:none!important;background:#fff!important;font-weight:400!important;">회원정보 수정</a></li>
-      <li><a href="{% url 'scentpick:password_change' %}" style="text-decoration:none!important;color:#4a5568!important;font-size:9px!important;display:block!important;padding:4px 6px!important;border-radius:4px!important;transition:background-color 0.2s!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;border:none!important;background:#fff!important;font-weight:400!important;">비밀번호 변경</a></li>
+      
+      {# yyh #}
+      {% comment %} <li><a href="{% url 'scentpick:password_change' %}" style="text-decoration:none!important;color:#4a5568!important;font-size:9px!important;display:block!important;padding:4px 6px!important;border-radius:4px!important;transition:background-color 0.2s!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;border:none!important;background:#fff!important;font-weight:400!important;">비밀번호 변경</a></li> {% endcomment %}
+      {# 소셜 로그인(네이버/카카오/구글 등) 사용자는 비밀번호 변경 숨김 #}
+      {% if not user.socialaccount_set.exists %}
+        <li>
+          <a href="{% url 'scentpick:password_change' %}"
+            style="text-decoration:none!important;border:none!important;background:#fff!important;font-weight:400!important;">
+            비밀번호 변경
+          </a>
+        </li>
+      {% endif %}
+      
       <li><a class="danger" href="{% url 'uauth:logout' %}" style="text-decoration:none!important;color:#e53e3e!important;font-size:9px!important;display:block!important;padding:4px 6px!important;border-radius:4px!important;transition:background-color 0.2s!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;border:none!important;background:#fff!important;font-weight:400!important;">로그아웃</a></li>
     </ul>
   </div>
@@ -50,9 +62,13 @@
     
     <div class="like-dislike-container">
         <div class="likes-section">
-            <h3>선호 향수 ({{ likes_count }}개)</h3>
-            {% if liked_perfumes %}
+            <h3 class="{% if likes_count|default:0 == 0 %}zero-count{% endif %}">
+              선호 향수 ({{ likes_count|default:0 }}개)
+            </h3>
+
+            
                 <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
+                  {% if liked_perfumes %}
                     {% for feedback in liked_perfumes %}
                         <div class="recommendation-card like-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
                             <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
@@ -65,8 +81,8 @@
                             <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.name }}</div>
                             <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.brand }}</div>
                             <div style="display:flex;justify-content:center;gap:5px;">
-                                <button class="feedback-btn like-btn active" data-action="like" onclick="handleFeedbackButtonClick(this, event)" style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
-                                <button class="feedback-btn dislike-btn" data-action="dislike" onclick="handleFeedbackButtonClick(this, event)" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
+                                <button class="feedback-btn like-btn active" data-action="like" style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
+                                <button class="feedback-btn dislike-btn" data-action="dislike" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
                             </div>
                         </div>
                     {% endfor %}
@@ -77,9 +93,14 @@
         </div>
 
         <div class="dislikes-section">
-            <h3>비선호 향수 ({{ dislikes_count }}개)</h3>
-            {% if disliked_perfumes %}
+
+            <h3 class="{% if dislikes_count|default:0 == 0 %}zero-count{% endif %}">
+              비선호 향수 ({{ dislikes_count|default:0 }}개)
+            </h3>
+            
+            
                 <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
+                  {% if disliked_perfumes %}
                     {% for feedback in disliked_perfumes %}
                         <div class="recommendation-card dislike-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
                             <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
@@ -92,8 +113,8 @@
                             <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.name }}</div>
                             <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.brand }}</div>
                             <div style="display:flex;justify-content:center;gap:5px;">
-                                <button class="feedback-btn like-btn" data-action="like" onclick="handleFeedbackButtonClick(this, event)" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
-                                <button class="feedback-btn dislike-btn active" data-action="dislike" onclick="handleFeedbackButtonClick(this, event)" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
+                                <button class="feedback-btn like-btn" data-action="like" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
+                                <button class="feedback-btn dislike-btn active" data-action="dislike" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
                             </div>
                         </div>
                     {% endfor %}
@@ -140,124 +161,7 @@
 
 {% block script %}
 <script>
-// 인라인 버튼 클릭 핸들러 (먼저 정의)
-async function handleFeedbackButtonClick(button, event) {
-  console.log('★ 버튼 클릭!', button.textContent, button.dataset.action);
-  event.preventDefault();
-  event.stopPropagation();
-  
-  const card = button.closest('.recommendation-card');
-  const feedbackId = card.dataset.feedbackId;
-  const action = button.dataset.action;
-  const isActive = button.classList.contains('active');
-  
-  if (isActive) {
-    // 활성화된 버튼 클릭 - 삭제
-    if (confirm('피드백을 취소하시겠습니까?')) {
-      await deleteFeedback(feedbackId, card);
-    }
-  } else {
-    // 비활성화된 버튼 클릭 - 변경
-    const otherButton = card.querySelector(`.feedback-btn:not([data-action="${action}"])`);
-    if (otherButton && otherButton.classList.contains('active')) {
-      await updateFeedback(feedbackId, action, card);
-    }
-  }
-}
-
-// 피드백 삭제
-async function deleteFeedback(feedbackId, card) {
-  try {
-    const response = await fetch('/scentpick/api/delete-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ feedback_id: parseInt(feedbackId) })
-    });
-    
-    if (response.ok) {
-      card.style.transition = 'all 0.3s ease';
-      card.style.opacity = '0';
-      card.style.transform = 'scale(0.8)';
-      setTimeout(() => card.remove(), 300);
-    }
-  } catch (error) {
-    console.error('삭제 오류:', error);
-  }
-}
-
-// 피드백 업데이트
-async function updateFeedback(feedbackId, action, card) {
-  try {
-    const response = await fetch('/scentpick/api/update-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ feedback_id: parseInt(feedbackId), action: action })
-    });
-    
-    if (response.ok) {
-      // 버튼 상태 및 스타일 변경
-      const likeBtn = card.querySelector('[data-action="like"]');
-      const dislikeBtn = card.querySelector('[data-action="dislike"]');
-      
-      if (action === 'like') {
-        // 선호로 변경
-        likeBtn.classList.add('active');
-        dislikeBtn.classList.remove('active');
-        
-        // 선호 버튼 스타일
-        likeBtn.style.background = '#4a90e2';
-        likeBtn.style.color = 'white';
-        likeBtn.style.border = 'none';
-        
-        // 비선호 버튼 스타일
-        dislikeBtn.style.background = '#f7fafc';
-        dislikeBtn.style.color = '#4a5568';
-        dislikeBtn.style.border = '1px solid #e2e8f0';
-        
-        // 카드 클래스 변경
-        card.className = 'recommendation-card like-card perfume-card-clickable';
-      } else {
-        // 비선호로 변경
-        dislikeBtn.classList.add('active');
-        likeBtn.classList.remove('active');
-        
-        // 비선호 버튼 스타일
-        dislikeBtn.style.background = '#e74c3c';
-        dislikeBtn.style.color = 'white';
-        dislikeBtn.style.border = 'none';
-        
-        // 선호 버튼 스타일  
-        likeBtn.style.background = '#f7fafc';
-        likeBtn.style.color = '#4a5568';
-        likeBtn.style.border = '1px solid #e2e8f0';
-        
-        // 카드 클래스 변경
-        card.className = 'recommendation-card dislike-card perfume-card-clickable';
-      }
-      
-      // 카드를 적절한 섹션으로 이동
-      const targetGrid = action === 'like' 
-        ? document.querySelector('.likes-section .recommendations-grid')
-        : document.querySelector('.dislikes-section .recommendations-grid');
-      
-      if (targetGrid) {
-        targetGrid.appendChild(card);
-      }
-      
-      console.log(`피드백이 ${action === 'like' ? '선호' : '비선호'}로 변경되었습니다.`);
-    }
-  } catch (error) {
-    console.error('업데이트 오류:', error);
-  }
-}
-
-// CSRF 토큰 가져오기 함수
+// CSRF 토큰 가져오기
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -273,14 +177,163 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// 즐겨찾기 해제 기능
+// 피드백 카운트 업데이트
+function updateFeedbackCounts() {
+    const likesCount = document.querySelectorAll('.likes-section .recommendation-card').length;
+    const dislikesCount = document.querySelectorAll('.dislikes-section .recommendation-card').length;
+    
+    const likesTitle = document.querySelector('.likes-section h3');
+    const dislikesTitle = document.querySelector('.dislikes-section h3');
+    
+    if (likesTitle) {
+        // classList를 사용해서 zero-count 클래스만 추가/제거
+        if (likesCount === 0) {
+            likesTitle.classList.add('zero-count');
+        } else {
+            likesTitle.classList.remove('zero-count');
+        }
+        likesTitle.textContent = `선호 향수 (${likesCount}개)`;
+    }
+    
+    if (dislikesTitle) {
+        // classList를 사용해서 zero-count 클래스만 추가/제거
+        if (dislikesCount === 0) {
+            dislikesTitle.classList.add('zero-count');
+        } else {
+            dislikesTitle.classList.remove('zero-count');
+        }
+        dislikesTitle.textContent = `비선호 향수 (${dislikesCount}개)`;
+    }
+    
+    console.log(`카운트 업데이트: 선호 ${likesCount}개, 비선호 ${dislikesCount}개`);
+}
+
+// 빈 섹션 처리
+function checkEmptySections() {
+    const likesGrid = document.querySelector('.likes-section .recommendations-grid');
+    const dislikesGrid = document.querySelector('.dislikes-section .recommendations-grid');
+    
+    if (likesGrid && likesGrid.children.length === 0) {
+        likesGrid.innerHTML = '<p class="empty-message" style="text-align: center; color: #718096; font-style: italic; padding: 40px 20px;">선호 향수가 없습니다.</p>';
+    }
+    
+    if (dislikesGrid && dislikesGrid.children.length === 0) {
+        dislikesGrid.innerHTML = '<p class="empty-message" style="text-align: center; color: #718096; font-style: italic; padding: 40px 20px;">비선호 향수가 없습니다.</p>';
+    }
+}
+
+// 피드백 삭제
+async function deleteFeedback(feedbackId, card) {
+    try {
+        const response = await fetch('/scentpick/api/delete-feedback/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ feedback_id: parseInt(feedbackId) })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success') {
+                card.style.transition = 'all 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                
+                setTimeout(() => {
+                    card.remove();
+                    updateFeedbackCounts();
+                    checkEmptySections();
+                }, 300);
+                
+                console.log('피드백 삭제 성공');
+            }
+        }
+    } catch (error) {
+        console.error('삭제 오류:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+
+// 피드백 업데이트
+async function updateFeedback(feedbackId, action, card) {
+  try {
+    const response = await fetch('/scentpick/api/update-feedback/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ feedback_id: parseInt(feedbackId), action })
+    });
+    if (!response.ok) return;
+
+    const data = await response.json();
+    if (data.status !== 'success') return;
+
+    // 버튼 상태/스타일
+    const likeBtn = card.querySelector('[data-action="like"]');
+    const dislikeBtn = card.querySelector('[data-action="dislike"]');
+
+    if (action === 'like') {
+      likeBtn.classList.add('active');
+      dislikeBtn.classList.remove('active');
+      likeBtn.style.background = '#4a90e2';
+      likeBtn.style.color = 'white';
+      likeBtn.style.border = 'none';
+      dislikeBtn.style.background = '#f7fafc';
+      dislikeBtn.style.color = '#4a5568';
+      dislikeBtn.style.border = '1px solid #e2e8f0';
+      card.className = 'recommendation-card like-card perfume-card-clickable';
+    } else {
+      dislikeBtn.classList.add('active');
+      likeBtn.classList.remove('active');
+      dislikeBtn.style.background = '#e74c3c';
+      dislikeBtn.style.color = 'white';
+      dislikeBtn.style.border = 'none';
+      likeBtn.style.background = '#f7fafc';
+      likeBtn.style.color = '#4a5568';
+      likeBtn.style.border = '1px solid #e2e8f0';
+      card.className = 'recommendation-card dislike-card perfume-card-clickable';
+    }
+
+    // === 이동 대상 그리드 보장 ===
+    const section = action === 'like'
+      ? document.querySelector('.likes-section')
+      : document.querySelector('.dislikes-section');
+
+    let targetGrid = section.querySelector('.recommendations-grid');
+    if (!targetGrid) {
+      targetGrid = document.createElement('div');
+      targetGrid.className = 'recommendations-grid';
+      section.appendChild(targetGrid);
+    }
+
+    // 빈 메시지 제거
+    const emptyMsg = targetGrid.querySelector('.empty-message');
+    if (emptyMsg) emptyMsg.remove();
+
+    // 카드 이동
+    targetGrid.appendChild(card);
+
+    // 카운트/색상 업데이트
+    updateFeedbackCounts();
+    checkEmptySections();
+
+    console.log(`피드백이 ${action}로 변경되었습니다.`);
+  } catch (err) {
+    console.error('업데이트 오류:', err);
+    alert('업데이트 중 오류가 발생했습니다.');
+  }
+}
+
+
+// 즐겨찾기 해제
 document.querySelectorAll('.remove-favorite').forEach(button => {
     button.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         
         const perfumeId = e.target.dataset.perfumeId;
-        const perfumeCard = e.target.closest('.recommendation-card'); // 올바른 클래스 사용
+        const perfumeCard = e.target.closest('.recommendation-card');
         
         try {
             const response = await fetch('/scentpick/api/toggle-favorite/', {
@@ -297,7 +350,6 @@ document.querySelectorAll('.remove-favorite').forEach(button => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.status === 'success') {
-                    // 즐겨찾기 해제 성공 시 카드 제거
                     perfumeCard.style.opacity = '0';
                     perfumeCard.style.transform = 'scale(0.8)';
                     perfumeCard.style.transition = 'all 0.3s ease';
@@ -305,7 +357,6 @@ document.querySelectorAll('.remove-favorite').forEach(button => {
                     setTimeout(() => {
                         perfumeCard.remove();
                         
-                        // 즐겨찾기 개수 업데이트
                         const favoriteCount = document.querySelector('.favorites-section h3');
                         if (favoriteCount) {
                             const currentCount = parseInt(favoriteCount.textContent.match(/\d+/)[0]);
@@ -313,7 +364,6 @@ document.querySelectorAll('.remove-favorite').forEach(button => {
                             favoriteCount.textContent = `⭐ 즐겨찾기 (${newCount}개)`;
                         }
                         
-                        // 즐겨찾기가 없으면 메시지 표시
                         const favoritesGrid = document.querySelector('.favorites-section .recommendations-grid');
                         if (favoritesGrid && favoritesGrid.children.length === 0) {
                             favoritesGrid.innerHTML = '<p style="text-align: center; color: #718096; font-style: italic;">즐겨찾기한 향수가 없습니다.</p>';
@@ -321,11 +371,7 @@ document.querySelectorAll('.remove-favorite').forEach(button => {
                     }, 300);
                     
                     alert('즐겨찾기에서 해제되었습니다.');
-                } else {
-                    alert(data.message || '즐겨찾기 해제에 실패했습니다.');
                 }
-            } else {
-                alert('즐겨찾기 해제 중 오류가 발생했습니다.');
             }
         } catch (error) {
             console.error('즐겨찾기 해제 오류:', error);
@@ -334,37 +380,71 @@ document.querySelectorAll('.remove-favorite').forEach(button => {
     });
 });
 
-// 카드 클릭 이벤트는 통합된 초기화 함수에서 처리
-
-// 통합 초기화 함수
-function initializePage() {
-    console.log('페이지 초기화 시작');
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('마이페이지 로드됨');
     
+    // 피드백 버튼에 이벤트 리스너 등록 (이벤트 위임 방식)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('feedback-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const button = e.target;
+            const card = button.closest('.recommendation-card');
+            const feedbackId = card.dataset.feedbackId;
+            const action = button.dataset.action;
+            const isActive = button.classList.contains('active');
+            
+            console.log('피드백 버튼 클릭:', { feedbackId, action, isActive });
+            
+            if (!feedbackId || !action) {
+                console.error('필수 데이터 누락:', { feedbackId, action });
+                return;
+            }
+            
+            // 버튼 임시 비활성화
+            button.disabled = true;
+            setTimeout(() => { button.disabled = false; }, 2000);
+            
+            if (isActive) {
+                // 활성화된 버튼 클릭 - 삭제
+                if (confirm('피드백을 취소하시겠습니까?')) {
+                    deleteFeedback(feedbackId, card);
+                }
+            } else {
+                // 비활성화된 버튼 클릭 - 변경
+                const otherButton = card.querySelector(`.feedback-btn:not([data-action="${action}"])`);
+                if (otherButton && otherButton.classList.contains('active')) {
+                    updateFeedback(feedbackId, action, card);
+                }
+            }
+        }
+        // 초기 로드 시 카운트 체크
+        updateFeedbackCounts();
+    });
     
-    // 2. 카드 클릭 이벤트 (상품 상세 페이지 이동) - 피드백 버튼 완전 제외
+    // 카드 클릭 이벤트 (상품 상세 페이지 이동)
     document.querySelectorAll('.perfume-card-clickable').forEach(card => {
         card.addEventListener('click', function(e) {
-            // 피드백 버튼 관련된 모든 요소는 카드 클릭 완전 무시
+            // 버튼 클릭은 무시
             if (e.target.classList.contains('feedback-btn') || 
                 e.target.hasAttribute('data-action') ||
                 e.target.closest('.feedback-btn') ||
                 e.target.matches('button, .remove-favorite')) {
-                console.log('버튼 클릭 감지됨, 카드 클릭 무시');
                 return;
             }
             
-            // 상품 상세 페이지로 이동
             const perfumeId = this.dataset.perfumeId;
             if (perfumeId) {
-                console.log('카드 클릭 - 상품 상세로 이동:', perfumeId);
-                window.location.href = `/scentpick/perfumes/${perfumeId}/`;
+                //window.location.href = `/scentpick/perfumes/${perfumeId}/`;
+                window.location.href = `/perfume/${perfumeId}/`;
             }
         });
     });
     
-    // 3. 피드백 버튼 호버 효과
-    const feedbackButtons = document.querySelectorAll('.feedback-btn');
-    feedbackButtons.forEach(btn => {
+    // 피드백 버튼 호버 효과
+    document.querySelectorAll('.feedback-btn').forEach(btn => {
         btn.addEventListener('mouseenter', function() {
             if (this.classList.contains('active')) {
                 if (this.classList.contains('like-btn')) {
@@ -393,55 +473,9 @@ function initializePage() {
             this.style.boxShadow = 'none';
         });
     });
-
-    // 4. 피드백 버튼 이벤트는 이벤트 위임으로 처리됨
     
-    console.log('페이지 초기화 완료');
-}
-
-
-// 피드백 카운트 업데이트 함수
-function updateFeedbackCounts() {
-    const likesCount = document.querySelectorAll('.likes-section .recommendation-card').length;
-    const dislikesCount = document.querySelectorAll('.dislikes-section .recommendation-card').length;
-    
-    const likesTitle = document.querySelector('.likes-section h3');
-    const dislikesTitle = document.querySelector('.dislikes-section h3');
-    
-    if (likesTitle) {
-        likesTitle.textContent = `선호 향수 (${likesCount}개)`;
-    }
-    if (dislikesTitle) {
-        dislikesTitle.textContent = `비선호 향수 (${dislikesCount}개)`;
-    }
-    
-    // 빈 섹션 처리 - 스타일 강제 적용
-    const likesGrid = document.querySelector('.likes-section .recommendations-grid');
-    const dislikesGrid = document.querySelector('.dislikes-section .recommendations-grid');
-    
-    if (likesGrid && likesCount === 0) {
-        const emptyMessage = document.createElement('p');
-        emptyMessage.style.textAlign = 'center';
-        emptyMessage.style.color = '#718096';
-        emptyMessage.style.fontStyle = 'italic';
-        emptyMessage.style.padding = '40px 20px';
-        emptyMessage.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-        emptyMessage.textContent = '선호하는 향수가 없습니다.';
-        likesGrid.innerHTML = '';
-        likesGrid.appendChild(emptyMessage);
-    }
-    if (dislikesGrid && dislikesCount === 0) {
-        const emptyMessage = document.createElement('p');
-        emptyMessage.style.textAlign = 'center';
-        emptyMessage.style.color = '#718096';
-        emptyMessage.style.fontStyle = 'italic';
-        emptyMessage.style.padding = '40px 20px';
-        emptyMessage.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-        emptyMessage.textContent = '비선호하는 향수가 없습니다.';
-        dislikesGrid.innerHTML = '';
-        dislikesGrid.appendChild(emptyMessage);
-    }
-}
+    console.log('이벤트 리스너 등록 완료');
+});
 </script>
 {% endblock script %}
 
@@ -1050,8 +1084,34 @@ body .mypage-container .recommendation-card:hover {
 
 .likes-section h3,
 .dislikes-section h3 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  color: #2d3748;
+  font-size: 18px !important;
+  margin-bottom: 15px !important;
+  color: #2d3748 !important; /* 기본 검정색 */
 }
+
+/* 0개일 때만 회색으로 변경 */
+.likes-section h3.zero-count,
+.dislikes-section h3.zero-count,
+html body .likes-section h3.zero-count,
+html body .dislikes-section h3.zero-count {
+  color: #718096 !important; /* 회색 */
+}
+
+.zero-count {
+  color: #718096 !important; /* yyh : 회색 */
+}
+
+.likes-section h3.zero-count,
+.dislikes-section h3.zero-count { color: #718096 !important; }
+
+<style>
+  /* override: 0개여도 제목 색상은 항상 검정(#2d3748) */
+  .likes-section h3.zero-count,
+  .dislikes-section h3.zero-count,
+  html body .likes-section h3.zero-count,
+  html body .dislikes-section h3.zero-count {
+    color: #2d3748 !important;
+  }
+</style>
+
 </style>

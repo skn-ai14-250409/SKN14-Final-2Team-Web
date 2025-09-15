@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}ScentPick{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/scentpick.css' %}?v=20250912-1">
+  <link rel="stylesheet" href="{% static 'css/scentpick.css' %}?v=20250915-1">
   <style>
     /* 인증 관련 스타일 추가 */
     .auth-container {
@@ -305,16 +305,19 @@
       `;
       toast.textContent = message;
       
-      document.getElementById('toast-container').appendChild(toast);
-      
-      // 애니메이션으로 나타내기
-      setTimeout(() => toast.style.transform = 'translateX(0)', 100);
-      
-      // 3초 후 제거
-      setTimeout(() => {
-          toast.style.transform = 'translateX(100%)';
-          setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      const container = document.getElementById('toast-container');
+      if (container) {
+          container.appendChild(toast);
+          
+          // 애니메이션으로 나타내기
+          setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+          
+          // 3초 후 제거
+          setTimeout(() => {
+              toast.style.transform = 'translateX(100%)';
+              setTimeout(() => toast.remove(), 300);
+          }, 3000);
+      }
   }
 
   // Django 메시지를 토스트로 변환
