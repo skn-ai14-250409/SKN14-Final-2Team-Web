@@ -569,9 +569,15 @@ body {
 }
 
 .product-detail-info h1 {
-    font-size: 32px;
+    font-size: clamp(18px, 4vw, 32px);  /* 길면 자동으로 줄임 */
     margin-bottom: 10px;
     color: #2d3748;
+    line-height: 1.2;
+
+    white-space: normal !important;     /* 줄바꿈 허용 */
+    overflow: visible !important;       /* 숨김 해제 */
+    text-overflow: clip !important;     /* ... 방지 */
+    word-break: break-word;             /* 단어 단위 줄바꿈 */
 }
 
 .product-detail-brand {

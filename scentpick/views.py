@@ -695,7 +695,7 @@ def chat_submit_api(request):
         }
         
         # FastAPI 호출
-        r = requests.post(FASTAPI_CHAT_URL, json=payload, headers=headers, timeout=30)
+        r = requests.post(FASTAPI_CHAT_URL, json=payload, headers=headers, timeout=60)
         r.raise_for_status()
         data = r.json()
 

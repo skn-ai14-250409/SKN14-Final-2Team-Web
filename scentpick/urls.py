@@ -20,4 +20,7 @@ urlpatterns = [
     path("api/conversations", views.conversations_api, name="conversations_api"),
     path("api/conversations/<int:conv_id>/messages", views.conversation_messages_api, name="conversation_messages_api"),
     path("api/chat/new", views.chat_new_api, name="chat_new_api"),
+    # Feedback APIs
+    path('scentpick/api/delete-feedback/', views.delete_feedback_api, name='delete_feedback_api'),
+    path('scentpick/api/update-feedback/', views.update_feedback_api, name='update_feedback_api'),
 ]
