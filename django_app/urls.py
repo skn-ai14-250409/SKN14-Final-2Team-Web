@@ -18,6 +18,11 @@ Including another URLconf
 from django.urls import path, include
 from django.views.generic import TemplateView
 from scentpick import views as scentpick_views
+from django.http import HttpResponse
+
+# health_check 함수
+def health_check(request):
+    return HttpResponse("OK", status=200)
 
 urlpatterns = [
     path('accounts/login/redirect/', TemplateView.as_view(template_name='account/login_redirect.html'), name='account_login_redirect'),
@@ -25,4 +30,5 @@ urlpatterns = [
     path('uauth/', include('uauth.urls')),
     path('', scentpick_views.home, name='home'),
     path('', include('scentpick.urls')),
+    path("health/", health_check),
 ]
