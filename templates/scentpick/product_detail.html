@@ -2,73 +2,77 @@
 {% block title %}{{ perfume.name|default:"블루 드 샤넬" }} - ScentPick{% endblock %}
 {% block content %}
 
-<div class="product-detail">
+<!-- 메인 제품 정보 섹션 -->
+<div class="product-detail-container">
+  <div class="product-detail-card">
   <!-- 향수 이미지 -->
   <div class="product-image-section">
-    <!--<h2>향수 이미지</h2>-->
     <img src="{{ image_url }}" 
          alt="{{ perfume.name }}" 
-         style="width:432px; border-radius:10px;"
+           class="product-main-image"
          onerror="this.src='https://via.placeholder.com/432x432/f0f0f0/666?text=No+Image'">
   </div>
 
   <!-- 향수 정보 -->
   <div class="product-detail-info">
-    <h1>{{ perfume.name }}</h1>
-    <div class="product-detail-brand">{{ perfume.brand }}</div>
-    <div class="product-detail-concentration">{{ perfume.concentration }}</div>
-    
+      <h1 class="product-title">{{ perfume.name }}</h1>
+      <div class="product-brand">{{ perfume.brand }}</div>
+      <div class="product-details">
+        <span class="product-concentration">{{ perfume.concentration }}</span>
     {% if perfume.sizes %}
-    <div class="product-detail-sizes">
-      {% for size in perfume.sizes %}
-        <span>{{ size }}ml</span>
-      {% endfor %}
-    </div>
+        <span class="product-sizes">
+          {% for size in perfume.sizes %}{{ size }}ml{% if not forloop.last %}, {% endif %}{% endfor %}
+        </span>
     {% endif %}
-    
-    <div class="product-detail-gender">{{ perfume.gender }}</div>
+        <span class="product-gender">{{ perfume.gender }}</span>
+      </div>
 
     <div class="product-description">
       {{ perfume.description }}
     </div>
 
-    <div style="margin-bottom: 20px;" class="action-buttons">
-      <button class="favorite-btn {% if is_favorite %}active{% endif %}" data-perfume-id="{{ perfume.id }}" 
-              style="background:{% if is_favorite %}#2c5282{% else %}#fff{% endif %};color:{% if is_favorite %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">
-          <span class="favorite-icon" style="color:{% if is_favorite %}#ffd700{% else %}#333{% endif %};">⭐</span> 즐겨찾기
+      <div class="action-buttons">
+        <button class="action-btn favorite-btn {% if is_favorite %}active{% endif %}" data-perfume-id="{{ perfume.id }}">
+          <span class="action-icon">⭐</span> 즐겨찾기
       </button>
-      <button class="like-btn {% if feedback_status == 'like' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="like" 
-              style="background:{% if feedback_status == 'like' %}#e53e3e{% else %}#fff{% endif %};color:{% if feedback_status == 'like' %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">👍 좋아요</button>
-      <button class="dislike-btn {% if feedback_status == 'dislike' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="dislike" 
-              style="background:{% if feedback_status == 'dislike' %}#718096{% else %}#fff{% endif %};color:{% if feedback_status == 'dislike' %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">👎 싫어요</button>
+        <button class="action-btn like-btn {% if feedback_status == 'like' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="like">
+          <span class="action-icon">👍</span> 좋아요
+        </button>
+        <button class="action-btn dislike-btn {% if feedback_status == 'dislike' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="dislike">
+          <span class="action-icon">👎</span> 싫어요
+        </button>
     </div>
 
     <button class="buy-btn" onclick="window.open('{{ detail_url|default:"#" }}', '_blank')" 
             {% if not detail_url %}disabled{% endif %}>
         구매 사이트 이동
     </button>
+    </div>
   </div>
 </div>
 
+<!-- 향수 노트 구성 섹션 -->
 <div class="notes-section">
-  <h3 style="text-align:center;margin-bottom:20px;">향수 노트 구성</h3>
+  <div class="section-header">
+    <h3>향수 노트 구성</h3>
+  </div>
 
-  <!-- 메인 어코드 - 동적 데이터 사용 -->
+  <!-- 메인 어코드 -->
   {% if main_accords %}
-  <div style="margin-bottom:40px;">
-    <h4 style="text-align:center;margin-bottom:20px;">메인 어코드</h4>
-    <div style="display:flex;justify-content:center;gap:20px;margin-bottom:30px;flex-wrap:wrap;">
+  <div class="main-accords-section">
+    <h4>메인 어코드</h4>
+    <div class="accords-container">
       {% for accord in main_accords %}
-      <div style="text-align:center;">
-        <div style="width:60px;height:60px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:10px;">{{ accord|truncatechars:6 }}</div>
-        <div style="font-size:12px;">{{ accord }}</div>
+      <div class="accord-item">
+        <div class="accord-circle">{{ accord|truncatechars:6 }}</div>
+        <span class="accord-name">{{ accord }}</span>
       </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- 향수 노트 - 동적 데이터 사용 -->
+  <!-- 향수 노트 -->
   <div class="notes-grid">
     {% if top_notes %}
     <div class="note-category">
@@ -77,7 +81,7 @@
         {% for note in top_notes %}
         {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}');"></div>
           <span>{{ note.korean_name }}</span>
         </div>
         {% endif %}
@@ -93,7 +97,7 @@
         {% for note in middle_notes %}
         {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}');"></div>
           <span>{{ note.korean_name }}</span>
         </div>
         {% endif %}
@@ -109,7 +113,7 @@
         {% for note in base_notes %}
         {% if note.image_url %}
         <div class="note-item">
-          <div class="note-image" style="background-image: url('{{ note.image_url }}'); background-size: cover; background-position: center;"></div>
+          <div class="note-image" style="background-image: url('{{ note.image_url }}');"></div>
           <span>{{ note.korean_name }}</span>
         </div>
         {% endif %}
@@ -120,299 +124,914 @@
   </div>
 </div>
 
-<!-- 점수 시각화 섹션 추가 -->
-{% if notes_score or season_score or day_night_score %}
-<div class="scores-section" style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-  <h3 style="text-align: center; margin-bottom: 30px;">향수 분석 점수</h3>
+<!-- 향수 분석 대시보드 -->
+<div class="analysis-dashboard">
+  <div class="section-header">
+    <h3>향수 분석 대시보드</h3>
+    <p class="section-subtitle">데이터 기반 향수 특성 분석</p>
+  </div>
   
-  <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-    
-    <!-- 노트 점수 차트 -->
-    {% if notes_score %}
-    <div class="chart-wrapper">
-      <h4 style="text-align: center; margin-bottom: 15px;">노트 특성 점수</h4>
-      <canvas id="notesChart" width="300" height="200"></canvas>
-    </div>
-    {% endif %}
-    
-    <!-- 계절 점수 차트 -->
-    {% if season_score %}
-    <div class="chart-wrapper">
-      <h4 style="text-align: center; margin-bottom: 15px;">계절 적합성</h4>
-      <div class="horizontal-bar-chart">
-        {% for key, value in season_score.items %}
-          {% if key == 'spring' %}
-          <div class="bar-item">
-            <div class="bar-label">봄</div>
-            <div class="bar-container">
-              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
-              <div class="bar-value">{{ value|floatformat:1 }}%</div>
-            </div>
-          </div>
-          {% endif %}
-        {% endfor %}
-        {% for key, value in season_score.items %}
-          {% if key == 'summer' %}
-          <div class="bar-item">
-            <div class="bar-label">여름</div>
-            <div class="bar-container">
-              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
-              <div class="bar-value">{{ value|floatformat:1 }}%</div>
-            </div>
-          </div>
-          {% endif %}
-        {% endfor %}
-        {% for key, value in season_score.items %}
-          {% if key == 'fall' %}
-          <div class="bar-item">
-            <div class="bar-label">가을</div>
-            <div class="bar-container">
-              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
-              <div class="bar-value">{{ value|floatformat:1 }}%</div>
-            </div>
-          </div>
-          {% endif %}
-        {% endfor %}
-        {% for key, value in season_score.items %}
-          {% if key == 'winter' %}
-          <div class="bar-item">
-            <div class="bar-label">겨울</div>
-            <div class="bar-container">
-              <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
-              <div class="bar-value">{{ value|floatformat:1 }}%</div>
-            </div>
-          </div>
-          {% endif %}
-        {% endfor %}
+  <div class="dashboard-grid">
+    <!-- 1. 성별 적합성 분석 -->
+    <div class="analysis-panel">
+      <div class="panel-header">
+        <div class="panel-icon">👥</div>
+        <div class="panel-title">
+          <h4>GENDER</h4>
+          <span class="panel-subtitle">성별 적합성</span>
+        </div>
       </div>
+      
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-dot active" data-value="all">
+            <span class="dot-label">전체</span>
     </div>
-    {% endif %}
-    
-    <!-- 낮/밤 점수 차트 -->
-    {% if day_night_score %}
-    <div class="chart-wrapper">
-      <h4 style="text-align: center; margin-bottom: 15px;">시간대 적합성</h4>
-      <div class="horizontal-bar-chart">
-        {% for key, value in day_night_score.items %}
-        <div class="bar-item">
-          <div class="bar-label">
-            {% if key == 'day' %}낮
-            {% elif key == 'night' %}밤
-            {% else %}{{ key }}{% endif %}
+          <div class="slider-dot" data-value="female">
+            <span class="dot-label">여성</span>
           </div>
-          <div class="bar-container">
-            <div class="bar-fill" style="width: {{ value }}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
-            <div class="bar-value">{{ value|floatformat:1 }}%</div>
+          <div class="slider-dot" data-value="unisex">
+            <span class="dot-label">공용</span>
+          </div>
+          <div class="slider-dot" data-value="male">
+            <span class="dot-label">남성</span>
           </div>
         </div>
-        {% endfor %}
+      </div>
+      
+             <div class="data-visualization" id="gender-data">
+               <!-- JavaScript로 동적 생성 -->
+             </div>
+             
+             <div class="panel-description">
+               <p>이 향수는 성별에 따른 적합성을 보여줍니다. 막대가 길수록 해당 성별에게 더 적합한 향수임을 의미합니다.</p>
+             </div>
+    </div>
+
+    <!-- 2. 계절 적합성 분석 -->
+    <div class="analysis-panel">
+      <div class="panel-header">
+        <div class="panel-icon">🌿</div>
+        <div class="panel-title">
+          <h4>SEASON</h4>
+          <span class="panel-subtitle">계절별 적합성</span>
+        </div>
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-dot active" data-value="all">
+            <span class="dot-label">전체</span>
+          </div>
+          <div class="slider-dot" data-value="spring">
+            <span class="dot-label">봄</span>
+          </div>
+          <div class="slider-dot" data-value="summer">
+            <span class="dot-label">여름</span>
+          </div>
+          <div class="slider-dot" data-value="fall">
+            <span class="dot-label">가을</span>
+          </div>
+          <div class="slider-dot" data-value="winter">
+            <span class="dot-label">겨울</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="data-visualization" id="season-data">
+        <!-- JavaScript로 동적 생성 -->
+      </div>
+      
+      <div class="panel-description">
+        <p>계절별 적합성을 나타냅니다. 각 계절의 특성과 향수의 노트가 얼마나 잘 어울리는지 보여주며, 100%에 가까울수록 해당 계절에 더 적합합니다.</p>
       </div>
     </div>
-    {% endif %}
-    
+
+    <!-- 3. 시간대 적합성 분석 -->
+    <div class="analysis-panel">
+      <div class="panel-header">
+        <div class="panel-icon">⏰</div>
+        <div class="panel-title">
+          <h4>TIME</h4>
+          <span class="panel-subtitle">시간대별 적합성</span>
+        </div>
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-dot active" data-value="all">
+            <span class="dot-label">전체</span>
+          </div>
+          <div class="slider-dot" data-value="day">
+            <span class="dot-label">낮</span>
+          </div>
+          <div class="slider-dot" data-value="night">
+            <span class="dot-label">밤</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="data-visualization" id="time-data">
+        <!-- JavaScript로 동적 생성 -->
+      </div>
+      
+      <div class="panel-description">
+        <p>낮과 밤 시간대별 적합성을 보여줍니다. 낮에는 상쾌하고 가벼운 향이, 밤에는 깊고 매혹적인 향이 더 적합하며, 막대 길이로 적합도를 확인할 수 있습니다.</p>
+      </div>
+    </div>
+
+    <!-- 4. 노트 특성 분석 -->
+    <div class="analysis-panel">
+      <div class="panel-header">
+        <div class="panel-icon">🌸</div>
+        <div class="panel-title">
+          <h4>NOTES</h4>
+          <span class="panel-subtitle">향수 노트 특성</span>
+        </div>
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-dot active" data-value="all">
+            <span class="dot-label">전체</span>
+          </div>
+          <div class="slider-dot" data-value="top">
+            <span class="dot-label">탑</span>
+          </div>
+          <div class="slider-dot" data-value="middle">
+            <span class="dot-label">미들</span>
+          </div>
+          <div class="slider-dot" data-value="base">
+            <span class="dot-label">베이스</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="data-visualization" id="notes-data">
+        <!-- JavaScript로 동적 생성 -->
+      </div>
+      
+      <div class="panel-description">
+        <p>향수의 노트 특성을 보여줍니다. 각 노트의 강도와 비율을 나타내며, 막대가 길수록 해당 노트가 더 강하게 느껴지는 향수입니다.</p>
+      </div>
+    </div>
+
   </div>
 </div>
-{% endif %}
 
 <style>
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
+/* 메인 제품 정보 컨테이너 */
+.product-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.pagination a {
-    padding: 10px 20px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
-    text-decoration: none;
-    color: #333;
+.product-detail-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
 }
 
-.pagination a:hover {
-    background-color: #e0e0e0;
-}
-
-.current-page {
-    padding: 10px 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
+/* 제품 이미지 */
 .product-image-section {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+    display: flex;
+  align-items: center;
+    justify-content: center;
 }
 
+.product-main-image {
+  width: 100%;
+  max-width: 432px;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.product-main-image:hover {
+  transform: scale(1.02);
+}
+
+/* 제품 정보 */
+.product-detail-info {
+  display: flex;
+  flex-direction: column;
+    gap: 20px;
+}
+
+.product-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #2d3748;
+  margin: 0;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.product-brand {
+  font-size: 20px;
+  color: #6366f1;
+  font-weight: 600;
+  margin: 0;
+}
+
+.product-details {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.product-concentration,
+.product-sizes,
+.product-gender {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.product-description {
+  color: #4a5568;
+  line-height: 1.8;
+  font-size: 16px;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 15px;
+  border-left: 4px solid #6366f1;
+}
+
+/* 액션 버튼들 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 25px;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.favorite-btn:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.favorite-btn.active {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+.like-btn:hover {
+  border-color: #e53e3e;
+  background: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+}
+
+.like-btn.active {
+  background: #e53e3e;
+  color: white;
+  border-color: #e53e3e;
+}
+
+.dislike-btn:hover {
+  border-color: #718096;
+  background: rgba(113, 128, 150, 0.1);
+  color: #718096;
+}
+
+.dislike-btn.active {
+  background: #718096;
+  color: white;
+  border-color: #718096;
+}
+
+.action-icon {
+  font-size: 16px;
+}
+
+/* 구매 버튼 */
+.buy-btn {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  color: white;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+  width: 100%;
+  max-width: 300px;
+}
+
+.buy-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(30, 64, 175, 0.4);
+}
+
+.buy-btn:disabled {
+  background: #e2e8f0;
+  color: #a0aec0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 섹션 헤더 */
+.section-header {
+    text-align: center;
+  margin-bottom: 30px;
+}
+
+.section-header h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+/* 노트 섹션 */
+.notes-section {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 메인 어코드 */
+.main-accords-section {
+  margin-bottom: 40px;
+  text-align: center;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-accords-section h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 25px;
+}
+
+.accords-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.accord-item {
+  text-align: center;
+}
+
+.accord-circle {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+}
+
+.accord-name {
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+/* 노트 그리드 */
 .notes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.note-category h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .note-items {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+  gap: 12px;
+  justify-content: center;
 }
 
 .note-item {
     display: flex;
+  flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
-    background: #f8f9fa;
+  padding: 15px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     border-radius: 15px;
-    font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: transform 0.3s ease;
+  min-width: 80px;
+}
+
+.note-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .note-image {
-    width: 20px;
-    height: 20px;
-    background: #ddd;
+  width: 35px;
+  height: 35px;
+  background: #e2e8f0;
     border-radius: 50%;
-    flex-shrink: 0;
-    border: 1px solid #e2e8f0;
+  margin-bottom: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 즐겨찾기 버튼 스타일 */
-.favorite-btn:hover {
-    background: navy !important;
-    color: #fff !important;
+/* 분석 대시보드 */
+.analysis-dashboard {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* 분석 패널 */
+.analysis-panel {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.analysis-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+}
+
+.analysis-panel:hover {
     transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e0;
 }
 
-.favorite-btn.active {
-    background: navy !important;
-    color: #fff !important;
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
 }
 
-.favorite-btn.active .favorite-icon {
-    color: #ffd700;
+.panel-icon {
+  font-size: 32px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 좋아요/싫어요 버튼 스타일 */
-.like-btn:hover {
-    background: red !important;
-    color: #fff !important;
-    transform: translateY(-2px);
+.panel-title h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  letter-spacing: 0.5px;
 }
 
-.like-btn.active {
-    background: red !important;
-    color: #fff !important;
-    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+.panel-subtitle {
+  font-size: 15px;
+  color: #718096;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
-.dislike-btn:hover {
-    background: gray !important;
-    color: #fff !important;
-    transform: translateY(-2px);
+/* 슬라이더 컨테이너 */
+.slider-container {
+  margin-bottom: 28px;
 }
 
-.dislike-btn.active {
-    background: gray !important;
-    color: #fff !important;
-    box-shadow: 0 4px 12px rgba(128, 128, 128, 0.4);
+.slider-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e2e8f0;
+  height: 8px;
+  border-radius: 4px;
+  position: relative;
+  padding: 0 16px;
 }
 
-/* 수평 막대 차트 스타일 */
-.horizontal-bar-chart {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.slider-dot {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: 3px solid #cbd5e0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.bar-item {
+.slider-dot.active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+  transform: scale(1.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.slider-dot:hover {
+  transform: scale(1.2);
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.dot-label {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.slider-dot:hover .dot-label {
+  opacity: 1;
+}
+
+/* 데이터 시각화 */
+.data-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.data-item {
     display: flex;
     align-items: center;
-    gap: 15px;
+  gap: 20px;
 }
 
-.bar-label {
-    min-width: 80px;
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
+.data-label {
+  min-width: 120px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: lowercase;
 }
 
-.bar-container {
+.data-bar-container {
     flex: 1;
     position: relative;
-    height: 30px;
-    background: #f0f0f0;
-    border-radius: 15px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
+  height: 32px;
+  background: #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.bar-fill {
+.data-bar-fill {
     height: 100%;
-    border-radius: 15px;
-    transition: width 0.3s ease;
-    position: relative;
+  background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+  border-radius: 16px;
+  transition: width 0.8s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
 }
 
-.bar-value {
+.data-bar-fill::after {
+  content: '';
     position: absolute;
-    right: 10px;
-    color: #333;
-    font-weight: 600;
-    font-size: 12px;
-    z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 16px;
 }
 
-/* 노트 점수 차트는 기존 막대 차트 유지하되 스타일 개선 */
-#notesChart {
-    max-height: 400px;
+.data-value {
+  position: absolute;
+  right: 16px;
+  color: #2d3748;
+  font-weight: 700;
+  font-size: 15px;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-/* 차트 컨테이너 반응형 개선 */
-.charts-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+/* 패널 설명 */
+.panel-description {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(167, 139, 250, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #a78bfa;
+}
+
+.panel-description p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .product-detail-card {
+    grid-template-columns: 1fr;
+    padding: 25px;
     gap: 30px;
 }
 
-.chart-wrapper {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-/* 점수 섹션 전체 스타일 개선 */
-.scores-section {
-    margin-top: 40px;
-    padding: 30px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.scores-section h3 {
-    color: #333;
+  .product-title {
     font-size: 24px;
-    margin-bottom: 30px;
-    text-align: center;
+  }
+  
+  .action-buttons {
+    justify-content: center;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .notes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .accords-container {
+    gap: 15px;
+  }
+  
+  .accord-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 10px;
+  }
+  
+  .analysis-panel {
+    padding: 20px;
+  }
+  
+  .data-label {
+    min-width: 80px;
+    font-size: 13px;
+  }
+  
+  .slider-dot {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
 }
 
-.chart-wrapper h4 {
-    color: #555;
-    font-size: 18px;
-    margin-bottom: 20px;
-    text-align: center;
+@media (max-width: 480px) {
+  .product-detail-container {
+    padding: 10px;
+  }
+  
+  .product-detail-card,
+  .notes-section,
+  .analysis-dashboard {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .slider-dot {
+    font-size: 8px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .dot-label {
+    font-size: 8px;
+    top: -22px;
+  }
 }
 </style>
 
 {% endblock content %}
 
 {% block script %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// 데이터 바 생성 헬퍼 함수
+function createDataBar(label, value, percentage, isPercentage = true) {
+  const displayValue = isPercentage ? `${value}%` : value;
+  return `
+    <div class="data-item">
+      <div class="data-label">${label}</div>
+      <div class="data-bar-container">
+        <div class="data-bar-fill" style="width: ${percentage}%;"></div>
+        <div class="data-value">${displayValue}</div>
+      </div>
+    </div>
+  `;
+}
+
+// 데이터 초기화 함수
+function initializeDataPanels() {
+  // GENDER 데이터
+  const genderData = {
+    'Female': { label: '여성용', value: '{% if gender == "Female" %}100{% else %}20{% endif %}', percentage: '{% if gender == "Female" %}100{% else %}20{% endif %}' },
+    'Male': { label: '남성용', value: '{% if gender == "Male" %}100{% else %}15{% endif %}', percentage: '{% if gender == "Male" %}100{% else %}15{% endif %}' },
+    'Unisex': { label: '공용', value: '{% if gender == "Unisex" %}100{% else %}65{% endif %}', percentage: '{% if gender == "Unisex" %}100{% else %}65{% endif %}' }
+  };
+
+  // SEASON 데이터
+  const seasonData = {
+    {% if season_score %}
+      {% for key, value in season_score.items %}
+        '{{ key }}': { 
+          label: '{% if key == "spring" %}봄{% elif key == "summer" %}여름{% elif key == "fall" %}가을{% elif key == "winter" %}겨울{% else %}{{ key }}{% endif %}', 
+          value: '{{ value|floatformat:1 }}', 
+          percentage: '{{ value }}' 
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      'spring': { label: '봄', value: '8.6', percentage: '8.6' },
+      'summer': { label: '여름', value: '6.3', percentage: '6.3' },
+      'fall': { label: '가을', value: '100.0', percentage: '100' },
+      'winter': { label: '겨울', value: '14.1', percentage: '14.1' }
+    {% endif %}
+  };
+
+  // TIME 데이터
+  const timeData = {
+    {% if day_night_score %}
+      {% for key, value in day_night_score.items %}
+        '{{ key }}': { 
+          label: '{% if key == "day" %}낮{% elif key == "night" %}밤{% else %}{{ key }}{% endif %}', 
+          value: '{{ value|floatformat:1 }}', 
+          percentage: '{{ value }}' 
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      'day': { label: '낮', value: '35.2', percentage: '35.2' },
+      'night': { label: '밤', value: '12.1', percentage: '12.1' }
+    {% endif %}
+  };
+
+  // NOTES 데이터
+  const notesData = {
+    {% if notes_score %}
+      {% for key, value in notes_score.items %}
+        '{{ key }}': { 
+          label: '{{ key }}', 
+          value: '{{ value|floatformat:0 }}', 
+          percentage: '{{ value }}' 
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      '플로럴': { label: '플로럴', value: '85', percentage: '85' },
+      '우디': { label: '우디', value: '70', percentage: '70' },
+      '스파이시': { label: '스파이시', value: '45', percentage: '45' },
+      '시트러스': { label: '시트러스', value: '30', percentage: '30' }
+    {% endif %}
+  };
+
+  // 데이터 바 생성
+  const genderContainer = document.getElementById('gender-data');
+  if (genderContainer) {
+    Object.values(genderData).forEach(item => {
+      genderContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
+    });
+  }
+
+  const seasonContainer = document.getElementById('season-data');
+  if (seasonContainer) {
+    Object.values(seasonData).forEach(item => {
+      seasonContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
+    });
+  }
+
+  const timeContainer = document.getElementById('time-data');
+  if (timeContainer) {
+    Object.values(timeData).forEach(item => {
+      timeContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
+    });
+  }
+
+  const notesContainer = document.getElementById('notes-data');
+  if (notesContainer) {
+    Object.values(notesData).forEach(item => {
+      notesContainer.innerHTML += createDataBar(item.label, item.value, item.percentage, false);
+    });
+  }
+}
+
+// DOM 로드 완료 후 실행
+document.addEventListener('DOMContentLoaded', initializeDataPanels);
 (() => {
     // CSRF 토큰 가져오기 함수
     function getCookie(name) {
@@ -458,13 +1077,14 @@
                     const data = await response.json();
                     favoriteBtn.classList.toggle('active', data.is_favorite);
 
-                    const icon = favoriteBtn.querySelector('.favorite-icon');
                     if (data.is_favorite) {
-                        favoriteBtn.style.background = '#2c5282';
-                        icon.style.color = '#ffd700';
+                        favoriteBtn.style.background = '#6366f1';
+                        favoriteBtn.style.color = 'white';
+                        favoriteBtn.style.borderColor = '#6366f1';
                     } else {
-                        favoriteBtn.style.background = '#fff';
-                        icon.style.color = '#333';
+                        favoriteBtn.style.background = 'white';
+                        favoriteBtn.style.color = '#4a5568';
+                        favoriteBtn.style.borderColor = '#e2e8f0';
                     }
                 } else {
                     const errorData = await response.json();
@@ -509,20 +1129,24 @@
                 // 버튼 초기화
                 likeBtn.classList.remove('active');
                 dislikeBtn.classList.remove('active');
-                likeBtn.style.background = '#fff';
-                likeBtn.style.color = '#333';
-                dislikeBtn.style.background = '#fff';
-                dislikeBtn.style.color = '#333';
+                likeBtn.style.background = 'white';
+                likeBtn.style.color = '#4a5568';
+                likeBtn.style.borderColor = '#e2e8f0';
+                dislikeBtn.style.background = 'white';
+                dislikeBtn.style.color = '#4a5568';
+                dislikeBtn.style.borderColor = '#e2e8f0';
 
                 // 새 상태 적용
                 if (data.current_action === 'like') {
                     likeBtn.classList.add('active');
                     likeBtn.style.background = '#e53e3e';
-                    likeBtn.style.color = '#fff';
+                    likeBtn.style.color = 'white';
+                    likeBtn.style.borderColor = '#e53e3e';
                 } else if (data.current_action === 'dislike') {
                     dislikeBtn.classList.add('active');
                     dislikeBtn.style.background = '#718096';
-                    dislikeBtn.style.color = '#fff';
+                    dislikeBtn.style.color = 'white';
+                    dislikeBtn.style.borderColor = '#718096';
                 }
             } else {
                 const errorData = await response.json();
@@ -541,50 +1165,22 @@
         dislikeBtn.addEventListener("click", () => handleLikeDislike(dislikeBtn, 'dislike'));
 }
 
-    // 노트 점수 차트만 생성 (기존 막대 차트)
-    function createNotesChart(data) {
-        const ctx = document.getElementById('notesChart').getContext('2d');
-        const labels = Object.keys(data);
-        const values = Object.values(data);
-        
-        // 상위 10개만 표시
-        const sortedData = labels.map((label, index) => ({label, value: values[index]}))
-            .sort((a, b) => b.value - a.value)
-            .slice(0, 10);
-        
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: sortedData.map(item => item.label),
-                datasets: [{
-                    label: '점수',
-                    data: sortedData.map(item => item.value),
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
+    // 필터 슬라이더 기능
+    const sliderDots = document.querySelectorAll('.slider-dot');
+    sliderDots.forEach(dot => {
+        dot.addEventListener('click', function() {
+            // 같은 패널 내의 다른 점들 비활성화
+            const panel = this.closest('.analysis-panel');
+            const panelDots = panel.querySelectorAll('.slider-dot');
+            panelDots.forEach(d => d.classList.remove('active'));
+            
+            // 클릭한 점 활성화
+            this.classList.add('active');
+            
+            // 필터링 로직 (향후 구현 가능)
+            console.log('Filter changed:', this.dataset.value);
         });
-    }
-
-    // 노트 차트만 초기화
-    {% if notes_score %}
-    createNotesChart({{ notes_score|safe }});
-    {% endif %}
+    });
 
 })();
 </script>

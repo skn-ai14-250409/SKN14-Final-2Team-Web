@@ -2,6 +2,69 @@
 {% block title %}ScentPick Chat{% endblock %}
 {% block content %}
 <div class="chat-container">
+
+  <!-- 마크다운 렌더링 간격 최소화 CSS -->
+  <style>
+    /* 마크다운으로 렌더되는 AI 메시지 전용 */
+    .markdown-body {
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
+      line-height: 1.4;
+    }
+    
+    /* 모든 요소의 마진 최소화 */
+    .markdown-body > * { margin: 0 !important; }
+    .markdown-body > * + * { margin-top: 0.3em !important; }
+    
+    /* 헤딩 간격 조정 */
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, 
+    .markdown-body h4, .markdown-body h5, .markdown-body h6 { 
+      margin: 0.4em 0 0.2em 0 !important; 
+      line-height: 1.2;
+    }
+    
+    /* 문단과 리스트 간격 최소화 */
+    .markdown-body p { margin: 0.2em 0 !important; }
+    .markdown-body ul, .markdown-body ol { 
+      margin: 0.2em 0 !important; 
+      padding-left: 1.2em; 
+    }
+    .markdown-body li { margin: 0 !important; padding: 0.1em 0; }
+    .markdown-body li > p { margin: 0 !important; display: inline; }
+    
+    /* 인용구 간격 조정 */
+    .markdown-body blockquote { 
+      margin: 0.3em 0 !important; 
+      padding: 0.3em 0.6em; 
+      border-left: 3px solid #ddd;
+      background: #f9f9f9;
+    }
+    .markdown-body blockquote p { margin: 0 !important; }
+    
+    /* 코드블록 간격 조정 */
+    .markdown-body pre { 
+      margin: 0.3em 0 !important; 
+      padding: 0.4em 0.6em; 
+      border-radius: 4px; 
+      background: #f6f8fa; 
+      overflow-x: auto;
+    }
+    .markdown-body code { 
+      padding: 0.1em 0.3em; 
+      background: #f0f0f0; 
+      border-radius: 3px; 
+    }
+    .markdown-body pre code { 
+      padding: 0; 
+      background: transparent; 
+    }
+    
+    /* 강조 표시 */
+    .markdown-body strong { font-weight: 600; }
+    .markdown-body em { font-style: italic; }
+  </style>
+
   <div class="chat-sidebar">
     <button class="new-chat-btn" id="newChatBtn">새 채팅</button>
     <ul class="chat-history" id="chatHistory">
@@ -24,19 +87,9 @@
       <h3 style="margin-bottom:10px;">ScentPick AI 챗봇</h3>
       <div class="chat-examples">💡 예시: "30대 남자가 자주 찾는 향수 알려줘", "코튼 향의 20만원 이하 향수"</div>
     </div>
-    <div class="chat-messages" id="chatMessages">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="message{% if message.role == 'user' %} user{% endif %}">
-            <div class="message-content">{{ message.content }}</div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="message">
-          <div class="message-content">안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?</div>
-        </div>
-      {% endif %}
-    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
     <div class="chat-input">
       <input type="text" placeholder="메시지를 입력하세요..." id="chatInput" autocomplete="off">
       <button class="send-btn" id="chatSendBtn">전송</button>
@@ -47,6 +100,7 @@
 {% endblock content %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
 <script>
   // CSRF 토큰
   function getCookie(name) {
@@ -55,16 +109,25 @@
   }
   const CSRF_TOKEN = getCookie('csrftoken');
 
+  // 초기 메시지 (서버 주입)
+  let INITIAL_MESSAGES = [];
+  try {
+    const messagesData = '{{ chat_messages|escapejs }}';
+    INITIAL_MESSAGES = (messagesData && messagesData !== '[]') ? JSON.parse(messagesData) : [];
+  } catch (e) {
+    console.error('초기 메시지 파싱 오류:', e);
+    INITIAL_MESSAGES = [];
+  }
+
   (function () {
     const sendBtn = document.getElementById("chatSendBtn");
     const input   = document.getElementById("chatInput");
     const box     = document.getElementById("chatMessages");
     const newBtn  = document.getElementById("newChatBtn");
     const historyList = document.getElementById("chatHistory");
-    
     if (!sendBtn || !input || !box || !historyList) return;
 
-    // 서버에서 내려준 초기 컨텍스트(없을 수 있음)
+    // 서버에서 내려준 초기 컨텍스트
     let conversationId   = {{ conversation_id|default:"null" }};
     let externalThreadId = {% if external_thread_id %}"{{ external_thread_id }}"{% else %}null{% endif %};
 
@@ -73,72 +136,61 @@
       try {
         const resp = await fetch("{% url 'scentpick:conversations_api' %}", {
           method: "GET",
-          headers: {
-            "X-CSRFToken": CSRF_TOKEN
-          }
+          headers: { "X-CSRFToken": CSRF_TOKEN }
         });
-        
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        
         const data = await resp.json();
         historyList.innerHTML = '';
-        
         if (data.items && data.items.length > 0) {
           data.items.forEach(conv => {
             const li = document.createElement("li");
             li.className = "conversation-item";
             li.dataset.conversationId = conv.id;
             li.textContent = conv.title || `대화 ${conv.id}`;
-            li.addEventListener('click', () => loadConversation(conv.id));
+            li.addEventListener('click', () => window.loadConversation(conv.id));
             historyList.appendChild(li);
           });
         } else {
-          const li = document.createElement("li");
-          li.className = "no-conversations";
-          li.textContent = "아직 대화가 없습니다.";
-          historyList.appendChild(li);
+          historyList.innerHTML = '<li class="no-conversations">아직 대화가 없습니다.</li>';
         }
       } catch (e) {
         console.error('대화 목록 불러오기 실패:', e);
-        historyList.innerHTML = '<li class="error">대화 목록 불러오기 실패</li>';
+        historyList.innerHTML = '<li class="error">대화 목록을 불러올 수 없습니다</li>';
       }
     }
 
-    // 특정 대화의 메시지 불러오기
-    async function loadConversation(convId) {
+    // 특정 대화 불러오기
+    window.loadConversation = async function(convId) {
       try {
-        // 활성 대화 표시
-        document.querySelectorAll('.conversation-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        document.querySelector(`[data-conversation-id="${convId}"]`).classList.add('active');
-        
+        document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+        const act = document.querySelector(`[data-conversation-id="${convId}"]`);
+        if (act) act.classList.add('active');
+
         const resp = await fetch(`/api/conversations/${convId}/messages`, {
           method: "GET",
-          headers: {
-            "X-CSRFToken": CSRF_TOKEN
-          }
+          headers: { "X-CSRFToken": CSRF_TOKEN }
         });
-        
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        
+
         const data = await resp.json();
         conversationId = data.conversation_id;
-        
-        // 메시지 표시 영역 초기화
         box.innerHTML = '';
-        
+
         if (data.items && data.items.length > 0) {
           data.items.forEach(msg => {
-            addMessage(msg.content, msg.role === 'user');
+            const el = addMessage(msg.content, msg.role === 'user');
+            if (msg.role === 'assistant' && msg.perfume_list && msg.perfume_list.length > 0) {
+              addPerfumeRecommendations(el.wrap, msg.perfume_list);
+            }
           });
         } else {
-          addMessage("이 대화에는 아직 메시지가 없습니다.");
+          addMessage("이 대화에는 아직 메시지가 없습니다.", false, false);
         }
-        
       } catch (e) {
         console.error('대화 불러오기 실패:', e);
-        addMessage(`오류: 대화를 불러올 수 없습니다. ${e.message}`);
+        if (e.message && !e.message.includes('404')) {
+          addMessage(`대화를 불러오는 중 문제가 발생했습니다.`, false, false);
+        }
       }
     }
 
@@ -147,58 +199,99 @@
       try {
         const resp = await fetch("{% url 'scentpick:chat_new_api' %}", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": CSRF_TOKEN
-          }
+          headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN }
         });
-        
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        
         const data = await resp.json();
-        
-        // 상태 초기화
+
         conversationId = null;
         externalThreadId = data.external_thread_id;
-        
-        // UI 초기화
+
         box.innerHTML = "";
-        addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?");
-        
-        // 활성 대화 표시 해제
-        document.querySelectorAll('.conversation-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        
+        addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?", false, false);
+        document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
         input.focus();
-        
       } catch (e) {
         console.error('새 채팅 시작 실패:', e);
-        addMessage(`오류: 새 채팅을 시작할 수 없습니다. ${e.message}`);
+        addMessage(`새 채팅을 시작하는 중 문제가 발생했습니다.`, false, false);
       }
     }
 
-    function addMessage(msg, isUser = false) {
+    // 마크다운 렌더링 (개행 최소화)
+    function renderMarkdown(text) {
+      try {
+        if (typeof marked === 'undefined') return text;
+        
+        marked.setOptions({
+          gfm: true,
+          breaks: false,      // 단일 개행을 <br>로 변환하지 않음
+          headerIds: false,
+          mangle: false,
+          sanitize: false
+        });
+        
+        // 텍스트 전처리: 과도한 개행 제거
+        const preprocessed = (text ?? '')
+          .replace(/\r\n/g, '\n')           // CRLF를 LF로 통일
+          .replace(/\n{3,}/g, '\n\n')       // 3개 이상 연속 개행을 2개로 제한
+          .trim();
+        
+        let rendered = marked.parse(preprocessed);
+        
+        // 후처리: HTML에서 불필요한 공백 제거
+        rendered = rendered
+          .replace(/>\s+</g, '><')          // 태그 사이 공백 제거
+          .replace(/\n\s*\n/g, '\n')        // 빈 줄 제거
+          .trim();
+          
+        return rendered;
+      } catch (e) {
+        console.error('마크다운 파싱 오류:', e);
+        return text;
+      }
+    }
+
+    function addMessage(msg, isUser = false, useMarkdown = true) {
       const wrap  = document.createElement("div");
       wrap.className = "message" + (isUser ? " user" : "");
       const inner = document.createElement("div");
       inner.className = "message-content";
-      inner.textContent = msg; // XSS 방지
+
+      if (isUser || !useMarkdown) {
+        inner.textContent = msg;
+      } else {
+        inner.classList.add("markdown-body");
+        inner.innerHTML = renderMarkdown(msg);
+      }
+
       wrap.appendChild(inner);
       box.appendChild(wrap);
       box.scrollTop = box.scrollHeight;
       return { wrap, inner };
     }
 
-    function addLoading() {
-      return addMessage("생각 중...", false);
+    // 추천 버튼
+    function addPerfumeRecommendations(messageWrap, perfumes) {
+      if (!perfumes || perfumes.length === 0) return;
+      const div = document.createElement("div");
+      div.className = "perfume-recommendations";
+      perfumes.slice(0, 5).forEach(p => {
+        const btn = document.createElement("button");
+        btn.className = "perfume-btn";
+        btn.textContent = `${p.brand} - ${p.name}`;
+        btn.onclick = () => { window.location.href = `/perfume/${p.id}/`; };
+        div.appendChild(btn);
+      });
+      messageWrap.appendChild(div);
+      box.scrollTop = box.scrollHeight;
     }
+
+    function addLoading() { return addMessage("생각 중...", false, false); }
 
     async function send() {
       const txt = (input.value || "").trim();
       if (!txt) return;
 
-      // UI 먼저 반응
       input.value = "";
       addMessage(txt, true);
       sendBtn.disabled = true;
@@ -208,40 +301,31 @@
       try {
         const resp = await fetch("{% url 'scentpick:chat_submit_api' %}", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": CSRF_TOKEN
-          },
-          body: JSON.stringify({
-            content: txt,
-            conversation_id: conversationId || null
-          })
+          headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN },
+          body: JSON.stringify({ content: txt, conversation_id: conversationId || null })
         });
 
         if (!resp.ok) {
           let errText = `HTTP ${resp.status}`;
-          try {
-            const j = await resp.json();
-            if (j && j.error) errText = j.error;
-          } catch (_e) {}
-          loader.inner.textContent = `오류: ${errText}`;
+          try { const j = await resp.json(); if (j && j.error) errText = j.error; } catch (_e) {}
+          loader.inner.innerHTML = renderMarkdown(`오류: ${errText}`);
           return;
         }
 
         const data = await resp.json();
-
-        // 최신 상태 반영
         conversationId   = data.conversation_id;
         externalThreadId = data.external_thread_id;
 
-        // 최종 답변으로 교체
-        loader.inner.textContent = data.final_answer || "(응답이 비어있습니다)";
-        
-        // 대화 목록 새로고침 (새 대화가 생성되었을 수 있음)
-        loadConversations();
+        const finalAnswer = data.final_answer || "(응답이 비어있습니다)";
+        loader.inner.innerHTML = renderMarkdown(finalAnswer);
 
+        if (data.perfume_list && data.perfume_list.length > 0) {
+          addPerfumeRecommendations(loader.wrap, data.perfume_list);
+        }
+
+        loadConversations();
       } catch (e) {
-        loader.inner.textContent = `오류: ${e && e.message ? e.message : e}`;
+        loader.inner.innerHTML = renderMarkdown(`오류: ${e && e.message ? e.message : e}`);
       } finally {
         sendBtn.disabled = false;
         input.disabled = false;
@@ -249,18 +333,37 @@
       }
     }
 
-    // 이벤트 리스너 등록
+    // 이벤트 리스너
     sendBtn.addEventListener("click", send);
     input.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
     newBtn.addEventListener("click", startNewChat);
 
-    // 현재 대화 ID 설정 (서버에서 전달받은 값)
+    // 현재 대화 ID 설정
     {% if current_conversation_id %}
       conversationId = {{ current_conversation_id }};
     {% endif %}
-    
-    // 초기 대화 목록은 서버에서 이미 렌더링됨
-    // 필요시에만 AJAX로 새로고침
+
+    // 초기 메시지 복원
+    try {
+      if (INITIAL_MESSAGES && INITIAL_MESSAGES.length > 0) {
+        box.innerHTML = '';
+        INITIAL_MESSAGES.forEach((msg, idx) => {
+          if (msg && typeof msg === 'object' && msg.content) {
+            const el = addMessage(msg.content, msg.role === 'user');
+            if (msg.role === 'assistant' && msg.perfume_list && Array.isArray(msg.perfume_list) && msg.perfume_list.length > 0) {
+              addPerfumeRecommendations(el.wrap, msg.perfume_list);
+            }
+          }
+        });
+      } else {
+        box.innerHTML = '';
+        addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?", false, false);
+      }
+    } catch (e) {
+      console.warn('초기 메시지 복원 오류:', e);
+      addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?", false, false);
+    }
+
   })();
 </script>
 {% endblock %}
