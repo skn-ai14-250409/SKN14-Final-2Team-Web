@@ -69,8 +69,8 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = reverse_lazy("uauth:login")
 LOGIN_REDIRECT_URL = "/uauth/profile/completion/"
 LOGOUT_REDIRECT_URL = "/"
-ACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
+# ACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
+# SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
 
 ACCOUNT_SIGNUP_REDIRECT_URL = reverse_lazy("uauth:complete_profile")
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
