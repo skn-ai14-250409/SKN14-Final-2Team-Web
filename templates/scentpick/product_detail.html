@@ -14,8 +14,8 @@
 
   <!-- 향수 정보 -->
   <div class="product-detail-info">
-    <h1>{{ perfume.name|default:"블루 드 샤넬" }}</h1>
-    <div class="product-detail-brand">{{ perfume.brand|default:"Chanel" }}</div>
+    <h1>{{ perfume.name }}</h1>
+    <div class="product-detail-brand">{{ perfume.brand }}</div>
     <div class="product-detail-concentration">{{ perfume.concentration }}</div>
     
     {% if perfume.sizes %}
@@ -33,11 +33,14 @@
     </div>
 
     <div style="margin-bottom: 20px;" class="action-buttons">
-      <button class="favorite-btn" data-perfume-id="{{ perfume.id }}" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">
-          <span class="favorite-icon">⭐</span> 즐겨찾기
+      <button class="favorite-btn {% if is_favorite %}active{% endif %}" data-perfume-id="{{ perfume.id }}" 
+              style="background:{% if is_favorite %}#2c5282{% else %}#fff{% endif %};color:{% if is_favorite %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">
+          <span class="favorite-icon" style="color:{% if is_favorite %}#ffd700{% else %}#333{% endif %};">⭐</span> 즐겨찾기
       </button>
-      <button class="like-btn" data-perfume-id="{{ perfume.id }}" data-action="like" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">👍 좋아요</button>
-      <button class="dislike-btn" data-perfume-id="{{ perfume.id }}" data-action="dislike" style="background:#fff;color:#333;border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">👎 싫어요</button>
+      <button class="like-btn {% if feedback_status == 'like' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="like" 
+              style="background:{% if feedback_status == 'like' %}#e53e3e{% else %}#fff{% endif %};color:{% if feedback_status == 'like' %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;margin-right:10px;cursor:pointer;transition:all 0.3s ease;">👍 좋아요</button>
+      <button class="dislike-btn {% if feedback_status == 'dislike' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="dislike" 
+              style="background:{% if feedback_status == 'dislike' %}#718096{% else %}#fff{% endif %};color:{% if feedback_status == 'dislike' %}#fff{% else %}#333{% endif %};border:1px solid #e2e8f0;padding:8px 15px;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">👎 싫어요</button>
     </div>
 
     <button class="buy-btn" onclick="window.open('{{ detail_url|default:"#" }}', '_blank')" 
@@ -429,9 +432,16 @@
 
     // 즐겨찾기 버튼 기능
     const favoriteBtn = document.querySelector(".favorite-btn");
-    
+
     if (favoriteBtn) {
         favoriteBtn.addEventListener("click", async () => {
+            const isCurrentlyActive = favoriteBtn.classList.contains("active");
+            if (isCurrentlyActive) {
+                if (!confirm("이 향수를 즐겨찾기에서 제거하시겠습니까?")) {
+                    return;
+                }
+            }
+
             try {
                 const response = await fetch('/scentpick/api/toggle-favorite/', {
                     method: 'POST',
@@ -447,15 +457,14 @@
                 if (response.ok) {
                     const data = await response.json();
                     favoriteBtn.classList.toggle('active', data.is_favorite);
-                    
-                    // 버튼 텍스트 업데이트
+
                     const icon = favoriteBtn.querySelector('.favorite-icon');
                     if (data.is_favorite) {
                         favoriteBtn.style.background = '#2c5282';
                         icon.style.color = '#ffd700';
                     } else {
-                        favoriteBtn.style.background = '#4299e1';
-                        icon.style.color = '#fff';
+                        favoriteBtn.style.background = '#fff';
+                        icon.style.color = '#333';
                     }
                 } else {
                     const errorData = await response.json();
@@ -471,8 +480,16 @@
     // 좋아요/싫어요 버튼 기능
     const likeBtn = document.querySelector(".like-btn");
     const dislikeBtn = document.querySelector(".dislike-btn");
-    
+
     async function handleLikeDislike(button, action) {
+        const isCurrentlyActive = button.classList.contains('active');
+        if (isCurrentlyActive) {
+            const actionName = action === 'like' ? '좋아요' : '싫어요';
+            if (!confirm(`이 향수의 ${actionName}를 취소하시겠습니까?`)) {
+                return;
+            }
+        }
+
         try {
             const response = await fetch('/scentpick/api/toggle-like-dislike/', {
                 method: 'POST',
@@ -488,16 +505,24 @@
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // 모든 버튼의 active 클래스 제거
+
+                // 버튼 초기화
                 likeBtn.classList.remove('active');
                 dislikeBtn.classList.remove('active');
-                
-                // 현재 액션에 따라 활성화
+                likeBtn.style.background = '#fff';
+                likeBtn.style.color = '#333';
+                dislikeBtn.style.background = '#fff';
+                dislikeBtn.style.color = '#333';
+
+                // 새 상태 적용
                 if (data.current_action === 'like') {
                     likeBtn.classList.add('active');
+                    likeBtn.style.background = '#e53e3e';
+                    likeBtn.style.color = '#fff';
                 } else if (data.current_action === 'dislike') {
                     dislikeBtn.classList.add('active');
+                    dislikeBtn.style.background = '#718096';
+                    dislikeBtn.style.color = '#fff';
                 }
             } else {
                 const errorData = await response.json();
@@ -508,14 +533,13 @@
             alert('피드백 처리 중 오류가 발생했습니다.');
         }
     }
-    
+
     if (likeBtn) {
         likeBtn.addEventListener("click", () => handleLikeDislike(likeBtn, 'like'));
     }
-    
     if (dislikeBtn) {
         dislikeBtn.addEventListener("click", () => handleLikeDislike(dislikeBtn, 'dislike'));
-    }
+}
 
     // 노트 점수 차트만 생성 (기존 막대 차트)
     function createNotesChart(data) {
