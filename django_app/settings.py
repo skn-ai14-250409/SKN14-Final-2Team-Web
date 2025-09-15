@@ -67,7 +67,7 @@ AUTHENTICATION_BACKENDS = [
 
 # 로그인/로그아웃 후 이동할 경로
 LOGIN_URL = reverse_lazy("uauth:login")
-LOGIN_REDIRECT_URL = "/uauth/profile/completion/"
+LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
