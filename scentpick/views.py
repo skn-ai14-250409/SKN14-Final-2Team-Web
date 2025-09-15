@@ -33,6 +33,8 @@ from .models import (
     NoteImage,
     Conversation,
     Message,
+    RecRun,
+    RecCandidate,
 )
 from uauth.models import UserDetail
 from uauth.utils import process_profile_image, upload_to_s3_and_get_url
@@ -67,18 +69,55 @@ def chat(request):
                 id=current_conversation_id, 
                 user=request.user
             )
-            # 해당 대화의 메시지들 가져오기
-            messages = current_conversation.messages.order_by('created_at')
+            # 해당 대화의 메시지들 가져오기 (추천 데이터 포함)
+            messages_raw = current_conversation.messages.order_by('created_at')
+            messages = []
+            
+            for m in messages_raw:
+                message_data = {
+                    'role': m.role,
+                    'content': m.content,
+                    'created_at': m.created_at,
+                    'perfume_list': []
+                }
+                
+                # assistant 메시지인 경우 관련된 추천 데이터 찾기
+                if m.role == 'assistant':
+                    rec_runs = RecRun.objects.filter(
+                        conversation=current_conversation,
+                        request_msg__created_at__lte=m.created_at
+                    ).order_by('-created_at')
+                    
+                    if rec_runs.exists():
+                        latest_run = rec_runs.first()
+                        candidates = latest_run.candidates.select_related('perfume').order_by('rank')
+                        
+                        perfume_list = []
+                        for candidate in candidates:
+                            perfume_list.append({
+                                'id': candidate.perfume.id,
+                                'brand': candidate.perfume.brand,
+                                'name': candidate.perfume.name,
+                                'rank': candidate.rank,
+                                'score': candidate.score
+                            })
+                        
+                        if perfume_list:
+                            message_data['perfume_list'] = perfume_list
+                
+                messages.append(message_data)
+            
             # 세션에 저장
             request.session['conversation_id'] = current_conversation.id
         except Conversation.DoesNotExist:
             current_conversation_id = None
+            messages = []
     
     return render(request, "scentpick/chat.html", {
         "recent_conversations": recent_conversations,
         "current_conversation": current_conversation,
         "current_conversation_id": current_conversation_id,
-        "messages": messages,
+        "chat_messages": json.dumps(messages, default=str, ensure_ascii=False),  # JSON으로 직렬화
     })
 
 @login_required
@@ -1667,22 +1706,6 @@ def conversations_api(request):
         })
     return JsonResponse({'items': items})
 
-@login_required
-@require_GET
-def conversation_messages_api(request, conv_id: int):
-    """
-    특정 대화의 메시지 목록 API - AJAX로 메시지 로드
-    """
-    conv = get_object_or_404(Conversation, id=conv_id, user=request.user)
-    msgs = conv.messages.order_by('created_at')
-    data = []
-    for m in msgs:
-        data.append({
-            'role': m.role,
-            'content': m.content,
-            'created_at': m.created_at.isoformat(),
-        })
-    return JsonResponse({'conversation_id': conv.id, 'title': conv.title, 'items': data})
 
 @login_required
 @require_POST
@@ -1786,17 +1809,47 @@ def conversations_api(request):
 @require_GET
 def conversation_messages_api(request, conv_id: int):
     """
-    특정 대화의 메시지 목록 API - AJAX로 메시지 로드
+    특정 대화의 메시지 목록 API - AJAX로 메시지 로드 (추천 데이터 포함)
     """
     conv = get_object_or_404(Conversation, id=conv_id, user=request.user)
     msgs = conv.messages.order_by('created_at')
     data = []
+    
     for m in msgs:
-        data.append({
+        message_data = {
             'role': m.role,
             'content': m.content,
             'created_at': m.created_at.isoformat(),
-        })
+        }
+        
+        # assistant 메시지인 경우 관련된 추천 데이터 찾기
+        if m.role == 'assistant':
+            # 이 메시지와 연관된 RecRun 찾기
+            rec_runs = RecRun.objects.filter(
+                conversation=conv,
+                request_msg__created_at__lte=m.created_at
+            ).order_by('-created_at')
+            
+            if rec_runs.exists():
+                latest_run = rec_runs.first()
+                # 추천 후보들 가져오기
+                candidates = latest_run.candidates.select_related('perfume').order_by('rank')
+                
+                perfume_list = []
+                for candidate in candidates:
+                    perfume_list.append({
+                        'id': candidate.perfume.id,
+                        'brand': candidate.perfume.brand,
+                        'name': candidate.perfume.name,
+                        'rank': candidate.rank,
+                        'score': candidate.score
+                    })
+                
+                if perfume_list:
+                    message_data['perfume_list'] = perfume_list
+        
+        data.append(message_data)
+    
     return JsonResponse({'conversation_id': conv.id, 'title': conv.title, 'items': data})
 
 @login_required

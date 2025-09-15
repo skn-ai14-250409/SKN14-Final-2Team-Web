@@ -348,10 +348,12 @@ body {
 .message {
     margin-bottom: 15px;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .message.user {
-    justify-content: flex-end;
+    align-items: flex-end;
 }
 
 .message-content {
@@ -359,11 +361,98 @@ body {
     padding: 12px 15px;
     border-radius: 15px;
     background: #f1f5f9;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 
 .message.user .message-content {
     background: #6366f1;
     color: white;
+}
+
+/* 마크다운 요소 스타일 */
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+    margin: 12px 0 8px 0;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.message-content h1 { font-size: 18px; }
+.message-content h2 { font-size: 16px; }
+.message-content h3 { font-size: 15px; color: #4a5568; }
+.message-content h4 { font-size: 14px; color: #4a5568; }
+.message-content h5 { font-size: 13px; color: #4a5568; }
+.message-content h6 { font-size: 12px; color: #4a5568; }
+
+.message-content strong {
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.message-content em {
+    font-style: italic;
+    color: #4a5568;
+}
+
+.message-content p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.message-content ul,
+.message-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.message-content li {
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+.message-content a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.message-content a:hover {
+    text-decoration: underline;
+}
+
+.message-content blockquote {
+    border-left: 3px solid #e2e8f0;
+    padding-left: 12px;
+    margin: 8px 0;
+    color: #4a5568;
+    font-style: italic;
+}
+
+.message-content code {
+    background: #f7fafc;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.message-content pre {
+    background: #f7fafc;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.message-content pre code {
+    background: none;
+    padding: 0;
 }
 
 .chat-input {
@@ -395,6 +484,45 @@ body {
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 추천 향수 버튼 스타일 */
+.perfume-recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    max-width: 70%;
+    align-self: flex-start;
+}
+
+.perfume-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    width: fit-content;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.perfume-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
 }
 
 .weather-info,
