@@ -31,9 +31,6 @@ SECRET_KEY = 'django-insecure-qa_=+$5+uu6w5kmt0-wcr=e2053(k&g8!%yy@sk=&f0r-g!&(r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -212,6 +209,8 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "django-web-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com",
+    "scentpick.store",
+    "www.scentpick.store",
 ]
 
 # S3 storage settings (used by uauth.utils upload)
