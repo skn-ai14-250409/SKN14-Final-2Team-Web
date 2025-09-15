@@ -226,4 +226,5 @@ SERVICE_TOKEN    = os.environ.get("SERVICE_TOKEN")
 CSRF_TRUSTED_ORIGINS = [
     "https://scentpick.store",
     "https://www.scentpick.store",
+    "https://django-web-env.eba-q3jam8c8.ap-northeast-2.elasticbeanstalk.com",
 ]
