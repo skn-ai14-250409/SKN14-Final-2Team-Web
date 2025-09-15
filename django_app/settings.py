@@ -75,8 +75,6 @@ SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/login/redirect/"
 ACCOUNT_SIGNUP_REDIRECT_URL = reverse_lazy("uauth:complete_profile")
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGIN_METHODS = {"username"}   # 일반 로그인은 username 기반
-ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*", "email*"]
 ACCOUNT_UNIQUE_EMAIL = False
 
 ACCOUNT_ADAPTER = "uauth.adapters.CustomAccountAdapter"
