@@ -222,3 +222,8 @@ KAKAO_JS_KEY = os.getenv("KAKAO_JS_KEY", "")
 
 FASTAPI_CHAT_URL = os.environ.get("FASTAPI_CHAT_URL")
 SERVICE_TOKEN    = os.environ.get("SERVICE_TOKEN")
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://scentpick.store/",
+    "https://www.scentpick.store/",
+]
