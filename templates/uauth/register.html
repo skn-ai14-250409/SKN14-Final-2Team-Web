@@ -1,6 +1,24 @@
 {% extends "scentpick/base.html" %}
 {% block title %}회원가입 - ScentPick{% endblock %}
 {% block content %}
+<style>
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.password-toggle-btn:hover {
+  color: #374151;
+}
+</style>
 <div class="auth-container">
   <h2 style="text-align:center;margin-bottom:30px;color:#2d3748;">회원가입</h2>
 
@@ -25,12 +43,18 @@
 
     <div class="form-group">
       <label>비밀번호</label>
-      <input type="password" name="password1" placeholder="비밀번호를 입력하세요 (8자 이상)" required>
+      <div style="position: relative;">
+        <input type="password" name="password1" id="password1" placeholder="비밀번호를 입력하세요 (8자 이상)" required>
+        <button type="button" id="toggle-password1" class="password-toggle-btn"></button>
+      </div>
     </div>
 
     <div class="form-group">
       <label>비밀번호 확인</label>
-      <input type="password" name="password2" placeholder="비밀번호를 다시 입력하세요" required>
+      <div style="position: relative;">
+        <input type="password" name="password2" id="password2" placeholder="비밀번호를 다시 입력하세요" required>
+        <button type="button" id="toggle-password2" class="password-toggle-btn"></button>
+      </div>
     </div>
 
     <div class="form-group">
@@ -40,7 +64,8 @@
 
     <div class="form-group">
       <label>이메일</label>
-      <input type="email" name="email" value="{{ form_data.email|default:'' }}" placeholder="이메일을 입력하세요" required>
+      <input type="email" name="email" id="email-input" value="{{ form_data.email|default:'' }}" placeholder="이메일을 입력하세요 (예: user@example.com)" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+      <div id="email-feedback" style="margin-top: 5px; font-size: 14px; min-height: 20px;"></div>
     </div>
 
     <div class="form-group">
@@ -88,6 +113,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const genderInput = document.getElementById("gender-input");
   const usernameInput = document.getElementById("username-input");
   const usernameFeedback = document.getElementById("username-feedback");
+  const emailInput = document.getElementById("email-input");
+  const emailFeedback = document.getElementById("email-feedback");
+  const password1Input = document.getElementById("password1");
+  const password2Input = document.getElementById("password2");
+  const togglePassword1 = document.getElementById("toggle-password1");
+  const togglePassword2 = document.getElementById("toggle-password2");
   const fileInput = document.getElementById("profile-image");
   const editor = document.getElementById("avatar-editor");
   const img = document.getElementById("avatar-image");
@@ -102,6 +133,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let debounceTimer;
   let imgLeft = 0, imgTop = 0;
   let naturalW = 0, naturalH = 0;
+
+  // SVG 아이콘 상수
+  const ICONS = {
+    EYE: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    EYE_OFF: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+  };
 
   // 성별 선택 기능
   genderButtons.forEach((btn) => {
@@ -148,11 +185,57 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 비밀번호 가시성 토글
+  function togglePasswordVisibility(input, toggleBtn) {
+    if (input.type === "password") {
+      input.type = "text";
+      toggleBtn.innerHTML = ICONS.EYE_OFF;
+    } else {
+      input.type = "password";
+      toggleBtn.innerHTML = ICONS.EYE;
+    }
+  }
+
+  // 모든 비밀번호 토글 버튼 초기화
+  function initPasswordToggles() {
+    [togglePassword1, togglePassword2].forEach(btn => {
+      btn.innerHTML = ICONS.EYE;
+      btn.addEventListener('click', function() {
+        const input = this.id === 'toggle-password1' ? password1Input : password2Input;
+        togglePasswordVisibility(input, this);
+      });
+    });
+  }
+
+  initPasswordToggles();
+
+  // 이메일 유효성 검사
+  function validateEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
+
+  // 이메일 입력 이벤트
+  emailInput.addEventListener('input', function() {
+    const email = this.value.trim();
+
+    if (email === '') {
+      emailFeedback.innerHTML = '';
+      return;
+    }
+
+    if (validateEmail(email)) {
+      emailFeedback.innerHTML = '<span style="color: #10b981;">✓ 올바른 이메일 형식입니다.</span>';
+    } else {
+      emailFeedback.innerHTML = '<span style="color: #ef4444;">✗ 올바른 이메일 형식을 입력해주세요. (예: user@example.com)</span>';
+    }
+  });
+
   // 아이디 입력 이벤트
   usernameInput.addEventListener('input', function() {
     clearTimeout(debounceTimer);
     const username = this.value.trim();
-    
+
     if (username === '') {
       usernameFeedback.innerHTML = '';
       return;
