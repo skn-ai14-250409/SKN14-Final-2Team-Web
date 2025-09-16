@@ -15,7 +15,12 @@ def _redir_with_next(next_url: str | None = None) -> str:
 class CustomAccountAdapter(DefaultAccountAdapter):
     def get_login_redirect_url(self, request):
         user = request.user
+
+        # 세션에서 provider 확인, 없으면 사용자의 소셜 계정에서 확인
         provider = request.session.get("socialaccount_provider")
+        if not provider:
+            social_accounts = user.socialaccount_set.all()
+            provider = social_accounts.first().provider if social_accounts.exists() else None
 
         needs_completion = (
             not hasattr(user, "detail")
@@ -47,7 +52,12 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def get_login_redirect_url(self, request):
         user = request.user
+
+        # 세션에서 provider 확인, 없으면 사용자의 소셜 계정에서 확인
         provider = request.session.get("socialaccount_provider")
+        if not provider:
+            social_accounts = user.socialaccount_set.all()
+            provider = social_accounts.first().provider if social_accounts.exists() else None
 
         needs_completion = (
             not hasattr(user, "detail")
