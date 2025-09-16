@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>로그인 완료</title>
+</head>
+<body>
+    <p>로그인 완료 중...</p>
+    <script>
+        console.log('login_redirect.html 실행');
+        console.log('현재 URL:', window.location.href);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const nextUrl = urlParams.get('next') || '/chat/';
+        
+        console.log('Next URL:', nextUrl);
+        console.log('Opener 존재:', !!window.opener);
+        console.log('Opener closed:', window.opener ? window.opener.closed : 'N/A');
+        
+        if (window.opener && !window.opener.closed) {
+            console.log('부모 창 직접 조작 시도');
+            try {
+                // 직접 부모 창의 location 변경
+                window.opener.location.href = nextUrl;
+                console.log('부모 창 리디렉션 완료');
+                
+                // 팝업 닫기
+                setTimeout(() => {
+                    window.close();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('부모 창 조작 실패:', error);
+                // 실패 시 팝업에서 리디렉션
+                window.location.href = nextUrl;
+            }
+        } else {
+            console.log('opener 없음 - 직접 리디렉션');
+            window.location.href = nextUrl;
+        }
+    </script>
+</body>
+</html>
