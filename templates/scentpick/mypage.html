@@ -23,63 +23,98 @@
   </div>
 
   <!-- 가운데: 추천 내역 -->
-  <div class="recommendations-section">
-    <h3 style="margin-bottom:20px;">추천 받은 향수 내역</h3>
+<div class="recommendations-section">
+  <h3 style="margin-bottom:12px;">추천 받은 향수 내역</h3>
 
-    <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
-      {% if recommendation_runs %}
-        {% for run in recommendation_runs %}
-          <div class="recommendation-card perfume-card-clickable" data-perfume-id="{{ run.perfume.id }}">
-            <div class="recommendation-date">{{ run.created_at|date:"Y.m.d" }}</div>
-            <div class="perfume-image-container" style="margin:0 auto 10px;">
-              <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ run.perfume.id }}.jpg" 
-                   alt="{{ run.perfume.name }}" 
-                   class="perfume-img"
-                   onerror="this.style.background='#e2e8f0'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.style.color='#718096'; this.style.fontSize='10px'; this.innerHTML='REC'; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzcxODA5NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJFQzwvdGV4dD48L3N2Zz4='">
+  <div class="rec-list-wrap" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;">
+    {% if rec_page and rec_page.object_list %}
+      <!-- 헤더 -->
+      <div style="display:grid;grid-template-columns:92px 120px 1fr 54px;gap:8px;padding:6px 8px;color:#64748b;font-size:13px;">
+        <div>추천날짜</div>
+        <div>브랜드</div>
+        <div>제품명</div>
+        <div style="text-align:right;">추천횟수</div>
+      </div>
+      <div style="height:1px;background:#e5e7eb;margin:4px 0 6px;"></div>
+
+      <!-- 항목 -->
+      <ul class="rec-list" style="list-style:none;margin:0;padding:0;">
+        {% for item in rec_page.object_list %}
+          <li style="display:grid;grid-template-columns:92px 120px 1fr 54px;gap:8px;padding:8px 8px;border-radius:8px;align-items:center;">
+            <div style="color:#475569;font-size:13px;">{{ item.last_date|date:"y.m.d" }}</div>
+            <div style="color:#334155;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              {{ item.perfume__brand }}
             </div>
-            <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ run.perfume.name }}</div>
-            <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ run.perfume.brand }}</div>
-            <!-- 디버그용: 스타일 변수 출력 확인 -->
-            <!-- perfume_brand_style: {{ perfume_brand_style }} -->
-          </div>
+            <div style="font-weight:600;">
+              <a href="/perfume/{{ item.perfume_id }}/"
+                  style="color:#2563eb;text-decoration:none;
+                        white-space:normal;           /* 줄바꿈 허용 */
+                        overflow:visible;
+                        text-overflow:clip;
+                        overflow-wrap:anywhere;       /* 영어 긴 단어도 줄바꿈 */
+                        display:inline-block;
+                        font-size:13px;">
+                {{ item.perfume__name }}
+              </a>
+            </div>
+            <div style="text-align:right;color:#111827;font-size:13px;">
+              {{ item.rec_count }}
+            </div>
+          </li>
         {% endfor %}
-      {% else %}
-        <div class="no-recommendations">
-          <p style="text-align: center; color: #718096; font-style: italic;">아직 추천받은 향수가 없습니다.</p>
+      </ul>
+
+      <!-- 페이지네이션 -->
+      {% if rec_page.paginator.num_pages > 1 %}
+        <div class="rec-pagination" style="display:flex;gap:10px;align-items:center;justify-content:flex-start;margin-top:10px;">
+          {% if rec_page.has_previous %}
+            <a href="?page={{ rec_page.previous_page_number }}" style="color:#2563eb;text-decoration:none;">이전</a>
+          {% endif %}
+          {% for p in rec_page.paginator.page_range %}
+            {% if p == rec_page.number %}
+              <strong style="color:#111827;">{{ p }}</strong>
+            {% else %}
+              <a href="?page={{ p }}" style="color:#2563eb;text-decoration:none;">{{ p }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if rec_page.has_next %}
+            <a href="?page={{ rec_page.next_page_number }}" style="color:#2563eb;text-decoration:none;">다음›</a>
+          {% endif %}
         </div>
       {% endif %}
-    </div>
+    {% else %}
+      <p style="text-align:center;color:#718096;font-style:italic;margin:10px 0;">
+        아직 추천받은 향수가 없습니다.
+      </p>
+    {% endif %}
+  </div>
     
     <div class="like-dislike-container">
-        <div class="likes-section">
-            <h3>선호 향수 ({{ likes_count }}개)</h3>
-
-                <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
-                    {% for feedback in liked_perfumes %}
-                        <div class="recommendation-card like-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
-                            <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
-                            <div class="perfume-image-container" style="margin:0 auto 10px;">
-                                <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg" 
-                                     alt="{{ feedback.perfume.name }}" 
-                                     class="perfume-img"
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiM0OGJiNzgiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxJS0U8L3RleHQ+PC9zdmc+'">
-                            </div>
-                            <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.name }}</div>
-                            <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.brand }}</div>
-                            <div style="display:flex;justify-content:center;gap:5px;">
-                                <button class="feedback-btn like-btn active" data-action="like" style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
-                                <button class="feedback-btn dislike-btn" data-action="dislike" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% if not liked_perfumes %}
-                <p class="empty-message"
-                  style="color:#718096 !important; font-style:italic; text-align:center; padding:40px 20px;">
-                  선호 향수가 없습니다.
-                </p>
-            {% endif %}
+  <!-- ✅ 선호 -->
+  <div class="likes-section">
+    <h3>선호 향수 ({{ likes_count }}개)</h3>
+    <div class="recommendations-grid">
+      {% for feedback in liked_perfumes %}
+        <div class="recommendation-card like-card perfume-card-clickable"
+             data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
+          <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
+          <div class="perfume-image-container" style="margin:0 auto 10px;">
+            <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg"
+                 alt="{{ feedback.perfume.name }}" class="perfume-img">
+          </div>
+          <div class="perfume-title">{{ feedback.perfume.name }}</div>
+          <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
+          <div style="display:flex;justify-content:center;gap:5px;">
+            <button class="feedback-btn like-btn active" data-action="like">선호</button>
+            <button class="feedback-btn dislike-btn" data-action="dislike">비선호</button>
+          </div>
         </div>
+      {% endfor %}
+    </div>
+    {% if not liked_perfumes %}
+      <p class="empty-message" style="color:#718096;font-style:italic;text-align:center;">선호 향수가 없습니다.</p>
+    {% endif %}
+  </div>
 
         <div class="dislikes-section">
             <h3>비선호 향수 ({{ dislikes_count }}개)</h3>
@@ -94,8 +129,8 @@
                                      class="perfume-img"
                                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlNTNlM2UiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5PPC90ZXh0Pjwvc3ZnPg=='">
                             </div>
-                            <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.name }}</div>
-                            <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ feedback.perfume.brand }}</div>
+                            <div class="perfume-title">{{ feedback.perfume.name }}</div>
+                            <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
                             <div style="display:flex;justify-content:center;gap:5px;">
                                 <button class="feedback-btn like-btn" data-action="like" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
                                 <button class="feedback-btn dislike-btn active" data-action="dislike" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
@@ -127,8 +162,8 @@
                              class="perfume-img"
                              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiM0YTkwZTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZBVjwvdGV4dD48L3N2Zz4='">
                     </div>
-                    <div class="perfume-title" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:10px!important;font-weight:600!important;color:#2d3748!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.2!important;margin-bottom:5px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ perfume.name }}</div>
-                    <div class="perfume-brand" style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif!important;font-size:8px!important;color:#9ca3af!important;font-weight:400!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;line-height:1.1!important;margin-bottom:8px!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;">{{ perfume.brand }}</div>
+                    <div class="perfume-title">{{ perfume.name }}</div>
+                    <div class="perfume-brand">{{ perfume.brand }}</div>
                     <div style="display:flex;justify-content:center;">
                         <button class="remove-favorite" data-perfume-id="{{ perfume.id }}" style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">
                             즐겨찾기 해제
@@ -319,552 +354,9 @@
 {% endblock script %}
 
 
-<style>
-/* ============= NUCLEAR CSS - scentpick.css 완전 무력화 ============= */
-
-/* 절대적 최고 우선순위 CSS - scentpick.css 보다 무조건 우선 */
-body.scentpick-page .mypage-container,
-body .mypage-container,
-html body .mypage-container,
-* .mypage-container {
-
-/* 기본 컨테이너 레이아웃 */
-body .mypage-container {
-  display: grid !important;
-  grid-template-columns: minmax(160px, 180px) 1fr 1fr !important;
-  gap: 8px !important;
-  max-width: 1200px !important;
-  width: 100% !important;
-  margin: 0 auto !important;
-  align-items: start !important;
-  padding: 0 8px !important;
-  box-sizing: border-box !important;
-}
-
-/* 프로필 섹션 */
-body .mypage-container .profile-section {
-  background: white !important;
-  border-radius: 12px !important;
-  padding: 15px 10px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
-  text-align: center !important;
-  height: fit-content !important;
-}
-
-/* 추천/즐겨찾기 섹션 */
-body .mypage-container .recommendations-section,
-body .mypage-container .favorites-section {
-  background: white !important;
-  border-radius: 12px !important;
-  padding: 12px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* ============= 절대적 최고 우선순위 - scentpick.css 완전 무력화 ============= */
-
-/* 그리드 레이아웃 - scentpick.css:832줄 덮어쓰기 */
-html body div.mypage-container div.recommendations-section div.recommendations-grid,
-html body div.mypage-container div.favorites-section div.recommendations-grid,
-html body div.mypage-container div.like-dislike-container div.likes-section div.recommendations-grid,
-html body div.mypage-container div.like-dislike-container div.dislikes-section div.recommendations-grid,
-.mypage-container .recommendations-grid,
-*.mypage-container *.recommendations-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 8px !important;
-  margin-bottom: 20px !important;
-  margin-top: 15px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* 카드 스타일 - scentpick.css:837줄 덮어쓰기 */
-html body div.mypage-container div.recommendation-card,
-html body div.mypage-container div.recommendations-section div.recommendation-card,
-html body div.mypage-container div.favorites-section div.recommendation-card,
-html body div.mypage-container div.like-dislike-container div.recommendation-card,
-.mypage-container .recommendation-card,
-*.mypage-container *.recommendation-card {
-  background: #f9fafb !important;
-  border-radius: 10px !important;
-  padding: 10px !important;
-  text-align: center !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  min-height: 350px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  position: relative !important;
-  transition: all 0.2s ease !important;
-  border: 1px solid #e2e8f0 !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* 향수 이미지 */
-body .mypage-container .perfume-image-container {
-  width: 100% !important;
-  max-width: min(360px, 80%) !important;
-  margin: 0 auto 15px !important;
-  display: flex !important;
-  justify-content: center !important;
-}
-
-body .mypage-container .perfume-img {
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 3/4 !important;
-  max-width: 100% !important;
-  background: #e2e8f0 !important;
-  border-radius: 8px !important;
-  object-fit: cover !important;
-  display: block !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-/* ============= 텍스트 스타일 - 높은 특이성으로 모든 충돌 해결 ============= */
-
-/* 향수명 - 절대적 최고 우선순위 */
-html body div.mypage-container div.recommendation-card div.perfume-title,
-html body div.mypage-container div.recommendations-section div.recommendation-card div.perfume-title,
-html body div.mypage-container div.favorites-section div.recommendation-card div.perfume-title,
-html body div.mypage-container div.like-dislike-container div.recommendation-card div.perfume-title,
-.mypage-container .recommendation-card .perfume-title,
-*.mypage-container *.recommendation-card *.perfume-title,
-div.perfume-title {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  color: #2d3748 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  line-height: 1.2 !important;
-  margin-bottom: 5px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  display: block !important;
-  box-sizing: border-box !important;
-}
-
-/* 브랜드명 - 절대적 최고 우선순위로 작은 회색 텍스트 강제 */
-html body div.mypage-container div.recommendation-card div.perfume-brand,
-html body div.mypage-container div.recommendations-section div.recommendation-card div.perfume-brand,
-html body div.mypage-container div.favorites-section div.recommendation-card div.perfume-brand,
-html body div.mypage-container div.like-dislike-container div.recommendation-card div.perfume-brand,
-html body div.mypage-container div.like-dislike-container div.likes-section div.recommendation-card div.perfume-brand,
-html body div.mypage-container div.like-dislike-container div.dislikes-section div.recommendation-card div.perfume-brand,
-.mypage-container .recommendation-card .perfume-brand,
-*.mypage-container *.recommendation-card *.perfume-brand,
-div.perfume-brand {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-  font-size: 8px !important;
-  color: #9ca3af !important;
-  font-weight: 400 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  line-height: 1.1 !important;
-  margin-bottom: 8px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  display: block !important;
-  box-sizing: border-box !important;
-}
-
-/* 빈 메시지 스타일 */
-.empty-message {
-  text-align: center !important;
-  color: #718096 !important;
-  font-style: italic !important;
-  padding: 40px 20px !important;
-}
-
-/* 프로필 메뉴 - scentpick.css:795-821줄 덮어쓰기 */
-html body div.mypage-container div.profile-section ul.profile-menu,
-.mypage-container .profile-section .profile-menu {
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-html body div.mypage-container div.profile-section ul.profile-menu li,
-.mypage-container .profile-section .profile-menu li {
-  margin-bottom: 4px !important;
-}
-
-html body div.mypage-container div.profile-section ul.profile-menu li a,
-.mypage-container .profile-section .profile-menu li a,
-.profile-menu a {
-  text-decoration: none !important;
-  color: #4a5568 !important;
-  font-size: 9px !important;
-  display: block !important;
-  padding: 4px 6px !important;
-  border-radius: 4px !important;
-  transition: background-color 0.2s !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  border: none !important;
-  background: #fff !important;
-  font-weight: 400 !important;
-}
-
-html body div.mypage-container div.profile-section ul.profile-menu li a:hover,
-.mypage-container .profile-section .profile-menu li a:hover,
-.profile-menu a:hover {
-  background-color: #f7fafc !important;
-  border-color: transparent !important;
-  transform: none !important;
-}
-
-html body div.mypage-container div.profile-section ul.profile-menu li a.danger,
-.mypage-container .profile-section .profile-menu li a.danger,
-.profile-menu a.danger {
-  color: #e53e3e !important;
-  border-color: transparent !important;
-}
-
-/* 반응형 */
-@media (max-width: 1400px) {
-  body .mypage-container {
-    grid-template-columns: 200px 1fr 1fr !important;
-    gap: 15px !important;
-  }
-}
-
-@media (max-width: 1200px) {
-  body .mypage-container {
-    grid-template-columns: 1fr !important;
-    max-width: 800px !important;
-    gap: 20px !important;
-    padding: 0 10px !important;
-  }
-  body .mypage-container .recommendations-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-}
-
-@media (max-width: 768px) {
-  body .mypage-container .recommendations-grid {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-  body .mypage-container .recommendation-card {
-    min-height: auto !important;
-    padding: 10px !important;
-  }
-  body .mypage-container .perfume-img {
-    max-width: 180px !important;
-  }
-  body .mypage-container {
-    padding: 0 5px !important;
-    gap: 8px !important;
-  }
-  body .mypage-container .recommendations-section, 
-  body .mypage-container .favorites-section {
-    padding: 10px !important;
-  }
-}
-</style>
-
-<!-- 페이지 초기화 및 강제 스타일 적용 -->
-<script>
-// 스타일 강제 적용 함수 - scentpick.css 완전 무력화
-function forceApplyStyles() {
-  console.log('강제 스타일 적용 시작');
-  
-  // 그리드 강제 적용
-  const grids = document.querySelectorAll('.recommendations-grid');
-  grids.forEach(grid => {
-    grid.style.setProperty('display', 'grid', 'important');
-    grid.style.setProperty('grid-template-columns', 'repeat(2, minmax(0, 1fr))', 'important');
-    grid.style.setProperty('gap', '8px', 'important');
-    grid.style.setProperty('margin-bottom', '20px', 'important');
-    grid.style.setProperty('margin-top', '15px', 'important');
-    grid.style.setProperty('width', '100%', 'important');
-    grid.style.setProperty('box-sizing', 'border-box', 'important');
-  });
-  
-  // 향수명 강제 적용
-  const perfumeTitles = document.querySelectorAll('.perfume-title');
-  perfumeTitles.forEach(title => {
-    title.style.setProperty('font-family', "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 'important');
-    title.style.setProperty('font-size', '10px', 'important');
-    title.style.setProperty('font-weight', '600', 'important');
-    title.style.setProperty('color', '#2d3748', 'important');
-    title.style.setProperty('overflow', 'hidden', 'important');
-    title.style.setProperty('text-overflow', 'ellipsis', 'important');
-    title.style.setProperty('white-space', 'nowrap', 'important');
-    title.style.setProperty('line-height', '1.2', 'important');
-    title.style.setProperty('margin-bottom', '5px', 'important');
-    title.style.setProperty('width', '100%', 'important');
-    title.style.setProperty('min-width', '0', 'important');
-    title.style.setProperty('display', 'block', 'important');
-    title.style.setProperty('box-sizing', 'border-box', 'important');
-  });
-  
-  // 브랜드명 강제 적용
-  const perfumeBrands = document.querySelectorAll('.perfume-brand');
-  perfumeBrands.forEach(brand => {
-    brand.style.setProperty('font-family', "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 'important');
-    brand.style.setProperty('font-size', '8px', 'important');
-    brand.style.setProperty('color', '#9ca3af', 'important');
-    brand.style.setProperty('font-weight', '400', 'important');
-    brand.style.setProperty('overflow', 'hidden', 'important');
-    brand.style.setProperty('text-overflow', 'ellipsis', 'important');
-    brand.style.setProperty('white-space', 'nowrap', 'important');
-    brand.style.setProperty('line-height', '1.1', 'important');
-    brand.style.setProperty('margin-bottom', '8px', 'important');
-    brand.style.setProperty('width', '100%', 'important');
-    brand.style.setProperty('min-width', '0', 'important');
-    brand.style.setProperty('display', 'block', 'important');
-    brand.style.setProperty('box-sizing', 'border-box', 'important');
-  });
-  
-  // 프로필 메뉴 강제 적용
-  const menuLinks = document.querySelectorAll('.profile-menu a');
-  menuLinks.forEach(link => {
-    link.style.setProperty('font-size', '9px', 'important');
-    link.style.setProperty('padding', '4px 6px', 'important');
-    link.style.setProperty('border', 'none', 'important');
-    link.style.setProperty('background', '#fff', 'important');
-    link.style.setProperty('font-weight', '400', 'important');
-    if (link.classList.contains('danger')) {
-      link.style.setProperty('color', '#e53e3e', 'important');
-    } else {
-      link.style.setProperty('color', '#4a5568', 'important');
-    }
-  });
-  
-  // 피드백 버튼 z-index 강제 적용 (클릭 가능하도록)
-  const feedbackBtns = document.querySelectorAll('.feedback-btn, button[data-action]');
-  feedbackBtns.forEach(btn => {
-    btn.style.setProperty('position', 'relative', 'important');
-    btn.style.setProperty('z-index', '999', 'important');
-    btn.style.setProperty('pointer-events', 'auto', 'important');
-    btn.style.setProperty('cursor', 'pointer', 'important');
-  });
-  
-  console.log('강제 스타일 적용 완료 - 피드백 버튼', feedbackBtns.length, '개 처리');
-  
-  // 피드백 버튼 이벤트 리스너 재설정
-  setupFeedbackButtons();
-}
 
 
 
-// 피드백 삭제 함수
-async function deleteFeedback(feedbackId, card) {
-  try {
-    const response = await fetch('/scentpick/api/delete-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ feedback_id: parseInt(feedbackId) })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success') {
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.8)';
-        card.style.transition = 'all 0.3s ease';
-        setTimeout(() => card.remove(), 300);
-      }
-    }
-  } catch (error) {
-    console.error('피드백 삭제 오류:', error);
-    alert('피드백 삭제 중 오류가 발생했습니다.');
-  }
-}
-
-// 피드백 업데이트 함수
-async function updateFeedback(feedbackId, action, card) {
-  try {
-    const response = await fetch('/scentpick/api/update-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ feedback_id: parseInt(feedbackId), action: action })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success') {
-        // 카드를 적절한 섹션으로 이동
-        const targetSection = action === 'like' ? 
-          document.querySelector('.likes-section .recommendations-grid') :
-          document.querySelector('.dislikes-section .recommendations-grid');
-          
-        if (targetSection) {
-          // 버튼 상태 업데이트
-          const likeBtn = card.querySelector('[data-action="like"]');
-          const dislikeBtn = card.querySelector('[data-action="dislike"]');
-          
-          likeBtn.classList.toggle('active', action === 'like');
-          dislikeBtn.classList.toggle('active', action === 'dislike');
-          
-          targetSection.appendChild(card);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('피드백 업데이트 오류:', error);
-    alert('피드백 업데이트 중 오류가 발생했습니다.');
-  }
-
-// 피드백 버튼 클릭 핸들러
-function handleFeedbackClick(e) {
-  console.log('=== 피드백 버튼 클릭 감지! ===', this);
-  
-  e.preventDefault();
-  e.stopPropagation();
-  
-  const button = this;
-  const card = button.closest('.recommendation-card');
-  const feedbackId = card ? card.dataset.feedbackId : null;
-  const action = button.dataset.action;
-  const currentlyActive = button.classList.contains('active');
-  const otherBtn = card ? card.querySelector(`.feedback-btn:not([data-action="${action}"])`) : null;
-  const otherActive = otherBtn ? otherBtn.classList.contains('active') : false;
-  
-  console.log('클릭 정보:', {
-    feedbackId,
-    action,
-    currentlyActive,
-    otherActive,
-    card: card ? 'found' : 'not found',
-    otherBtn: otherBtn ? 'found' : 'not found'
-  });
-  
-  if (!card || !feedbackId || !action) {
-    console.error('필수 요소가 누락됨!');
-    return;
-  }
-  
-  // 버튼 비활성화로 중복 클릭 방지
-  button.disabled = true;
-  setTimeout(() => { button.disabled = false; }, 2000);
-  
-  // 같은 버튼 다시 클릭 - 삭제
-  if (currentlyActive) {
-    if (confirm('피드백을 취소하시겠습니까?')) {
-      deleteFeedback(feedbackId, card);
-    }
-    return;
-  }
-  
-  // 다른 버튼이 활성 - 업데이트
-  if (otherActive) {
-    updateFeedback(feedbackId, action, button, otherBtn, card);
-  }
-}
-
-// 피드백 삭제 함수
-async function deleteFeedback(feedbackId, card) {
-  try {
-    const response = await fetch('/scentpick/api/delete-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ feedback_id: parseInt(feedbackId) })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success') {
-        // 카드 제거 애니메이션
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.8)';
-        card.style.transition = 'all 0.3s ease';
-        
-        setTimeout(() => {
-          card.remove();
-          updateFeedbackCounts();
-        }, 300);
-        
-        console.log('피드백 삭제 성공');
-      }
-    }
-  } catch (error) {
-    console.error('피드백 삭제 오류:', error);
-    alert('피드백 삭제 중 오류가 발생했습니다.');
-  }
-}
-
-// 피드백 업데이트 함수
-async function updateFeedback(feedbackId, action, button, otherBtn, card) {
-  try {
-    const response = await fetch('/scentpick/api/update-feedback/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ 
-        feedback_id: parseInt(feedbackId),
-        action: action 
-      })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success') {
-        // 버튼 상태 변경
-        button.classList.add('active');
-        otherBtn.classList.remove('active');
-        
-        // 스타일 적용
-        if (action === 'like') {
-          button.style.background = '#4a90e2';
-          button.style.color = 'white';
-          button.style.border = 'none';
-          otherBtn.style.background = '#f7fafc';
-          otherBtn.style.color = '#4a5568';
-          otherBtn.style.border = '1px solid #e2e8f0';
-        } else {
-          button.style.background = '#e74c3c';
-          button.style.color = 'white';
-          button.style.border = 'none';
-          otherBtn.style.background = '#f7fafc';
-          otherBtn.style.color = '#4a5568';
-          otherBtn.style.border = '1px solid #e2e8f0';
-        }
-        
-        // 카드 이동
-        moveCardToSection(card, action);
-        
-        console.log('피드백 업데이트 성공:', action);
-        alert(`${action === 'like' ? '선호' : '비선호'}로 변경되었습니다.`);
-      }
-    }
-  } catch (error) {
-    console.error('피드백 업데이트 오류:', error);
-    alert('피드백 업데이트 중 오류가 발생했습니다.');
-  }
-}
-
-// 초기화 및 강제 적용
-
-</script>
 
 <style>
 /* 추가 스타일들 */
@@ -928,5 +420,52 @@ body .mypage-container .recommendation-card:hover {
   margin-bottom: 15px;
   color: #2d3748;
 }
+
+/* 추천 받은 향수 내역 표 전용 hover 효과만 */
+.recommendations-section .rec-list-wrap .rec-list li:hover {
+  background: #f8fafc;
+}
+
+/* 비어 있는 메시지 일관성 */
+.empty-message {
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+  padding: 20px 10px;
+}
+
+/* [FIX] 선호/비선호 영역만 2열 고정 */
+.likes-section .recommendations-grid,
+.dislikes-section .recommendations-grid { 
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+/* [FIX] 카드 내 버튼 모양/정렬 복구 */
+.recommendation-card .feedback-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width: 56px !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  background:#f7fafc !important;
+  color:#4a5568 !important;
+  font-weight:600 !important;
+  font-size:13px !important;
+  cursor:pointer !important;
+}
+
+/* 활성 상태 색만 지정 (나머지는 그대로) */
+.recommendation-card .like-btn.active{
+  background:#4a90e2 !important; color:#fff !important; border:none !important;
+}
+.recommendation-card .dislike-btn.active{
+  background:#e74c3c !important; color:#fff !important; border:none !important;
+}
+
 
 </style>
