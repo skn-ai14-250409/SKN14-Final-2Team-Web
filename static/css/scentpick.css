@@ -1172,8 +1172,116 @@ body {
     outline: none;
 }
 
-/* yyh MyPage: (비)선호 없음 문구 회색 고정 */
-.likes-section .empty-message,
-.dislikes-section .empty-message {
-  color: #718096 !important;
+/* ===== yyh 상단 '추천받은 향수 내역' 전용 표형 레이아웃 시작===== */
+.recommendations-section .rec-table { 
+  margin-top: 12px;
 }
+
+.recommendations-section .rec-head{
+  display: grid;
+  grid-template-columns: 100px 54px 160px 1fr 100px;
+  column-gap: 16px;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.recommendations-section .rec-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recommendations-section .rec-item{
+  display: grid;
+  grid-template-columns: 100px 54px 160px 1fr 100px;
+  column-gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.recommendations-section .rec-date{
+  color:#4b5563;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendations-section .rec-brand{
+  font-weight: 500;
+  color:#374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendations-section .rec-name{
+  color: #2563eb;
+  text-decoration: underline;   /* 원하면 none으로 둬도 됨 */
+  white-space: normal;          /* 줄바꿈 허용 */
+  overflow: visible;            /* 숨김 해제 */
+  text-overflow: clip;          /* … 방지 */
+  word-break: break-word;       /* 긴 단어 줄바꿈 */
+  min-width: 0;
+}
+.recommendations-section .rec-name:hover{ text-decoration: underline; }
+
+.recommendations-section .rec-count{
+  text-align: right;
+  color:#1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 모바일(선택): 2행으로 접기 */
+@media (max-width: 640px){
+  .recommendations-section .rec-head,
+  .recommendations-section .rec-item{
+    grid-template-columns: 100px 1fr; /* 날짜 | 나머지 */
+    row-gap: 6px;
+  }
+  .recommendations-section .rec-brand{ order: 2; }
+  .recommendations-section .rec-name{ order: 3; }
+  .recommendations-section .rec-count{ order: 4; text-align: left; }
+}
+
+/* [FIX] 선호 영역: 항목이 1개여도 2열 폭 유지 */
+.likes-section .recommendations-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  /* 두 칸 폭(카드 2개+갭) 만큼만 컨테이너를 제한 */
+  max-width: 700px;            /* 카드 카드 + gap 합친 폭(원하는 값으로 약간 조정 가능) */
+  margin: 15px 0 20px 0;       /* 가운데/좌측 정렬은 취향대로 */
+}
+
+
+.recommendation-card .feedback-btn{ 
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 56px !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f7fafc !important;
+  color: #4a5568 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+}
+
+/* 활성 색상만 별도 */
+.recommendation-card .like-btn.active{
+  background:#4a90e2 !important; color:#fff !important; border:none !important;
+}
+.recommendation-card .dislike-btn.active{
+  background:#e74c3c !important; color:#fff !important; border:none !important;
+}
+/* ===== yyh 상단 '추천받은 향수 내역' 전용 표형 레이아웃 끝===== */

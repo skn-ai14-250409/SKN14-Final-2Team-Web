@@ -9,7 +9,7 @@
   <div class="product-image-section">
     <img src="{{ image_url }}" 
          alt="{{ perfume.name }}" 
-           class="product-main-image"
+         class="product-main-image"
          onerror="this.src='https://via.placeholder.com/432x432/f0f0f0/666?text=No+Image'">
   </div>
 
@@ -34,7 +34,7 @@
       <div class="action-buttons">
         <button class="action-btn favorite-btn {% if is_favorite %}active{% endif %}" data-perfume-id="{{ perfume.id }}">
           <span class="action-icon">⭐</span> 즐겨찾기
-      </button>
+        </button>
         <button class="action-btn like-btn {% if feedback_status == 'like' %}active{% endif %}" data-perfume-id="{{ perfume.id }}" data-action="like">
           <span class="action-icon">👍</span> 좋아요
         </button>
@@ -43,8 +43,7 @@
         </button>
     </div>
 
-    <button class="buy-btn" onclick="window.open('{{ detail_url|default:"#" }}', '_blank')" 
-            {% if not detail_url %}disabled{% endif %}>
+    <button class="buy-btn" id="buy-btn" data-url="{{ detail_url|default:'#' }}">
         구매 사이트 이동
     </button>
     </div>
@@ -142,59 +141,20 @@
         </div>
       </div>
       
-      <div class="slider-container">
-        <div class="slider-track">
-          <div class="slider-dot active" data-value="all">
-            <span class="dot-label">전체</span>
-    </div>
-          <div class="slider-dot" data-value="female">
-            <span class="dot-label">여성</span>
-          </div>
-          <div class="slider-dot" data-value="unisex">
-            <span class="dot-label">공용</span>
-          </div>
-          <div class="slider-dot" data-value="male">
-            <span class="dot-label">남성</span>
-          </div>
-        </div>
-      </div>
-      
              <div class="data-visualization" id="gender-data">
                <!-- JavaScript로 동적 생성 -->
              </div>
              
-             <div class="panel-description">
-               <p>이 향수는 성별에 따른 적합성을 보여줍니다. 막대가 길수록 해당 성별에게 더 적합한 향수임을 의미합니다.</p>
-             </div>
+
     </div>
 
     <!-- 2. 계절 적합성 분석 -->
     <div class="analysis-panel">
       <div class="panel-header">
-        <div class="panel-icon">🌿</div>
+        <div class="panel-icon">🌸</div>
         <div class="panel-title">
           <h4>SEASON</h4>
           <span class="panel-subtitle">계절별 적합성</span>
-        </div>
-      </div>
-      
-      <div class="slider-container">
-        <div class="slider-track">
-          <div class="slider-dot active" data-value="all">
-            <span class="dot-label">전체</span>
-          </div>
-          <div class="slider-dot" data-value="spring">
-            <span class="dot-label">봄</span>
-          </div>
-          <div class="slider-dot" data-value="summer">
-            <span class="dot-label">여름</span>
-          </div>
-          <div class="slider-dot" data-value="fall">
-            <span class="dot-label">가을</span>
-          </div>
-          <div class="slider-dot" data-value="winter">
-            <span class="dot-label">겨울</span>
-          </div>
         </div>
       </div>
       
@@ -202,9 +162,7 @@
         <!-- JavaScript로 동적 생성 -->
       </div>
       
-      <div class="panel-description">
-        <p>계절별 적합성을 나타냅니다. 각 계절의 특성과 향수의 노트가 얼마나 잘 어울리는지 보여주며, 100%에 가까울수록 해당 계절에 더 적합합니다.</p>
-      </div>
+      
     </div>
 
     <!-- 3. 시간대 적합성 분석 -->
@@ -217,27 +175,11 @@
         </div>
       </div>
       
-      <div class="slider-container">
-        <div class="slider-track">
-          <div class="slider-dot active" data-value="all">
-            <span class="dot-label">전체</span>
-          </div>
-          <div class="slider-dot" data-value="day">
-            <span class="dot-label">낮</span>
-          </div>
-          <div class="slider-dot" data-value="night">
-            <span class="dot-label">밤</span>
-          </div>
-        </div>
-      </div>
-      
       <div class="data-visualization" id="time-data">
         <!-- JavaScript로 동적 생성 -->
       </div>
       
-      <div class="panel-description">
-        <p>낮과 밤 시간대별 적합성을 보여줍니다. 낮에는 상쾌하고 가벼운 향이, 밤에는 깊고 매혹적인 향이 더 적합하며, 막대 길이로 적합도를 확인할 수 있습니다.</p>
-      </div>
+      
     </div>
 
     <!-- 4. 노트 특성 분석 -->
@@ -250,30 +192,11 @@
         </div>
       </div>
       
-      <div class="slider-container">
-        <div class="slider-track">
-          <div class="slider-dot active" data-value="all">
-            <span class="dot-label">전체</span>
-          </div>
-          <div class="slider-dot" data-value="top">
-            <span class="dot-label">탑</span>
-          </div>
-          <div class="slider-dot" data-value="middle">
-            <span class="dot-label">미들</span>
-          </div>
-          <div class="slider-dot" data-value="base">
-            <span class="dot-label">베이스</span>
-          </div>
-        </div>
-      </div>
-      
       <div class="data-visualization" id="notes-data">
         <!-- JavaScript로 동적 생성 -->
       </div>
       
-      <div class="panel-description">
-        <p>향수의 노트 특성을 보여줍니다. 각 노트의 강도와 비율을 나타내며, 막대가 길수록 해당 노트가 더 강하게 느껴지는 향수입니다.</p>
-      </div>
+      
     </div>
 
   </div>
@@ -684,75 +607,6 @@
   margin-top: 4px;
 }
 
-/* 슬라이더 컨테이너 */
-.slider-container {
-  margin-bottom: 28px;
-}
-
-.slider-track {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #e2e8f0;
-  height: 8px;
-  border-radius: 4px;
-  position: relative;
-  padding: 0 16px;
-}
-
-.slider-dot {
-  width: 24px;
-  height: 24px;
-  background: white;
-  border: 3px solid #cbd5e0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: #718096;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.slider-dot.active {
-  background: #6366f1;
-  border-color: #6366f1;
-  color: white;
-  transform: scale(1.3);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
-.slider-dot:hover {
-  transform: scale(1.2);
-  border-color: #6366f1;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-}
-
-.dot-label {
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  position: absolute;
-  top: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 3px 8px;
-  border-radius: 4px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.slider-dot:hover .dot-label {
-  opacity: 1;
-}
-
 /* 데이터 시각화 */
 .data-visualization {
   display: flex;
@@ -816,23 +670,6 @@
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-/* 패널 설명 */
-.panel-description {
-  margin-top: 24px;
-  padding: 20px;
-  background: rgba(167, 139, 250, 0.05);
-  border-radius: 12px;
-  border-left: 4px solid #a78bfa;
-}
-
-.panel-description p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #4a5568;
-  font-weight: 500;
-}
-
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .product-detail-card {
@@ -876,11 +713,6 @@
     font-size: 13px;
   }
   
-  .slider-dot {
-    width: 18px;
-    height: 18px;
-    font-size: 9px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -908,280 +740,53 @@
     gap: 20px;
   }
   
-  .slider-dot {
-    font-size: 8px;
-    width: 16px;
-    height: 16px;
-  }
-  
-  .dot-label {
-    font-size: 8px;
-    top: -22px;
-  }
 }
 </style>
 
 {% endblock content %}
 
 {% block script %}
-<script>
-// 데이터 바 생성 헬퍼 함수
-function createDataBar(label, value, percentage, isPercentage = true) {
-  const displayValue = isPercentage ? `${value}%` : value;
-  return `
-    <div class="data-item">
-      <div class="data-label">${label}</div>
-      <div class="data-bar-container">
-        <div class="data-bar-fill" style="width: ${percentage}%;"></div>
-        <div class="data-value">${displayValue}</div>
-      </div>
+<!-- 데이터 전달용 HTML 요소들 -->
+<div id="data-container" style="display: none;">
+  <!-- GENDER 데이터 - 실제 성별 데이터 사용 -->
+  <div class="data-group" data-type="gender">
+    <div data-key="{{ gender }}" data-label="{{ gender }}" data-value="100" data-percentage="100"></div>
+  </div>
+  
+  <!-- SEASON 데이터 - 실제 계절 점수 사용 -->
+  <div class="data-group" data-type="season">
+    {% for season, score in season_score.items %}
+    <div data-key="{{ season }}" 
+         data-label="{% if season == 'spring' %}봄{% elif season == 'summer' %}여름{% elif season == 'fall' %}가을{% elif season == 'winter' %}겨울{% else %}{{ season }}{% endif %}" 
+         data-value="{{ score|floatformat:1 }}" 
+         data-percentage="{{ score }}">
     </div>
-  `;
-}
+    {% endfor %}
+  </div>
+  
+  <!-- TIME 데이터 - 실제 낮/밤 점수 사용 -->
+  <div class="data-group" data-type="time">
+    {% for time, score in day_night_score.items %}
+    <div data-key="{{ time }}" 
+         data-label="{% if time == 'day' %}낮{% elif time == 'night' %}밤{% else %}{{ time }}{% endif %}" 
+         data-value="{{ score|floatformat:1 }}" 
+         data-percentage="{{ score }}">
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- NOTES 데이터 - 실제 노트 점수 사용 -->
+  <div class="data-group" data-type="notes">
+    {% for note, score in notes_score.items %}
+    <div data-key="{{ note }}" 
+         data-label="{{ note }}" 
+         data-value="{{ score|floatformat:0 }}" 
+         data-percentage="{{ score }}">
+    </div>
+    {% endfor %}
+  </div>
+</div>
 
-// 데이터 초기화 함수
-function initializeDataPanels() {
-  // GENDER 데이터
-  const genderData = {
-    'Female': { label: '여성용', value: '{% if gender == "Female" %}100{% else %}20{% endif %}', percentage: '{% if gender == "Female" %}100{% else %}20{% endif %}' },
-    'Male': { label: '남성용', value: '{% if gender == "Male" %}100{% else %}15{% endif %}', percentage: '{% if gender == "Male" %}100{% else %}15{% endif %}' },
-    'Unisex': { label: '공용', value: '{% if gender == "Unisex" %}100{% else %}65{% endif %}', percentage: '{% if gender == "Unisex" %}100{% else %}65{% endif %}' }
-  };
-
-  // SEASON 데이터
-  const seasonData = {
-    {% if season_score %}
-      {% for key, value in season_score.items %}
-        '{{ key }}': { 
-          label: '{% if key == "spring" %}봄{% elif key == "summer" %}여름{% elif key == "fall" %}가을{% elif key == "winter" %}겨울{% else %}{{ key }}{% endif %}', 
-          value: '{{ value|floatformat:1 }}', 
-          percentage: '{{ value }}' 
-        }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    {% else %}
-      'spring': { label: '봄', value: '8.6', percentage: '8.6' },
-      'summer': { label: '여름', value: '6.3', percentage: '6.3' },
-      'fall': { label: '가을', value: '100.0', percentage: '100' },
-      'winter': { label: '겨울', value: '14.1', percentage: '14.1' }
-    {% endif %}
-  };
-
-  // TIME 데이터
-  const timeData = {
-    {% if day_night_score %}
-      {% for key, value in day_night_score.items %}
-        '{{ key }}': { 
-          label: '{% if key == "day" %}낮{% elif key == "night" %}밤{% else %}{{ key }}{% endif %}', 
-          value: '{{ value|floatformat:1 }}', 
-          percentage: '{{ value }}' 
-        }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    {% else %}
-      'day': { label: '낮', value: '35.2', percentage: '35.2' },
-      'night': { label: '밤', value: '12.1', percentage: '12.1' }
-    {% endif %}
-  };
-
-  // NOTES 데이터
-  const notesData = {
-    {% if notes_score %}
-      {% for key, value in notes_score.items %}
-        '{{ key }}': { 
-          label: '{{ key }}', 
-          value: '{{ value|floatformat:0 }}', 
-          percentage: '{{ value }}' 
-        }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    {% else %}
-      '플로럴': { label: '플로럴', value: '85', percentage: '85' },
-      '우디': { label: '우디', value: '70', percentage: '70' },
-      '스파이시': { label: '스파이시', value: '45', percentage: '45' },
-      '시트러스': { label: '시트러스', value: '30', percentage: '30' }
-    {% endif %}
-  };
-
-  // 데이터 바 생성
-  const genderContainer = document.getElementById('gender-data');
-  if (genderContainer) {
-    Object.values(genderData).forEach(item => {
-      genderContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
-    });
-  }
-
-  const seasonContainer = document.getElementById('season-data');
-  if (seasonContainer) {
-    Object.values(seasonData).forEach(item => {
-      seasonContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
-    });
-  }
-
-  const timeContainer = document.getElementById('time-data');
-  if (timeContainer) {
-    Object.values(timeData).forEach(item => {
-      timeContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
-    });
-  }
-
-  const notesContainer = document.getElementById('notes-data');
-  if (notesContainer) {
-    Object.values(notesData).forEach(item => {
-      notesContainer.innerHTML += createDataBar(item.label, item.value, item.percentage, false);
-    });
-  }
-}
-
-// DOM 로드 완료 후 실행
-document.addEventListener('DOMContentLoaded', initializeDataPanels);
-(() => {
-    // CSRF 토큰 가져오기 함수
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // 즐겨찾기 버튼 기능
-    const favoriteBtn = document.querySelector(".favorite-btn");
-
-    if (favoriteBtn) {
-        favoriteBtn.addEventListener("click", async () => {
-            const isCurrentlyActive = favoriteBtn.classList.contains("active");
-            if (isCurrentlyActive) {
-                if (!confirm("이 향수를 즐겨찾기에서 제거하시겠습니까?")) {
-                    return;
-                }
-            }
-
-            try {
-                const response = await fetch('/scentpick/api/toggle-favorite/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        perfume_id: favoriteBtn.dataset.perfumeId
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    favoriteBtn.classList.toggle('active', data.is_favorite);
-
-                    if (data.is_favorite) {
-                        favoriteBtn.style.background = '#6366f1';
-                        favoriteBtn.style.color = 'white';
-                        favoriteBtn.style.borderColor = '#6366f1';
-                    } else {
-                        favoriteBtn.style.background = 'white';
-                        favoriteBtn.style.color = '#4a5568';
-                        favoriteBtn.style.borderColor = '#e2e8f0';
-                    }
-                } else {
-                    const errorData = await response.json();
-                    alert(errorData.message || '즐겨찾기 처리 중 오류가 발생했습니다.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('즐겨찾기 처리 중 오류가 발생했습니다.');
-            }
-        });
-    }
-
-    // 좋아요/싫어요 버튼 기능
-    const likeBtn = document.querySelector(".like-btn");
-    const dislikeBtn = document.querySelector(".dislike-btn");
-
-    async function handleLikeDislike(button, action) {
-        const isCurrentlyActive = button.classList.contains('active');
-        if (isCurrentlyActive) {
-            const actionName = action === 'like' ? '좋아요' : '싫어요';
-            if (!confirm(`이 향수의 ${actionName}를 취소하시겠습니까?`)) {
-                return;
-            }
-        }
-
-        try {
-            const response = await fetch('/scentpick/api/toggle-like-dislike/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    perfume_id: button.dataset.perfumeId,
-                    action: action
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-
-                // 버튼 초기화
-                likeBtn.classList.remove('active');
-                dislikeBtn.classList.remove('active');
-                likeBtn.style.background = 'white';
-                likeBtn.style.color = '#4a5568';
-                likeBtn.style.borderColor = '#e2e8f0';
-                dislikeBtn.style.background = 'white';
-                dislikeBtn.style.color = '#4a5568';
-                dislikeBtn.style.borderColor = '#e2e8f0';
-
-                // 새 상태 적용
-                if (data.current_action === 'like') {
-                    likeBtn.classList.add('active');
-                    likeBtn.style.background = '#e53e3e';
-                    likeBtn.style.color = 'white';
-                    likeBtn.style.borderColor = '#e53e3e';
-                } else if (data.current_action === 'dislike') {
-                    dislikeBtn.classList.add('active');
-                    dislikeBtn.style.background = '#718096';
-                    dislikeBtn.style.color = 'white';
-                    dislikeBtn.style.borderColor = '#718096';
-                }
-            } else {
-                const errorData = await response.json();
-                alert(errorData.message || '피드백 처리 중 오류가 발생했습니다.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('피드백 처리 중 오류가 발생했습니다.');
-        }
-    }
-
-    if (likeBtn) {
-        likeBtn.addEventListener("click", () => handleLikeDislike(likeBtn, 'like'));
-    }
-    if (dislikeBtn) {
-        dislikeBtn.addEventListener("click", () => handleLikeDislike(dislikeBtn, 'dislike'));
-}
-
-    // 필터 슬라이더 기능
-    const sliderDots = document.querySelectorAll('.slider-dot');
-    sliderDots.forEach(dot => {
-        dot.addEventListener('click', function() {
-            // 같은 패널 내의 다른 점들 비활성화
-            const panel = this.closest('.analysis-panel');
-            const panelDots = panel.querySelectorAll('.slider-dot');
-            panelDots.forEach(d => d.classList.remove('active'));
-            
-            // 클릭한 점 활성화
-            this.classList.add('active');
-            
-            // 필터링 로직 (향후 구현 가능)
-            console.log('Filter changed:', this.dataset.value);
-        });
-    });
-
-})();
-</script>
-{% endblock script %}
+<!-- 외부 JavaScript 파일 로드 -->
+<script src="{% static 'js/product_detail.js' %}"></script>
+{% endblock %}
