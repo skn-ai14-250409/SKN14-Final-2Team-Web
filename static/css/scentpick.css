@@ -931,6 +931,7 @@ body {
     font-weight: 500;
     background: #fff;
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    font-size: 16px !important; /* 14~18px 중 원하는 값 */
 }
 .profile-menu a:hover {
     border-color: #6366f1;
@@ -1169,4 +1170,10 @@ body {
 .date-input:focus {
     border-color: #6366f1;
     outline: none;
+}
+
+/* yyh MyPage: (비)선호 없음 문구 회색 고정 */
+.likes-section .empty-message,
+.dislikes-section .empty-message {
+  color: #718096 !important;
 }
