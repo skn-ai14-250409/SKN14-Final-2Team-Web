@@ -19,8 +19,6 @@
   </button>
 </form>
 
-
-
 <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;">
   <!-- 필터 -->
   <aside style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);position:sticky;top:12px;">
@@ -60,7 +58,8 @@
 
       <details class="filter-section">
         <summary style="cursor:pointer;font-weight:600;">메인어코드</summary>
-        <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;font-size:13px;margin-top:6px;margin-left:6px;">
+        <!-- 서버가 내려준 원본을 일단 렌더해 두고, 아래 스크립트가 동의어 통합 버전으로 재빌드합니다 -->
+        <div id="accordBox" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;font-size:13px;margin-top:6px;margin-left:6px;">
           {% for a in accords %}
             <label>
               <input type="checkbox" name="accord" value="{{ a }}"
@@ -87,27 +86,107 @@
   const searchForm = document.getElementById('searchForm');
   const products   = document.getElementById('products');
 
-  function qsFromForm(form) {
-    const params = new URLSearchParams(new FormData(form));
-    params.set('ajax', '1');
-    return params.toString();
+  /* =========================
+   *  메인어코드 동의어 그룹
+   *  (필요시 여기만 추가/수정)
+   * ========================= */
+  const ACCORD_GROUPS = {
+    '플로랄':   ['플로랄','플로럴','플로','플라워','꽃'],
+    '아쿠아틱': ['아쿠아틱','마린','워터리','오션','해양','바다'],
+    '머스크':   ['머스크','머스키','머스','무스크','무시'],
+    '그린':     ['그린','허브','허벌','풀','잔디','모스','오크모스'],
+    '우디':     ['우디','우드','나무','우드티'],
+    '시트러스': ['시트러스','시트','시트라스','시트릭'],
+    '스파이시': ['스파이시','스파이스','향신료'],
+    '파우더리': ['파우더리','파우더'],
+    '바닐라':   ['바닐라','바닐','바닐린'],
+    '프루티':   ['프루티','프룻티','후르티','과일','프루트'],
+    '앰버':     ['앰버','엠버','암버'],
+    '레더':     ['레더','가죽'],
+    '로즈':     ['로즈','장미'],
+  };
+
+  /* ===== 1) 메인어코드 체크박스 UI를 통합 버전으로 재구성 ===== */
+  function rebuildAccordList(){
+    const box = document.getElementById('accordBox');
+    if (!box) return;
+
+    // 원본 값 수집
+    const originals = Array.from(box.querySelectorAll('label')).map(l => l.textContent.trim());
+    const originalSet = new Set(originals);
+
+    // 현재 URL에서 선택된 값들(새로고침 시 체크 유지)
+    const selected = new Set(new URLSearchParams(location.search).getAll('accord'));
+
+    const frag = document.createDocumentFragment();
+    const used = new Set();
+
+    // (a) 사전 정의된 그룹 우선 생성
+    Object.entries(ACCORD_GROUPS).forEach(([canon, syns]) => {
+      const isChecked = syns.some(s => selected.has(s) || selected.has(canon));
+      const label = document.createElement('label');
+      label.innerHTML =
+        `<input type="checkbox" name="accord" value="${canon}"
+                data-synonyms="${syns.join('|')}" ${isChecked ? 'checked':''}> ${canon}`;
+      frag.appendChild(label);
+      syns.forEach(s => used.add(s));
+      used.add(canon);
+    });
+
+    // (b) 사전에 없는 나머지(중복 제거)
+    const rest = [...originalSet].filter(a => !used.has(a));
+    rest.sort((a,b)=>a.localeCompare(b,'ko'));
+    rest.forEach(a => {
+      const isChecked = selected.has(a);
+      const label = document.createElement('label');
+      label.innerHTML =
+        `<input type="checkbox" name="accord" value="${a}"
+                data-synonyms="${a}" ${isChecked ? 'checked':''}> ${a}`;
+      frag.appendChild(label);
+    });
+
+    box.innerHTML = '';
+    box.appendChild(frag);
   }
-  function qsForHistory() {
-    const params = new URLSearchParams(new FormData(filterForm));
+
+  /* ===== 2) accord 선택을 동의어 전체로 '확장'해서 쿼리 구성 ===== */
+  function buildQuery({withAjax=true, page=null} = {}){
+    const params = new URLSearchParams();
+
+    // 검색어 q 동기화
     if (searchForm) {
       const q = new FormData(searchForm).get('q');
-      if (q) params.set('q', q); else params.delete('q');
+      if (q) params.set('q', q);
     }
+
+    // 나머지 필터 (brand/gender/conc)
+    const fd = new FormData(filterForm);
+    for (const [k, v] of fd.entries()) {
+      if (k === 'accord') continue; // accord는 아래에서 확장 처리
+      params.append(k, v);
+    }
+
+    // accord 확장: 체크된 항목의 data-synonyms를 전부 append
+    document.querySelectorAll('input[name="accord"]:checked').forEach(cb => {
+      const syns = (cb.dataset.synonyms || cb.value).split('|').map(s=>s.trim()).filter(Boolean);
+      syns.forEach(s => params.append('accord', s));
+    });
+
+    if (page) params.set('page', page);
+    if (withAjax) params.set('ajax','1');
     return params.toString();
   }
+
+  /* ===== 3) 목록 갱신 ===== */
   async function refresh() {
-    const url = window.location.pathname + '?' + qsFromForm(filterForm);
+    const url = window.location.pathname + '?' + buildQuery({withAjax:true});
     const res = await fetch(url);
     const html = await res.text();
     products.innerHTML = html;
-    history.replaceState(null, '', '?' + qsForHistory());
+    history.replaceState(null, '', '?' + buildQuery({withAjax:false}));
   }
 
+  /* ===== 4) 이벤트 바인딩 ===== */
   filterForm.addEventListener('change', (e) => {
     if (e.target && e.target.type === 'checkbox') {
       e.preventDefault();
@@ -117,33 +196,34 @@
 
   searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const q = new FormData(searchForm).get('q') || '';
-    let hidden = filterForm.querySelector('input[name="q"]');
+    // filterForm에도 q 히든 싱크
+    let hidden = filterForm.querySelector('input[name="q"][type="hidden"]');
     if (!hidden) {
       hidden = document.createElement('input');
       hidden.type = 'hidden'; hidden.name = 'q';
       filterForm.appendChild(hidden);
     }
-    hidden.value = q;
+    hidden.value = (new FormData(searchForm).get('q') || '');
     refresh();
   });
 
+  // 페이지네이션(AJAX)
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[data-ajax-pg]');
     if (!a) return;
     e.preventDefault();
-    const params = new URLSearchParams(new FormData(filterForm));
-    const url = new URL(a.href);
-    params.set('page', url.searchParams.get('page') || '1');
-    params.set('ajax', '1');
-    fetch(window.location.pathname + '?' + params.toString())
+    const pg = new URL(a.href).searchParams.get('page') || '1';
+    const url = window.location.pathname + '?' + buildQuery({withAjax:true, page:pg});
+    fetch(url)
       .then(r => r.text())
       .then(html => {
         products.innerHTML = html;
-        params.delete('ajax');
-        history.replaceState(null, '', '?' + params.toString());
+        history.replaceState(null, '', '?' + buildQuery({withAjax:false, page:pg}));
       });
   });
+
+  // 최초 1회: 메인어코드 리스트 통합
+  rebuildAccordList();
 })();
 </script>
 {% endblock script %}
