@@ -20,10 +20,11 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Max  # yyh : Count, Max 추가
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 # --- 프로젝트 내부 (app) ---
 from .models import (
@@ -38,6 +39,8 @@ from .models import (
 )
 from uauth.models import UserDetail
 from uauth.utils import process_profile_image, upload_to_s3_and_get_url
+
+from .utils.note_translations import get_korean_note_name, get_english_note_name
 
 def home(request):
     return render(request, "scentpick/home.html")
@@ -795,594 +798,105 @@ def chat_submit_api(request):
     except Exception as e:
         return JsonResponse({"error": f"서버 오류: {str(e)}"}, status=500)
 
-# 노트 한국어 번역 딕셔너리
-NOTE_TRANSLATIONS = {
-    # Citrus Smells
-    'Bergamot': '베르가못',
-    'Bigarade': '비가라드',
-    'Bitter Orange': '쓴오렌지',
-    'Blood Orange': '블러드 오렌지',
-    'Lemon': '레몬',
-    'Lime': '라임',
-    'Orange': '오렌지',
-    'Grapefruit': '자몽',
-    'Mandarin Orange': '만다린',
-    'Tangerine': '탠저린',
-    'Yuzu': '유자',
-    'Neroli': '네롤리',
-    'Petitgrain': '쁘띠그레인',
-    'Citrus': '시트러스',
-    'Lemongrass': '레몬그라스',
-    
-    # Fruits, Vegetables And Nuts
-    'Apple': '사과',
-    'Apricot': '살구',
-    'Cherry': '체리',
-    'Peach': '복숭아',
-    'Pear': '배',
-    'Plum': '자두',
-    'Banana': '바나나',
-    'Blackberry': '블랙베리',
-    'Blueberry': '블루베리',
-    'Raspberry': '라즈베리',
-    'Strawberry': '딸기',
-    'Black Currant': '블랙커런트',
-    'Coconut': '코코넛',
-    'Almond': '아몬드',
-    'Walnut': '호두',
-    'Hazelnut': '헤이즐넛',
-    'Fig': '무화과',
-    'Grape': '포도',
-    'Watermelon': '수박',
-    'Melon': '멜론',
-    'Pineapple': '파인애플',
-    'Mango': '망고',
-    'Papaya': '파파야',
-    'Passion Fruit': '패션프루트',
-    'Kiwi': '키위',
-    'Pomegranate': '석류',
-    'Carrot': '당근',
-    'Tomato': '토마토',
-    
-    # Flowers
-    'Rose': '장미',
-    'Jasmine': '자스민',
-    'Lavender': '라벤더',
-    'Lily': '백합',
-    'Peony': '작약',
-    'Gardenia': '치자꽃',
-    'Tuberose': '튜베로즈',
-    'Ylang-Ylang': '일랑일랑',
-    'Carnation': '카네이션',
-    'Violet': '제비꽃',
-    'Iris': '아이리스',
-    'Freesia': '프리지아',
-    'Magnolia': '목련',
-    'Lily of the Valley': '은방울꽃',
-    'Geranium': '제라늄',
-    'Narcissus': '수선화',
-    'Orange Blossom': '오렌지 블라썸',
-    'Lotus': '연꽃',
-    'Mimosa': '미모사',
-    'Honeysuckle': '인동꽃',
-    'Wisteria': '등나무',
-    'Hibiscus': '히비스커스',
-    'Chamomile': '카모마일',
-    'Marigold': '메리골드',
-    'Sunflower': '해바라기',
-    'Dahlia': '달리아',
-    'Orchid': '난초',
-    'Cherry Blossom': '벚꽃',
-    'Plumeria': '플루메리아',
-    'Lilac': '라일락',
-    'Hyacinth': '히아신스',
-    'Daffodil': '수선화',
-    'Chrysanthemum': '국화',
-    
-    # Spices
-    'Cinnamon': '계피',
-    'Cardamom': '카다몬',
-    'Clove': '정향',
-    'Nutmeg': '육두구',
-    'Black Pepper': '후추',
-    'Pink Pepper': '핑크 페퍼',
-    'Star Anise': '팔각',
-    'Ginger': '생강',
-    'Vanilla': '바닐라',
-    'Saffron': '사프란',
-    'Cumin': '커민',
-    'Coriander': '고수',
-    'Fennel': '회향',
-    'Anise': '아니스',
-    'Bay Leaf': '월계수',
-    'Allspice': '올스파이스',
-    'Turmeric': '강황',
-    'Paprika': '파프리카',
-    'Curry': '커리',
-    
-    # Woods
-    'Sandalwood': '샌달우드',
-    'Cedar': '시더',
-    'Pine': '소나무',
-    'Birch': '자작나무',
-    'Oak': '참나무',
-    'Bamboo': '대나무',
-    'Driftwood': '유목',
-    'Ebony': '흑단',
-    'Mahogany': '마호가니',
-    'Rosewood': '로즈우드',
-    'Teak': '티크',
-    'Cypress': '사이프러스',
-    'Juniper': '주니퍼',
-    'Fir': '전나무',
-    'Spruce': '가문비나무',
-    'Elm': '느릅나무',
-    'Ash': '물푸레나무',
-    'Maple': '단풍나무',
-    'Cherry Wood': '체리우드',
-    'Apple Wood': '사과나무',
-    'Olive Wood': '올리브 나무',
-    
-    # Resins
-    'Amber': '앰버',
-    'Frankincense': '프랑킨센스',
-    'Myrrh': '몰약',
-    'Benzoin': '벤조인',
-    'Labdanum': '라브다눔',
-    'Opoponax': '오포포낙스',
-    'Elemi': '엘레미',
-    'Copal': '코팔',
-    'Dragon Blood': '드래곤 블러드',
-    'Styrax': '스티락스',
-    
-    # Musks and Animal notes
-    'Musk': '머스크',
-    'White Musk': '화이트 머스크',
-    'Ambergris': '앰버그리스',
-    'Civet': '시벳',
-    'Castoreum': '카스토리움',
-    'Ambroxan': '암브록산',
-    'Iso E Super': '이소 E 슈퍼',
-    
-    # Green and Aromatic
-    'Mint': '민트',
-    'Basil': '바질',
-    'Thyme': '타임',
-    'Rosemary': '로즈마리',
-    'Sage': '세이지',
-    'Oregano': '오레가노',
-    'Marjoram': '마조람',
-    'Eucalyptus': '유칼립투스',
-    'Tea Tree': '티트리',
-    'Pine Needles': '솔잎',
-    'Grass': '풀',
-    'Moss': '이끼',
-    'Fern': '고사리',
-    'Leaves': '잎',
-    'Green Notes': '그린 노트',
-    'Seaweed': '해조류',
-    'Algae': '조류',
-    
-    # Gourmand and Sweet
-    'Chocolate': '초콜릿',
-    'Coffee': '커피',
-    'Caramel': '카라멜',
-    'Honey': '꿀',
-    'Sugar': '설탕',
-    'Cream': '크림',
-    'Milk': '우유',
-    'Butter': '버터',
-    'Bread': '빵',
-    'Cookie': '쿠키',
-    'Cake': '케이크',
-    'Pie': '파이',
-    'Jam': '잼',
-    'Maple Syrup': '메이플 시럽',
-    'Marshmallow': '마시멜로',
-    'Cotton Candy': '솜사탕',
-    'Liquorice': '감초',
-    'Praline': '프랄린',
-    'Nougat': '누가',
-    'Toffee': '토피',
-    'Fudge': '퍼지',
-    
-    # Alcoholic beverages
-    'Wine': '와인',
-    'Champagne': '샴페인',
-    'Whiskey': '위스키',
-    'Rum': '럼',
-    'Brandy': '브랜디',
-    'Gin': '진',
-    'Vodka': '보드카',
-    'Beer': '맥주',
-    'Sake': '사케',
-    'Cognac': '코냑',
-    
-    # Tea and Tobacco
-    'Black Tea': '홍차',
-    'Green Tea': '녹차',
-    'White Tea': '백차',
-    'Oolong Tea': '우롱차',
-    'Earl Grey': '얼그레이',
-    'Jasmine Tea': '자스민차',
-    'Chai': '차이',
-    'Tobacco': '담배',
-    'Pipe Tobacco': '파이프 담배',
-    'Cigarette': '담배',
-    'Cuban Tobacco': '쿠바 담배',
-    
-    # Marine and Aquatic
-    'Sea Water': '바닷물',
-    'Ocean Breeze': '바다 바람',
-    'Salt': '소금',
-    'Seashells': '조개껍질',
-    'Coral': '산호',
-    'Driftwood': '유목',
-    'Kelp': '다시마',
-    'Plankton': '플랑크톤',
-    'Rain': '비',
-    'Water': '물',
-    'Ice': '얼음',
-    'Snow': '눈',
-    'Fog': '안개',
-    'Ozone': '오존',
-    
-    # Leather and Animalic
-    'Leather': '가죽',
-    'Suede': '스웨이드',
-    'Fur': '모피',
-    'Skin': '피부',
-    'Hair': '머리카락',
-    'Sweat': '땀',
-    'Body Odor': '체취',
-    
-    # Metallic and Mineral
-    'Metal': '금속',
-    'Iron': '철',
-    'Steel': '강철',
-    'Copper': '구리',
-    'Silver': '은',
-    'Gold': '금',
-    'Tin': '주석',
-    'Lead': '납',
-    'Stone': '돌',
-    'Flint': '부싯돌',
-    'Concrete': '콘크리트',
-    'Dust': '먼지',
-    'Sand': '모래',
-    'Clay': '점토',
-    'Chalk': '분필',
-    'Gunpowder': '화약',
-    'Sulfur': '황',
-    'Tar': '타르',
-    'Gasoline': '휘발유',
-    'Rubber': '고무',
-    'Plastic': '플라스틱',
-    
-    # 추가된 항목들
-    'Earthy': '얼디',
-    'Warm': '웜',
-    'Spicy': '스파이시',
-    'Aromatic': '아로마틱',
-    'Peach': '피치',
-    'May': '5월의',
-    'Pear': '페어',
-    'Sambac': '삼박',
-    'Tahitian': '타히티안',
-    'Australian': '호주산',
-    'Liquorice': '리코리스',
-    'Yellow': '옐로우',
-    'Floral': '플로랄',
-    'Tree': '트리',
-    'Seed': '씨드',
-    'Leaf': '리프',
-    'Madagascar': '마다가스카르',
-    'Coumarin': '쿠마린',
-    'Calabrian': '칼라브리안',
-    'Petitgrain': '페티그레인',
-    'Ginger': '진저',
-    'Cardamom': '카다멈',
-    'Solar': '솔라',
-    'Dry Flower': '드라이플라워',
-    'Absolute': '앱솔루트',
-    'Driftwood': '드리프트우드',
-    'Musk': '머스',
-    'Oud': '오드',
-    'Yuzu': '유주',
-    'Grape': '그레이프',
-    'Fruit': '프룻',
-    'Osmanthus': '오스만투스',
-    'Hedione': '헤디온',
-    'Pink': '핑크',
-    'Watery': '워터리',
-    'Wild': '와일드',
-    'Flower': '플라워',
-    'Tropical': '트로피칼',
-}
 
-def get_korean_note_name(english_name):
-    """영어 노트명을 한국어로 번역"""
-    return NOTE_TRANSLATIONS.get(english_name, english_name)
+@login_required
+@require_POST
+def chat_stream_api(request):
+    """
+    스트리밍 채팅 API - Server-Sent Events 방식으로 실시간 응답
+    """
+    try:
+        # JSON 요청 처리
+        if request.content_type == 'application/json':
+            body = json.loads(request.body.decode("utf-8"))
+            content = (body.get("content") or body.get("query") or "").strip()
+            conversation_id = body.get("conversation_id")
+        else:
+            content = request.POST.get("content", "").strip()
+            conversation_id = request.POST.get("conversation_id") or request.session.get("conversation_id")
 
-# 한국어 → 영어 역번역 딕셔너리
-KOREAN_TO_ENGLISH = {
-    '베르가못': 'Bergamot',
-    '비가라드': 'Bigarade',
-    '쓴오렌지': 'Bitter Orange',
-    '블러드오렌지': 'Blood Orange',
-    '레몬': 'Lemon',
-    '라임': 'Lime',
-    '오렌지': 'Orange',
-    '자몽': 'Grapefruit',
-    '만다린': 'Mandarin Orange',
-    '탠저린': 'Tangerine',
-    '유자': 'Yuzu',
-    '네롤리': 'Neroli',
-    '쁘띠그레인': 'Petitgrain',
-    '시트러스': 'Citrus',
-    '레몬그라스': 'Lemongrass',
-    
-    # 과일
-    '사과': 'Apple',
-    '살구': 'Apricot',
-    '체리': 'Cherry',
-    '복숭아': 'Peach',
-    '배': 'Pear',
-    '자두': 'Plum',
-    '바나나': 'Banana',
-    '블랙베리': 'Blackberry',
-    '블루베리': 'Blueberry',
-    '라즈베리': 'Raspberry',
-    '딸기': 'Strawberry',
-    '블랙커런트': 'Black Currant',
-    '커런트': 'Black Currant',
-    '코코넛': 'Coconut',
-    '아몬드': 'Almond',
-    '호두': 'Walnut',
-    '헤이즐넛': 'Hazelnut',
-    '무화과': 'Fig',
-    '포도': 'Grape',
-    '수박': 'Watermelon',
-    '멜론': 'Melon',
-    '파인애플': 'Pineapple',
-    '망고': 'Mango',
-    '파파야': 'Papaya',
-    '패션프루트': 'Passion Fruit',
-    '키위': 'Kiwi',
-    '석류': 'Pomegranate',
-    '당근': 'Carrot',
-    '토마토': 'Tomato',
-    '리치': 'Lychee',
-    
-    # 꽃
-    '장미': 'Rose',
-    '로즈': 'Rose',
-    '자스민': 'Jasmine',
-    '라벤더': 'Lavender',
-    '백합': 'Lily',
-    '작약': 'Peony',
-    '피오니': 'Peony',
-    '치자꽃': 'Gardenia',
-    '튜베로즈': 'Tuberose',
-    '일랑일랑': 'Ylang-Ylang',
-    '카네이션': 'Carnation',
-    '제비꽃': 'Violet',
-    '바이올렛': 'Violet',
-    '아이리스': 'Iris',
-    '프리지아': 'Freesia',
-    '목련': 'Magnolia',
-    '매그놀리아': 'Magnolia',
-    '은방울꽃': 'Lily of the Valley',
-    '제라늄': 'Geranium',
-    '수선화': 'Narcissus',
-    '오렌지블라썸': 'Orange Blossom',
-    '연꽃': 'Lotus',
-    '미모사': 'Mimosa',
-    '인동꽃': 'Honeysuckle',
-    '등나무': 'Wisteria',
-    '히비스커스': 'Hibiscus',
-    '카모마일': 'Chamomile',
-    '메리골드': 'Marigold',
-    '해바라기': 'Sunflower',
-    '달리아': 'Dahlia',
-    '난초': 'Orchid',
-    '벚꽃': 'Cherry Blossom',
-    '플루메리아': 'Plumeria',
-    '라일락': 'Lilac',
-    '히아신스': 'Hyacinth',
-    '국화': 'Chrysanthemum',
-    
-    # 스파이스
-    '계피': 'Cinnamon',
-    '카다몬': 'Cardamom',
-    '정향': 'Clove',
-    '육두구': 'Nutmeg',
-    '후추': 'Black Pepper',
-    '핑크페퍼': 'Pink Pepper',
-    '핑크': 'Pink Pepper',
-    '페퍼': 'Pepper',
-    '팔각': 'Star Anise',
-    '생강': 'Ginger',
-    '바닐라': 'Vanilla',
-    '사프란': 'Saffron',
-    '커민': 'Cumin',
-    '고수': 'Coriander',
-    '코리안더': 'Coriander',
-    '회향': 'Fennel',
-    '아니스': 'Anise',
-    '월계수': 'Bay Leaf',
-    '올스파이스': 'Allspice',
-    '강황': 'Turmeric',
-    '파프리카': 'Paprika',
-    '커리': 'Curry',
-    
-    # 우드
-    '샌달우드': 'Sandalwood',
-    '시더': 'Cedar',
-    '소나무': 'Pine',
-    '자작나무': 'Birch',
-    '참나무': 'Oak',
-    '대나무': 'Bamboo',
-    '유목': 'Driftwood',
-    '흑단': 'Ebony',
-    '마호가니': 'Mahogany',
-    '로즈우드': 'Rosewood',
-    '팰리샌더': 'Rosewood',
-    '티크': 'Teak',
-    '사이프러스': 'Cypress',
-    '시프레': 'Cypress',
-    '주니퍼': 'Juniper',
-    '전나무': 'Fir',
-    '가문비나무': 'Spruce',
-    '느릅나무': 'Elm',
-    '물푸레나무': 'Ash',
-    '단풍나무': 'Maple',
-    '체리우드': 'Cherry Wood',
-    '사과나무': 'Apple Wood',
-    '올리브나무': 'Olive Wood',
-    '우디': 'Woody',
-    '노트': 'Notes',
-    
-    # 레진
-    '앰버': 'Amber',
-    '프랑킨센스': 'Frankincense',
-    '몰약': 'Myrrh',
-    '벤조인': 'Benzoin',
-    '라브다눔': 'Labdanum',
-    '오포포낙스': 'Opoponax',
-    '엘레미': 'Elemi',
-    '코팔': 'Copal',
-    '드래곤블러드': 'Dragon Blood',
-    '스티락스': 'Styrax',
-    
-    # 머스크
-    '머스크': 'Musk',
-    '화이트머스크': 'White Musk',
-    '화이트': 'White',
-    '앰버그리스': 'Ambergris',
-    '시벳': 'Civet',
-    '카스토리움': 'Castoreum',
-    '암브록산': 'Ambroxan',
-    '이소이수퍼': 'Iso E Super',
-    
-    # 그린/아로마틱
-    '민트': 'Mint',
-    '바질': 'Basil',
-    '타임': 'Thyme',
-    '로즈마리': 'Rosemary',
-    '세이지': 'Sage',
-    '오레가노': 'Oregano',
-    '마조람': 'Marjoram',
-    '유칼립투스': 'Eucalyptus',
-    '티트리': 'Tea Tree',
-    '솔잎': 'Pine Needles',
-    '풀': 'Grass',
-    '이끼': 'Moss',
-    '모스': 'Moss',
-    '고사리': 'Fern',
-    '잎': 'Leaves',
-    '그린노트': 'Green Notes',
-    '해조류': 'Seaweed',
-    '조류': 'Algae',
-    
-    # 구르망/스위트
-    '초콜릿': 'Chocolate',
-    '커피': 'Coffee',
-    '카라멜': 'Caramel',
-    '꿀': 'Honey',
-    '허니': 'Honey',
-    '설탕': 'Sugar',
-    '크림': 'Cream',
-    '우유': 'Milk',
-    '버터': 'Butter',
-    '빵': 'Bread',
-    '쿠키': 'Cookie',
-    '케이크': 'Cake',
-    '파이': 'Pie',
-    '잼': 'Jam',
-    '메이플시럽': 'Maple Syrup',
-    '마시멜로': 'Marshmallow',
-    '솜사탕': 'Cotton Candy',
-    '감초': 'Liquorice',
-    '프랄린': 'Praline',
-    '누가': 'Nougat',
-    '토피': 'Toffee',
-    '퍼지': 'Fudge',
-    
-    # 음료
-    '와인': 'Wine',
-    '샴페인': 'Champagne',
-    '위스키': 'Whiskey',
-    '럼': 'Rum',
-    '브랜디': 'Brandy',
-    '진': 'Gin',
-    '보드카': 'Vodka',
-    '맥주': 'Beer',
-    '사케': 'Sake',
-    '코냑': 'Cognac',
-    
-    # 차/담배
-    '홍차': 'Black Tea',
-    '녹차': 'Green Tea',
-    '백차': 'White Tea',
-    '우롱차': 'Oolong Tea',
-    '얼그레이': 'Earl Grey',
-    '자스민차': 'Jasmine Tea',
-    '차이': 'Chai',
-    '담배': 'Tobacco',
-    '파이프담배': 'Pipe Tobacco',
-    '쿠바담배': 'Cuban Tobacco',
-    
-    # 해양/아쿠아틱
-    '바닷물': 'Sea Water',
-    '바다바람': 'Ocean Breeze',
-    '소금': 'Salt',
-    '조개껍질': 'Seashells',
-    '산호': 'Coral',
-    '다시마': 'Kelp',
-    '플랑크톤': 'Plankton',
-    '비': 'Rain',
-    '물': 'Water',
-    '얼음': 'Ice',
-    '눈': 'Snow',
-    '안개': 'Fog',
-    '오존': 'Ozone',
-    
-    # 가죽/애니멀릭
-    '가죽': 'Leather',
-    '레더': 'Leather',
-    '스웨이드': 'Suede',
-    '모피': 'Fur',
-    '피부': 'Skin',
-    '머리카락': 'Hair',
-    '땀': 'Sweat',
-    '체취': 'Body Odor',
-    
-    # 기타 자주 나오는 노트들
-    '페출리': 'Patchouli',
-    '파츌리': 'Patchouli',
-    '페출': 'Patchouli',
-    '베티버': 'Vetiver',
-    '카시스': 'Black Currant',
-    '블랙': 'Black',
-    '다마스크': 'Damask',
-    '불가리안': 'Bulgarian',
-    '터키쉬': 'Turkish',
-    '스파이스': 'Spice',
-    '루트': 'Root',
-    '시앗': 'Seed',
-    '씨앗': 'Seed',
-    '알데하이드': 'Aldehyde',
-    '부들레아': 'Buddleia',
-    '월': 'Month',
-    '5월의': 'May',
-    '페탈': 'Petal',
-    '워': 'Water',
-}
+        if not content:
+            def error_generator():
+                yield f"data: {json.dumps({'error': '내용이 비었습니다.'})}\n\n"
+            return StreamingHttpResponse(error_generator(), content_type='text/event-stream')
 
-def get_english_note_name(korean_name):
-    """한국어 노트명을 영어로 역번역"""
-    return KOREAN_TO_ENGLISH.get(korean_name, korean_name)
+        # FastAPI로 스트리밍 요청 준비
+        payload = {
+            "user_id": request.user.id,
+            "query": content,
+            "stream": True  # 스트리밍 요청임을 표시
+        }
+
+        if conversation_id:
+            try:
+                payload["conversation_id"] = int(conversation_id)
+            except ValueError:
+                pass
+
+        headers = {
+            "X-Service-Token": SERVICE_TOKEN,
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream"  # SSE 요청
+        }
+
+        def stream_generator():
+            try:
+                # FastAPI 서버가 없을 때 임시 mock 응답
+                if not FASTAPI_CHAT_URL:
+                    mock_response = f"안녕하세요! '{content}'에 대한 응답입니다. 현재 FastAPI 서버가 연결되지 않아 임시 응답을 제공합니다."
+                    import time
+                    for chunk in mock_response.split():
+                        yield f"data: {json.dumps({'content': chunk + ' '})}\n\n"
+                        time.sleep(0.1)  # 스트리밍 효과
+                    yield f"data: {json.dumps({'done': True, 'conversation_id': conversation_id or 1, 'perfume_list': []})}\n\n"
+                    return
+
+                # FastAPI로 스트리밍 요청
+                response = requests.post(
+                    FASTAPI_CHAT_URL + "/stream" if not FASTAPI_CHAT_URL.endswith("/stream") else FASTAPI_CHAT_URL,
+                    json=payload,
+                    headers=headers,
+                    stream=True,
+                    timeout=120
+                )
+                response.raise_for_status()
+
+                # 스트리밍 응답 처리
+                for line in response.iter_lines(decode_unicode=True):
+                    if line:
+                        # FastAPI에서 오는 SSE 데이터를 그대로 전달
+                        if line.startswith("data: "):
+                            yield f"{line}\n\n"
+                        else:
+                            # 일반 텍스트라면 SSE 형식으로 감싸기
+                            yield f"data: {json.dumps({'content': line})}\n\n"
+
+                # 스트림 종료 신호
+                yield f"data: {json.dumps({'done': True})}\n\n"
+
+            except requests.RequestException as e:
+                # FastAPI 서버가 없을 때 mock 응답
+                print(f"FastAPI 연결 실패, mock 응답 사용: {e}")
+                mock_response = f"안녕하세요! '{content}'에 대한 응답입니다. FastAPI 서버 연결에 실패하여 임시 응답을 제공합니다."
+                import time
+                for chunk in mock_response.split():
+                    yield f"data: {json.dumps({'content': chunk + ' '})}\n\n"
+                    time.sleep(0.1)
+                yield f"data: {json.dumps({'done': True, 'conversation_id': conversation_id or 1, 'perfume_list': []})}\n\n"
+
+            except Exception as e:
+                yield f"data: {json.dumps({'error': f'서버 오류: {str(e)}'})}\n\n"
+
+        response = StreamingHttpResponse(stream_generator(), content_type='text/event-stream')
+        response['Cache-Control'] = 'no-cache'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Headers'] = 'Cache-Control'
+        return response
+
+    except Exception as e:
+        def error_generator():
+            yield f"data: {json.dumps({'error': f'서버 오류: {str(e)}'})}\n\n"
+        return StreamingHttpResponse(error_generator(), content_type='text/event-stream')
 
 def get_note_image_url(note_name):
     """노트명으로 이미지 URL 가져오기 - 개선된 버전"""
@@ -1558,6 +1072,7 @@ def toggle_favorite(request):
         
         return JsonResponse({
             'status': 'success',
+            'success': True,
             'is_favorite': is_favorite,
             'message': message,
             'debug_total_favorites': total_favorites  # 디버깅 정보
@@ -1636,6 +1151,7 @@ def toggle_like_dislike(request):
         
         return JsonResponse({
             'status': 'success',
+            'success': True,
             'current_action': current_action,
             'message': message,
             'debug_likes': total_likes,

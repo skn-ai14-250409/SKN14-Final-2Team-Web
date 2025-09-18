@@ -16,6 +16,7 @@ urlpatterns = [
     path('mypage/profile/', views.profile_edit, name='profile_edit'),
     path('mypage/password/', views.password_change_view, name='password_change'),
     path("api/chat", views.chat_submit_api, name="chat_submit_api"),
+    path("api/chat/stream", views.chat_stream_api, name="chat_stream_api"),
     # Chat sidebar + history APIs
     path("api/conversations", views.conversations_api, name="conversations_api"),
     path("api/conversations/<int:conv_id>/messages", views.conversation_messages_api, name="conversation_messages_api"),
@@ -24,3 +25,5 @@ urlpatterns = [
     path('scentpick/api/delete-feedback/', views.delete_feedback_api, name='delete_feedback_api'),
     path('scentpick/api/update-feedback/', views.update_feedback_api, name='update_feedback_api'),
 ]
+
+

@@ -10,12 +10,17 @@
     color:#1f2937;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s ease;
   }
   .chip:hover{ background:#e5e7eb; box-shadow:0 2px 8px rgba(0,0,0,.06); transform:translateY(-1px); }
+  /* 레이아웃 고정 폭/높이 유지 */
+  #mapSection{ position:relative;border-radius:16px;overflow:hidden;background:#f1f5f9; height:560px; }
+  #map{ width:100%; height:100%; }
+  /* 사이드 스크롤은 사이드만 스크롤되게 */
+  #side{ max-height:560px; overflow:auto; }
 </style>
 
 <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:16px;">
   <!-- 지도 -->
-  <section id="mapSection" style="position:relative;border-radius:16px;overflow:hidden;background:#f1f5f9;min-height:560px;">
-    <div id="map" style="height:560px;"></div>
+  <section id="mapSection">
+    <div id="map"></div>
 
     <!-- 빠른탭 -->
     <div id="presetBar" style="position:absolute;left:12px;top:12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:6px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:1000;box-shadow:0 6px 16px rgba(0,0,0,.05);">
@@ -82,7 +87,7 @@
     <div id="status" style="font-size:12px;color:#64748b;margin-bottom:8px;">검색 대기 중…</div>
 
     <!-- 결과 리스트 -->
-    <ul id="list" style="display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;max-height:420px;overflow:auto;border-top:1px solid #f1f5f9;padding-top:8px;"></ul>
+    <ul id="list" style="display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;border-top:1px solid #f1f5f9;padding-top:8px;"></ul>
 
     <!-- 더보기 -->
     <div id="moreWrap" style="display:none;margin-top:8px;">
@@ -126,6 +131,7 @@
 
   /* ===== 설정/상태 ===== */
   const SEARCH_RADIUS_M = 10000; // 10km
+  const MAP_HEIGHT = 560;        // 고정 높이
   let map, places, geocoder, clusterer;
   let markers = [];
   let markersById = new Map();
@@ -159,15 +165,6 @@
     const c = map.getCenter();
     return c.getLat().toFixed(5) + ',' + c.getLng().toFixed(5) + '|' + map.getLevel();
   }
-  function syncMapHeight(){
-    const asideH = $('#side').offsetHeight;
-    const h = Math.max(560, asideH);
-    const mapEl = $('#map');
-    if (mapEl.style.height !== h + 'px') {
-      mapEl.style.height = h + 'px';
-      if (window.kakao && map) setTimeout(() => map.relayout(), 0);
-    }
-  }
 
   /* ===== 분류/색상 ===== */
   const CAT_COLOR = { BRAND:'#2563eb', OLIVE:'#10b981', WORK:'#f59e0b' };
@@ -197,7 +194,6 @@
     const qHasBrand = BRAND_TOKENS.some(b => q.includes(b));
     const qHasBeautyWord = /(향수|화장품|뷰티|올리브영)/i.test(q);
 
-    // 일반 검색은 '뷰티 힌트'가 있는 것만 노출
     if (qHasBrand || qHasBeautyWord) return BEAUTY_HINT_RE.test(hay);
     return BEAUTY_HINT_RE.test(hay);
   }
@@ -207,18 +203,11 @@
     const cat  = d.category_name || '';
     const hay  = `${name} ${cat}`;
 
-    // 1) 올리브영
     if (/올리브영/i.test(hay) || /OLIVE\s*YOUNG/i.test(hay)) return 'OLIVE';
-
-    // 2) 공방(카테고리나 이름에 공방/원데이/클래스 등)
     if (/향수\s*공방/i.test(query) || WORK_HINT_RE.test(cat) || /(향수\s*공방|퍼퓸\s*공방|향수원데이|향수\s*클래스)/i.test(name)) {
       return 'WORK';
     }
-
-    // 3) 브랜드 인식
     if (BRAND_TOKENS.some(t => hay.toLowerCase().includes(t.toLowerCase()))) return 'BRAND';
-
-    // 4) 뷰티 힌트만 있으면 기본적으로 매장(브랜드) 취급, 아니면 공방
     return BEAUTY_HINT_RE.test(hay) ? 'BRAND' : 'WORK';
   }
 
@@ -357,15 +346,13 @@
     clusterer.addMarkers(ms);
 
     setCount($('#list').children.length);
-    syncMapHeight();
+    // 높이 고정: 아무 것도 안 함
   }
 
   /* ===== 검색 ===== */
   function handleSearch(data, status, pagination){
     if (status === kakao.maps.services.Status.OK) {
-      // 1) 결과 필터링
       const filtered = data.filter(d => isBeautyPlace(d, currentQuery));
-      // 2) 매핑 + 카테고리 강제 필터
       let rows = filtered.map(d => toStore(d, currentQuery));
       if (forceCategory !== 'ALL') rows = rows.filter(r => r.cat === forceCategory);
 
@@ -386,14 +373,12 @@
         clearMarkers(); setCount(0);
         setStatus(`"${currentQuery}" 검색 결과 없음`);
         $('#moreWrap').style.display = 'none';
-        syncMapHeight();
       }
       isAppending = false;
     } else {
       setStatus('검색 실패: 권한/키/네트워크를 확인해주세요.');
       $('#moreWrap').style.display = 'none';
       isAppending = false;
-      syncMapHeight();
     }
   }
 
@@ -581,7 +566,7 @@
     $('#btnMore').addEventListener('click', more);
 
     kakao.maps.event.addListener(map, 'click', () => { closeDetail(); closeHover(); });
-    window.addEventListener('resize', () => { syncMapHeight(); });
+    window.addEventListener('resize', () => { if (map) map.relayout(); });
   }
 
   /* ===== Kakao SDK 로더 & 초기화 ===== */
@@ -636,7 +621,6 @@
 
     lastViewportKey = viewportKey();
     $('.preset[data-q="__ALL__"]').click(); // 초기 로드
-    syncMapHeight();
   }
 </script>
 {% endblock script %}
