@@ -106,9 +106,17 @@ function createDataBar(label, value, percentage, isPercentage = true) {
       });
     }
   
-    // SEASON 데이터
+    // SEASON 데이터 - 봄-여름-가을-겨울 순으로 정렬
     if (seasonContainer && window.seasonData) {
-      Object.values(window.seasonData).forEach(item => {
+      // 계절 순서 정의
+      const seasonOrder = ['봄', '여름', '가을', '겨울'];
+      
+      // 계절 데이터를 순서대로 정렬
+      const sortedSeasons = seasonOrder.map(season => {
+        return Object.values(window.seasonData).find(item => item.label === season);
+      }).filter(item => item); // undefined 제거
+      
+      sortedSeasons.forEach(item => {
         seasonContainer.innerHTML += createDataBar(item.label, item.value, item.percentage);
       });
     }
@@ -174,7 +182,7 @@ function createDataBar(label, value, percentage, isPercentage = true) {
                       if (data.success) {
                           favoriteBtn.classList.toggle('active');
                           if (favoriteBtn.classList.contains('active')) {
-                              favoriteBtn.innerHTML = '<span class="action-icon">⭐</span> 즐겨찾기됨';
+                              favoriteBtn.innerHTML = '<span class="action-icon">⭐</span> 즐겨찾기';
                           } else {
                               favoriteBtn.innerHTML = '<span class="action-icon">⭐</span> 즐겨찾기';
                           }
@@ -202,7 +210,7 @@ function createDataBar(label, value, percentage, isPercentage = true) {
       }
   
       try {
-          const response = await fetch('/scentpick/api/feedback/', {
+          const response = await fetch('/scentpick/api/toggle-like-dislike/', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -232,9 +240,9 @@ function createDataBar(label, value, percentage, isPercentage = true) {
   
                   if (data.current_action === 'like') {
                       likeBtn.classList.add('active');
-                      likeBtn.style.background = '#48bb78';
+                      likeBtn.style.background = '#e53e3e';  // 빨간색
                       likeBtn.style.color = 'white';
-                      likeBtn.style.borderColor = '#48bb78';
+                      likeBtn.style.borderColor = '#e53e3e';  // 빨간색
                   } else if (data.current_action === 'dislike') {
                       dislikeBtn.classList.add('active');
                       dislikeBtn.style.background = '#718096';
@@ -242,8 +250,7 @@ function createDataBar(label, value, percentage, isPercentage = true) {
                       dislikeBtn.style.borderColor = '#718096';
                   }
               } else {
-                  const errorData = await response.json();
-                  alert(errorData.message || '피드백 처리 중 오류가 발생했습니다.');
+                  alert(data.message || '피드백 처리 중 오류가 발생했습니다.');
               }
           } else {
               const errorData = await response.json();
