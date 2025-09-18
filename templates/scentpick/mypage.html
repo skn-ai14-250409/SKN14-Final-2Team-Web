@@ -8,7 +8,8 @@
 
 <div class="mypage-container" style="display: grid !important; grid-template-columns: minmax(160px, 180px) 1fr 1fr !important; gap: 8px !important; max-width: 1200px !important; width: 100% !important; margin: 0 auto !important; align-items: start !important; padding: 0 8px !important; box-sizing: border-box !important;">
   <!-- 좌측: 프로필 -->
-  <div class="profile-section">
+  
+  <div class="profile-section" style="grid-row: 1 / span 2;">
     <div class="profile-avatar" style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:#f9fafb;">
       <img src="{{ request.user.detail.avatar_url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
     </div>
@@ -22,11 +23,17 @@
     </ul>
   </div>
 
-  <!-- 가운데: 추천 내역 -->
-<div class="recommendations-section">
-  <h3 style="margin-bottom:12px;">추천 받은 향수 내역</h3>
+<!-- 가운데: 추천 내역 (상단 전체 폭) -->
+<div class="recommendations-section" style="grid-column: 2 / 4;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <h3 style="margin:0;">추천 받은 향수 내역</h3>
+    <button id="toggle-rec-btn" type="button"
+            style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;">
+      목록 접기
+    </button>
+  </div>
 
-  <div class="rec-list-wrap" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;">
+  <div id="rec-list-wrap" class="rec-list-wrap" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;">
     {% if rec_page and rec_page.object_list %}
       <!-- 헤더 -->
       <div style="display:grid;grid-template-columns:92px 120px 1fr 54px;gap:8px;padding:6px 8px;color:#64748b;font-size:13px;">
@@ -47,13 +54,7 @@
             </div>
             <div style="font-weight:600;">
               <a href="/perfume/{{ item.perfume_id }}/"
-                  style="color:#2563eb;text-decoration:none;
-                        white-space:normal;           /* 줄바꿈 허용 */
-                        overflow:visible;
-                        text-overflow:clip;
-                        overflow-wrap:anywhere;       /* 영어 긴 단어도 줄바꿈 */
-                        display:inline-block;
-                        font-size:13px;">
+                 style="color:#2563eb;text-decoration:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;display:inline-block;font-size:13px;">
                 {{ item.perfume__name }}
               </a>
             </div>
@@ -64,9 +65,10 @@
         {% endfor %}
       </ul>
 
-      <!-- 페이지네이션 -->
+      <!-- 페이지네이션: 중앙 정렬 -->
       {% if rec_page.paginator.num_pages > 1 %}
-        <div class="rec-pagination" style="display:flex;gap:10px;align-items:center;justify-content:flex-start;margin-top:10px;">
+        <div class="rec-pagination"
+             style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;">
           {% if rec_page.has_previous %}
             <a href="?page={{ rec_page.previous_page_number }}" style="color:#2563eb;text-decoration:none;">이전</a>
           {% endif %}
@@ -88,95 +90,101 @@
       </p>
     {% endif %}
   </div>
-    
-    <div class="like-dislike-container">
-  <!-- ✅ 선호 -->
-  <div class="likes-section">
-    <h3>선호 향수 ({{ likes_count }}개)</h3>
-    <div class="recommendations-grid">
-      {% for feedback in liked_perfumes %}
-        <div class="recommendation-card like-card perfume-card-clickable"
-             data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
-          <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
-          <div class="perfume-image-container" style="margin:0 auto 10px;">
-            <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg"
-                 alt="{{ feedback.perfume.name }}" class="perfume-img">
+</div>  <!-- /recommendations-section -->
+
+<!-- 아래 좌측: 선호/비선호 -->
+<!-- 아래 좌측: 선호/비선호 -->
+<div class="recommendations-section like-dislike-section" style="grid-column: 2 / 3;">
+
+  <div class="like-dislike-container" style="margin-top: 8px;">
+    <!-- ✅ 선호 -->
+    <div class="likes-section">
+      <h3>선호 향수 ({{ likes_count }}개)</h3>
+      <div class="recommendations-grid">
+        {% for feedback in liked_perfumes %}
+          <div class="recommendation-card like-card perfume-card-clickable"
+               data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
+            <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
+            <div class="perfume-image-container" style="margin:0 auto 10px;">
+              <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg"
+                   alt="{{ feedback.perfume.name }}" class="perfume-img">
+            </div>
+            <div class="perfume-title">{{ feedback.perfume.name }}</div>
+            <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
+            <div style="display:flex;justify-content:center;gap:5px;">
+              <button class="feedback-btn like-btn active" data-action="like">선호</button>
+              <button class="feedback-btn dislike-btn" data-action="dislike">비선호</button>
+            </div>
           </div>
-          <div class="perfume-title">{{ feedback.perfume.name }}</div>
-          <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
-          <div style="display:flex;justify-content:center;gap:5px;">
-            <button class="feedback-btn like-btn active" data-action="like">선호</button>
-            <button class="feedback-btn dislike-btn" data-action="dislike">비선호</button>
+        {% endfor %}
+      </div>
+      {% if not liked_perfumes %}
+        <p class="empty-message" style="color:#718096;font-style:italic;text-align:center;">선호 향수가 없습니다.</p>
+      {% endif %}
+    </div>
+
+    <!-- ✅ 비선호 -->
+    <div class="dislikes-section">
+      <h3>비선호 향수 ({{ dislikes_count }}개)</h3>
+      <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
+        {% for feedback in disliked_perfumes %}
+          <div class="recommendation-card dislike-card perfume-card-clickable"
+               data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
+            <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
+            <div class="perfume-image-container" style="margin:0 auto 10px;">
+              <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg"
+                   alt="{{ feedback.perfume.name }}" class="perfume-img"
+                   onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlNTNlM2UiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5PPC90ZXh0Pjwvc3ZnPg=='">
+            </div>
+            <div class="perfume-title">{{ feedback.perfume.name }}</div>
+            <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
+            <div style="display:flex;justify-content:center;gap:5px;">
+              <button class="feedback-btn like-btn" data-action="like"
+                      style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
+              <button class="feedback-btn dislike-btn active" data-action="dislike"
+                      style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if not disliked_perfumes %}
+        <p class="empty-message" style="color:#718096 !important; font-style:italic; text-align:center; padding:40px 20px;">
+          비선호 향수가 없습니다.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 아래 우측: 즐겨찾기 -->
+<div class="favorites-section" style="grid-column: 3 / 4;">
+  <h3 style="margin-bottom:20px;">⭐ 즐겨찾기 ({{ favorites_count }}개)</h3>
+  {% if favorite_perfumes %}
+    <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
+      {% for perfume in favorite_perfumes %}
+        <div class="recommendation-card favorite-card perfume-card-clickable" data-perfume-id="{{ perfume.id }}">
+          <div class="recommendation-date" style="visibility: hidden;">즐겨찾기</div>
+          <div class="perfume-image-container" style="margin:0 auto 10px;">
+            <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ perfume.id }}.jpg"
+                 alt="{{ perfume.name }}" class="perfume-img"
+                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiM0YTkwZTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZBVjwvdGV4dD48L3N2Zz4='">
+          </div>
+          <div class="perfume-title">{{ perfume.name }}</div>
+          <div class="perfume-brand">{{ perfume.brand }}</div>
+          <div style="display:flex;justify-content:center;">
+            <button class="remove-favorite" data-perfume-id="{{ perfume.id }}"
+                    style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">
+              즐겨찾기 해제
+            </button>
           </div>
         </div>
       {% endfor %}
     </div>
-    {% if not liked_perfumes %}
-      <p class="empty-message" style="color:#718096;font-style:italic;text-align:center;">선호 향수가 없습니다.</p>
-    {% endif %}
-  </div>
-
-        <div class="dislikes-section">
-            <h3>비선호 향수 ({{ dislikes_count }}개)</h3>
-       
-                <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
-                    {% for feedback in disliked_perfumes %}
-                        <div class="recommendation-card dislike-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
-                            <div class="recommendation-date">{{ feedback.created_at|date:"Y.m.d" }}</div>
-                            <div class="perfume-image-container" style="margin:0 auto 10px;">
-                                <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ feedback.perfume.id }}.jpg" 
-                                     alt="{{ feedback.perfume.name }}" 
-                                     class="perfume-img"
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlNTNlM2UiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5PPC90ZXh0Pjwvc3ZnPg=='">
-                            </div>
-                            <div class="perfume-title">{{ feedback.perfume.name }}</div>
-                            <div class="perfume-brand">{{ feedback.perfume.brand }}</div>
-                            <div style="display:flex;justify-content:center;gap:5px;">
-                                <button class="feedback-btn like-btn" data-action="like" style="background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">선호</button>
-                                <button class="feedback-btn dislike-btn active" data-action="dislike" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">비선호</button>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% if not disliked_perfumes %}
-                <p class="empty-message"
-                  style="color:#718096 !important; font-style:italic; text-align:center; padding:40px 20px;">
-                  비선호 향수가 없습니다.
-                </p>
-            {% endif %}
-        </div>
-    </div>
-  </div>
-
-  <!-- 우측: 즐겨찾기 -->
-  <div class="favorites-section">
-    <h3 style="margin-bottom:20px;">⭐ 즐겨찾기 ({{ favorites_count }}개)</h3>
-    {% if favorite_perfumes %}
-        <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
-            {% for perfume in favorite_perfumes %}
-                <div class="recommendation-card favorite-card perfume-card-clickable" data-perfume-id="{{ perfume.id }}">
-                    <div class="recommendation-date" style="visibility: hidden;">즐겨찾기</div>
-                    <div class="perfume-image-container" style="margin:0 auto 10px;">
-                        <img src="https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{{ perfume.id }}.jpg" 
-                             alt="{{ perfume.name }}" 
-                             class="perfume-img"
-                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iMTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI5MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiM0YTkwZTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZBVjwvdGV4dD48L3N2Zz4='">
-                    </div>
-                    <div class="perfume-title">{{ perfume.name }}</div>
-                    <div class="perfume-brand">{{ perfume.brand }}</div>
-                    <div style="display:flex;justify-content:center;">
-                        <button class="remove-favorite" data-perfume-id="{{ perfume.id }}" style="background:#4a90e2;color:white;border:none;padding:6px 12px;border-radius:15px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                            즐겨찾기 해제
-                        </button>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p style="text-align: center; color: #718096; font-style: italic;">즐겨찾기한 향수가 없습니다.</p>
-    {% endif %}
-  </div>
+  {% else %}
+    <p style="text-align: center; color: #718096; font-style: italic;">즐겨찾기한 향수가 없습니다.</p>
+  {% endif %}
 </div>
+
 
 
 {% endblock content %}
@@ -350,6 +358,18 @@
     updateCounts();
   });
 })();
+
+document.addEventListener("DOMContentLoaded", function(){
+    const btn  = document.getElementById("toggle-rec-btn");
+    const wrap = document.getElementById("rec-list-wrap");
+    if (!btn || !wrap) return;
+
+    btn.addEventListener("click", function(){
+      const hidden = wrap.style.display === "none";
+      wrap.style.display = hidden ? "block" : "none";
+      btn.textContent   = hidden ? "목록 접기" : "목록 펼치기";
+    });
+  });
 </script>
 {% endblock script %}
 
