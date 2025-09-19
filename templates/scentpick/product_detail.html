@@ -754,39 +754,139 @@
     <div data-key="{{ gender }}" data-label="{{ gender }}" data-value="100" data-percentage="100"></div>
   </div>
   
-  <!-- SEASON 데이터 - 실제 계절 점수 사용 -->
-  <div class="data-group" data-type="season">
-    {% for season, score in season_score.items %}
-    <div data-key="{{ season }}" 
-         data-label="{% if season == 'spring' %}봄{% elif season == 'summer' %}여름{% elif season == 'fall' %}가을{% elif season == 'winter' %}겨울{% else %}{{ season }}{% endif %}" 
-         data-value="{{ score|floatformat:1 }}" 
-         data-percentage="{{ score }}">
-    </div>
-    {% endfor %}
+  <!-- SEASON 데이터 - season_score JSON 파싱 -->
+  <div class="data-group" data-type="season" id="season-data-container">
+    <script>
+      (function() {
+        try {
+          var seasonData = {{ season_score|safe }};
+          if (typeof seasonData === 'string') {
+            seasonData = JSON.parse(seasonData);
+          }
+          if (seasonData && typeof seasonData === 'object') {
+            var container = document.getElementById('season-data-container');
+            for (var season in seasonData) {
+              var score = seasonData[season];
+              if (score > 0) {
+                var seasonLabel = season === 'spring' ? '봄' : 
+                                season === 'summer' ? '여름' : 
+                                season === 'fall' ? '가을' : 
+                                season === 'winter' ? '겨울' : season;
+                var div = document.createElement('div');
+                div.setAttribute('data-key', season);
+                div.setAttribute('data-label', seasonLabel);
+                div.setAttribute('data-value', score.toFixed(1));
+                div.setAttribute('data-percentage', score.toFixed(1));
+                container.appendChild(div);
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Season data parsing error:', e);
+        }
+      })();
+    </script>
   </div>
   
-  <!-- TIME 데이터 - 실제 낮/밤 점수 사용 -->
-  <div class="data-group" data-type="time">
-    {% for time, score in day_night_score.items %}
-    <div data-key="{{ time }}" 
-         data-label="{% if time == 'day' %}낮{% elif time == 'night' %}밤{% else %}{{ time }}{% endif %}" 
-         data-value="{{ score|floatformat:1 }}" 
-         data-percentage="{{ score }}">
-    </div>
-    {% endfor %}
+  <!-- TIME 데이터 - day_night_score JSON 파싱 -->
+  <div class="data-group" data-type="time" id="time-data-container">
+    <script>
+      (function() {
+        try {
+          var timeData = {{ day_night_score|safe }};
+          if (typeof timeData === 'string') {
+            timeData = JSON.parse(timeData);
+          }
+          if (timeData && typeof timeData === 'object') {
+            var container = document.getElementById('time-data-container');
+            for (var time in timeData) {
+              var score = timeData[time];
+              if (score > 0) {
+                var timeLabel = time === 'day' ? '낮' : time === 'night' ? '밤' : time;
+                var div = document.createElement('div');
+                div.setAttribute('data-key', time);
+                div.setAttribute('data-label', timeLabel);
+                div.setAttribute('data-value', score.toFixed(1));
+                div.setAttribute('data-percentage', score.toFixed(1));
+                container.appendChild(div);
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Time data parsing error:', e);
+        }
+      })();
+    </script>
   </div>
   
-  <!-- NOTES 데이터 - 실제 노트 점수 사용 -->
-  <div class="data-group" data-type="notes">
-    {% for note, score in notes_score.items %}
-    <div data-key="{{ note }}" 
-         data-label="{{ note }}" 
-         data-value="{{ score|floatformat:0 }}" 
-         data-percentage="{{ score }}">
-    </div>
-    {% endfor %}
+  <!-- NOTES 데이터 - notes_score JSON 파싱 -->
+  <div class="data-group" data-type="notes" id="notes-data-container">
+    <script>
+      (function() {
+        try {
+          var notesData = {{ notes_score|safe }};
+          if (typeof notesData === 'string') {
+            notesData = JSON.parse(notesData);
+          }
+          if (notesData && typeof notesData === 'object') {
+            var container = document.getElementById('notes-data-container');
+            for (var note in notesData) {
+              var score = notesData[note];
+              if (score > 0) {
+                var div = document.createElement('div');
+                div.setAttribute('data-key', note);
+                div.setAttribute('data-label', note);
+                div.setAttribute('data-value', Math.round(score));
+                div.setAttribute('data-percentage', score.toFixed(1));
+                container.appendChild(div);
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Notes data parsing error:', e);
+        }
+      })();
+    </script>
   </div>
 </div>
+
+<script>
+// JSON 데이터가 문자열인 경우 파싱
+document.addEventListener('DOMContentLoaded', function() {
+  // season_score 파싱
+  if (typeof {{ season_score|safe }} === 'string') {
+    try {
+      window.seasonScoreData = JSON.parse({{ season_score|safe }});
+    } catch (e) {
+      window.seasonScoreData = {};
+    }
+  } else {
+    window.seasonScoreData = {{ season_score|safe }};
+  }
+  
+  // day_night_score 파싱
+  if (typeof {{ day_night_score|safe }} === 'string') {
+    try {
+      window.dayNightScoreData = JSON.parse({{ day_night_score|safe }});
+    } catch (e) {
+      window.dayNightScoreData = {};
+    }
+  } else {
+    window.dayNightScoreData = {{ day_night_score|safe }};
+  }
+  
+  // notes_score 파싱
+  if (typeof {{ notes_score|safe }} === 'string') {
+    try {
+      window.notesScoreData = JSON.parse({{ notes_score|safe }});
+    } catch (e) {
+      window.notesScoreData = {};
+    }
+  } else {
+    window.notesScoreData = {{ notes_score|safe }};
+  }
+});
+</script>
 
 <!-- 외부 JavaScript 파일 로드 -->
 <script src="{% static 'js/product_detail.js' %}"></script>
