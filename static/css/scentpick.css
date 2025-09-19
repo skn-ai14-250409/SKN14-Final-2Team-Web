@@ -7,9 +7,15 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    min-height: 100vh;
-    line-height: 1.6;
+    height: 100%;
+    margin: 0;
     color: #333;
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Navigation */
@@ -82,8 +88,8 @@ body {
 
 /* Main Content */
 .main-content {
+    flex: 1;               /* 남는 공간 차지 */
     margin-top: 80px;
-    min-height: calc(100vh - 160px);
     padding: 40px 20px;
 }
 
@@ -890,8 +896,18 @@ body {
 /* My Page */
 .mypage-container {
     display: grid;
-    grid-template-columns: 250px 1fr 250px;
-    gap: 30px;
+    grid-template-columns: minmax(160px, 180px) 1fr 1fr;
+    gap: 8px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    align-items: start;
+    padding: 0 8px;
+    box-sizing: border-box;
+
+    flex: 1;            /* 🔑 main-content flex 안에서 공간을 채워 푸터를 밀어냄 */
+    min-height: 0;      /* 🔑 grid가 불필요하게 커지지 않도록 보정 */
+    min-height: calc(100vh - 200px); /* 헤더+푸터 제외 */
 }
 
 .profile-section {
@@ -1285,3 +1301,8 @@ body {
   background:#e74c3c !important; color:#fff !important; border:none !important;
 }
 /* ===== yyh 상단 '추천받은 향수 내역' 전용 표형 레이아웃 끝===== */
+
+/* 마이페이지 전용: main-content 좌우 여백 제거 */
+body.mypage .main-content {
+  padding: 40px 0 0 0 !important;  /* 위아래 40px, 좌우 0 */
+}

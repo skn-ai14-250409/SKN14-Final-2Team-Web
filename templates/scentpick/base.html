@@ -5,247 +5,95 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}ScentPick{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/scentpick.css' %}?v=20250915-1">
+  <link rel="stylesheet" href="{% static 'css/scentpick.css' %}?v=20250919-1">
   <style>
-    /* 인증 관련 스타일 추가 */
-    .auth-container {
-        max-width: 400px;
-        margin: 50px auto;
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #2d3748;
-    }
-    
-    .form-group input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: border-color 0.2s;
-        box-sizing: border-box;
-    }
-    
-    .form-group input:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    
-    .btn-primary {
-        width: 100%;
-        background: #6366f1;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    
-    .btn-primary:hover {
-        background: #5855eb;
-    }
-    
-    .social-login {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-    
-    .social-btn {
-        flex: 1;
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        background: white;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-    }
-    
-    .social-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .gender-selection {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .gender-btn {
-        flex: 1;
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        background: white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .gender-btn.selected {
-        background: #6366f1;
-        color: white;
-        border-color: #6366f1;
-    }
-    
-    /* 사용자 메뉴 스타일 */
-    .user-menu {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .user-menu-btn {
-        background: #6366f1;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .user-dropdown {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        min-width: 120px;
-        z-index: 1000;
-    }
-    
-    .user-dropdown a {
-        display: block;
-        padding: 10px 15px;
-        text-decoration: none;
-        color: #2d3748;
-        border-bottom: 1px solid #f7fafc;
-    }
-    
-    .user-dropdown a:last-child {
-        border-bottom: none;
-        color: #e53e3e;
-    }
-    
-    .user-dropdown a:hover {
-        background-color: #f7fafc;
-    }
-    
-    .user-info {
-        color: #4a5568;
-        margin-right: 15px;
-        font-size: 14px;
-    }
-    
-    .auth-links {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .auth-links a {
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 14px;
-    }
-    
-    .login-link {
-        color: #6366f1;
-    }
-    
-    .register-link {
-        background: #6366f1;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 6px;
-    }
-    .nav-avatar {
-        width: 32px; height: 32px; border-radius: 50%;
-        object-fit: cover; border: 1px solid #e2e8f0; margin-right: 8px;
-        vertical-align: middle;
-    }
+    /* 인증 관련 스타일 (기존 유지) */
+    .auth-container { max-width: 400px; margin: 50px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #2d3748; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; box-sizing: border-box; }
+    .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .btn-primary { width: 100%; background: #6366f1; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; }
+    .btn-primary:hover { background: #5855eb; }
+    .social-login { display: flex; gap: 10px; margin-top: 20px; }
+    .social-btn { flex: 1; padding: 12px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; text-decoration: none; display: inline-block; text-align: center; }
+    .social-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .gender-selection { display: flex; gap: 10px; }
+    .gender-btn { flex: 1; padding: 12px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .gender-btn.selected { background: #6366f1; color: white; border-color: #6366f1; }
+    .user-menu { position: relative; display: inline-block; }
+    .user-menu-btn { background: #6366f1; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .user-dropdown { display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 120px; z-index: 1000; }
+    .user-dropdown a { display: block; padding: 10px 15px; text-decoration: none; color: #2d3748; border-bottom: 1px solid #f7fafc; }
+    .user-dropdown a:last-child { border-bottom: none; color: #e53e3e; }
+    .user-dropdown a:hover { background-color: #f7fafc; }
+    .user-info { color: #4a5568; margin-right: 15px; font-size: 14px; }
+    .auth-links { display: flex; align-items: center; gap: 15px; }
+    .auth-links a { text-decoration: none; font-weight: 500; font-size: 14px; }
+    .login-link { color: #6366f1; }
+    .register-link { background: #6366f1; color: white; padding: 8px 16px; border-radius: 6px; }
+    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; margin-right: 8px; vertical-align: middle; }
   </style>
 </head>
-<body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <a class="logo" href="{% url 'scentpick:home' %}">ScentPick</a>
-      <ul class="nav-menu">
-        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'chat' %}active{% endif %}" href="{% url 'scentpick:chat' %}">ScentPick Chat</a></li>
-        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'recommend' %}active{% endif %}" href="{% url 'scentpick:recommend' %}">Recommend</a></li>
-        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'perfumes' %}active{% endif %}" href="{% url 'scentpick:perfumes' %}">Perfumes</a></li>
-        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'offlines' %}active{% endif %}" href="{% url 'scentpick:offlines' %}">Offlines</a></li>
-        <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'mypage' %}active{% endif %}" href="{% url 'scentpick:mypage' %}">My Page</a></li>
-        
-        <!-- 사용자 인증 관련 메뉴 추가 -->
-        <li class="nav-item nav-auth">
-          {% if user.is_authenticated %}
-            <img class="nav-avatar" src="{{ user.detail.avatar_url }}" alt="avatar">
-            <span class="user-info">{{ user.detail.name|default:user.username }}님</span>
-            <div class="user-menu">
-              <button class="user-menu-btn" id="userMenuBtn">Menu</button>
-              <div class="user-dropdown" id="userDropdown">
-                <a href="{% url 'scentpick:mypage' %}">마이페이지</a>
-                <a href="{% url 'uauth:logout' %}">로그아웃</a>
+<body class="{% block body_class %}{% endblock %}">
+  <div class="page-wrapper">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a class="logo" href="{% url 'scentpick:home' %}">ScentPick</a>
+        <ul class="nav-menu">
+          <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'chat' %}active{% endif %}" href="{% url 'scentpick:chat' %}">ScentPick Chat</a></li>
+          <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'recommend' %}active{% endif %}" href="{% url 'scentpick:recommend' %}">Recommend</a></li>
+          <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'perfumes' %}active{% endif %}" href="{% url 'scentpick:perfumes' %}">Perfumes</a></li>
+          <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'offlines' %}active{% endif %}" href="{% url 'scentpick:offlines' %}">Offlines</a></li>
+          <li class="nav-item"><a class="{% if request.resolver_match.url_name == 'mypage' %}active{% endif %}" href="{% url 'scentpick:mypage' %}">My Page</a></li>
+          
+          <!-- 사용자 인증 메뉴 -->
+          <li class="nav-item nav-auth">
+            {% if user.is_authenticated %}
+              <img class="nav-avatar" src="{{ user.detail.avatar_url }}" alt="avatar">
+              <span class="user-info">{{ user.detail.name|default:user.username }}님</span>
+              <div class="user-menu">
+                <button class="user-menu-btn" id="userMenuBtn">Menu</button>
+                <div class="user-dropdown" id="userDropdown">
+                  <a href="{% url 'scentpick:mypage' %}">마이페이지</a>
+                  <a href="{% url 'uauth:logout' %}">로그아웃</a>
+                </div>
               </div>
-            </div>
-          {% else %}
-            <div class="auth-links">
-              <a href="{% url 'uauth:login' %}" class="login-link">로그인</a>
-              <a href="{% url 'uauth:register' %}" class="register-link">회원가입</a>
-            </div>
-          {% endif %}
-        </li>
-      </ul>
-    </div>
-  </nav>
+            {% else %}
+              <div class="auth-links">
+                <a href="{% url 'uauth:login' %}" class="login-link">로그인</a>
+                <a href="{% url 'uauth:register' %}" class="register-link">회원가입</a>
+              </div>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-  <!-- Main -->
-  <div class="main-content">
-    <div class="container">
-      {% block content %}{% endblock %}
+    <!-- Main -->
+    <div class="main-content">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-warnings">
+          ⚠️ 향수 사용 시 주의사항: 본 제품은 알레르기 유발 성분을 포함할 수 있습니다.
+          피부에 이상이 생길 경우 사용을 중단하세요. 가연성 물질이므로 화기 근처에서 사용을 금지합니다.
+        </div>
+        <div class="footer-copyright">
+          © 2024 ScentPick. All rights reserved. | 문의: contact@scentpick.com
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-warnings">
-        ⚠️ 향수 사용 시 주의사항: 본 제품은 알레르기 유발 성분을 포함할 수 있습니다.
-        피부에 이상이 생길 경우 사용을 중단하세요. 가연성 물질이므로 화기 근처에서 사용을 금지합니다.
-      </div>
-      <div class="footer-copyright">
-        © 2024 ScentPick. All rights reserved. | 문의: contact@scentpick.com
-      </div>
-    </div>
-  </footer>
-
-  <!-- 토스트 알림 컨테이너 -->
+  <!-- 토스트 알림 -->
   <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"></div>
-
   <script src="{% static 'js/scentpick.js' %}"></script>
   {% block script %}{% endblock script %}
   {% block scripts %}{% endblock scripts %}
@@ -255,58 +103,38 @@
   document.addEventListener('DOMContentLoaded', function() {
       const menuBtn = document.getElementById('userMenuBtn');
       const dropdown = document.getElementById('userDropdown');
-      
       if (menuBtn && dropdown) {
           menuBtn.addEventListener('click', function(e) {
               e.stopPropagation();
               dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
           });
-          
           document.addEventListener('click', function() {
               dropdown.style.display = 'none';
           });
       }
   });
-
   // 토스트 알림 함수
   function showToast(message, type = 'success') {
       const toast = document.createElement('div');
       toast.style.cssText = `
           background: ${type === 'success' ? '#48bb78' : '#f56565'};
-          color: white;
-          padding: 12px 16px;
-          border-radius: 8px;
-          margin-bottom: 10px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          transform: translateX(100%);
-          transition: transform 0.3s ease;
-          max-width: 300px;
-          word-wrap: break-word;
+          color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 10px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateX(100%);
+          transition: transform 0.3s ease; max-width: 300px; word-wrap: break-word;
       `;
       toast.textContent = message;
-      
       const container = document.getElementById('toast-container');
       if (container) {
           container.appendChild(toast);
-          
-          // 애니메이션으로 나타내기
           setTimeout(() => toast.style.transform = 'translateX(0)', 100);
-          
-          // 3초 후 제거
-          setTimeout(() => {
-              toast.style.transform = 'translateX(100%)';
-              setTimeout(() => toast.remove(), 300);
-          }, 3000);
+          setTimeout(() => { toast.style.transform = 'translateX(100%)'; setTimeout(() => toast.remove(), 300); }, 3000);
       }
   }
-
-  // Django 메시지를 토스트로 변환
   {% if messages %}
       {% for message in messages %}
           showToast('{{ message|escapejs }}', '{{ message.tags }}');
       {% endfor %}
   {% endif %}
   </script>
-
 </body>
 </html>
