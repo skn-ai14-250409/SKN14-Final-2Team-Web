@@ -1,12 +1,13 @@
 {% extends "scentpick/base.html" %}
 {% block title %}마이페이지 - ScentPick{% endblock %}
+{% block body_class %}mypage{% endblock %}
 
 {% block content %}
 <!-- 공통 스타일 변수 -->
 
 <h2 style="margin-bottom:30px;color:#2d3748;">마이페이지</h2>
 
-<div class="mypage-container" style="display: grid !important; grid-template-columns: minmax(160px, 180px) 1fr 1fr !important; gap: 8px !important; max-width: 1200px !important; width: 100% !important; margin: 0 auto !important; align-items: start !important; padding: 0 8px !important; box-sizing: border-box !important;">
+<div class="mypage-container">
   <!-- 좌측: 프로필 -->
   
   <div class="profile-section" style="grid-row: 1 / span 2;">
