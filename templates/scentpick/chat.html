@@ -387,9 +387,9 @@
                   // 약간의 지연 (타자 치는 듯한 효과)
                   await new Promise(resolve => setTimeout(resolve, 50));
 
-                  // 1) 청크 단위 텍스트 그대로 출력 (타자 치는 느낌)
+                  // 1) 청크 단위 텍스트 그대로 출력 (마크다운 무시, 원문 그대로)
                   const span = document.createElement("span");
-                  span.textContent = data.content;   // ← renderMarkdown 쓰지 말고 원문 그대로
+                  span.textContent = data.content;
                   loader.inner.appendChild(span);
                   box.scrollTop = box.scrollHeight;
 
@@ -401,7 +401,6 @@
                   // 스트리밍 완료 → 전체를 마크다운으로 다시 렌더링
                   loader.inner.innerHTML = renderMarkdown(currentContent);
 
-                  // 스트리밍 완료
                   if (data.conversation_id) {
                     conversationId = data.conversation_id;
                   }
