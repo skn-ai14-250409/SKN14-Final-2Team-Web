@@ -399,6 +399,7 @@
 
                 if (data.done) {
                   // 3) 최종적으로 전체 답변을 마크다운으로 변환
+                  loader.inner.classList.add("markdown-body");  // 스타일 적용
                   loader.inner.innerHTML = renderMarkdown(currentContent);
 
                   if (data.conversation_id) {
