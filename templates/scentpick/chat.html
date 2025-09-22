@@ -160,7 +160,7 @@
       try {
         const resp = await fetch("{% url 'scentpick:conversations_api' %}", {
           method: "GET",
-          headers: { "X-CSRFToken": CSRF_TOKEN }
+          headers: { "X-CSRFToken": CSRF_TOKEN, "X-Service-Token": SERVICE_TOKEN }
         });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
@@ -192,7 +192,7 @@
 
         const resp = await fetch(`/api/conversations/${convId}/messages`, {
           method: "GET",
-          headers: { "X-CSRFToken": CSRF_TOKEN }
+          headers: { "X-CSRFToken": CSRF_TOKEN, "X-Service-Token": SERVICE_TOKEN, }
         });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
@@ -223,7 +223,7 @@
       try {
         const resp = await fetch("{% url 'scentpick:chat_new_api' %}", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN }
+          headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN, "X-Service-Token": SERVICE_TOKEN }
         });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
@@ -341,7 +341,8 @@
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": CSRF_TOKEN,
-            "Accept": "text/event-stream"
+            "Accept": "text/event-stream",
+            "X-Service-Token": SERVICE_TOKEN
           },
           body: JSON.stringify({ content: txt, conversation_id: conversationId || null })
         });
