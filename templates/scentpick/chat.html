@@ -384,9 +384,13 @@
                 }
 
                 if (data.content) {
-                  // currentContent += data.content;
-                  loader.inner.innerHTML += renderMarkdown(data.content);
+                  const span = document.createElement("span");
+                  span.innerHTML = renderMarkdown(data.content);
+                  loader.inner.appendChild(span);
                   box.scrollTop = box.scrollHeight;
+                  // currentContent += data.content;
+                  // loader.inner.innerHTML = renderMarkdown(currentContent);
+                  // box.scrollTop = box.scrollHeight;
                 }
 
                 if (data.done) {
