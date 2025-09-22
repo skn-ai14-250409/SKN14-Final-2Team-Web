@@ -329,7 +329,8 @@
       addMessage(txt, true);
       sendBtn.disabled = true;
       input.disabled = true;
-      const loader = addLoading();
+      const loader = addLoading(); // 로딩 안내만 표시
+      let loader = null; // 답변 컨테이너는 따로 생성
 
       try {
         // EventSource를 사용한 스트리밍 방식
@@ -359,8 +360,9 @@
         let buffer = '';
         let currentContent = '';
 
-        // 로딩 메시지 초기화
-        // loader.inner.innerHTML = '';
+        // 로딩 메시지 제거 후 새 답변 메시지 생성
+        loadingMsg.wrap.remove();
+        loader = addMessage("", false, false);
         loader.inner.classList.add("markdown-body");
 
         while (true) {
