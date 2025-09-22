@@ -385,7 +385,7 @@
 
                 if (data.content) {
                   // currentContent += data.content;
-                  loader.inner.innerHTML = renderMarkdown(currentContent);
+                  loader.inner.innerHTML += renderMarkdown(data.content);
                   box.scrollTop = box.scrollHeight;
                 }
 
