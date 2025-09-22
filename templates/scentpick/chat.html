@@ -384,28 +384,23 @@
                 }
 
                 if (data.content) {
-                  // 약간의 지연 (타자 치는 듯한 효과)
+                  // 타자 효과 + 마크다운 적용
                   await new Promise(resolve => setTimeout(resolve, 50));
 
-                  // 1) 청크 단위 텍스트 그대로 출력 (타자 치는 느낌)
-                  const span = document.createElement("span");
-                  span.textContent = data.content;   // ← renderMarkdown 쓰지 말고 원문 그대로
-                  loader.inner.appendChild(span);
-                  box.scrollTop = box.scrollHeight;
-
-                  // 2) 전체 문자열 누적
+                  // 누적
                   currentContent += data.content;
+
+                  // 누적된 전체 문자열을 매번 마크다운으로 변환
+                  loader.inner.innerHTML = renderMarkdown(currentContent);
+                  box.scrollTop = box.scrollHeight;
                 }
 
                 if (data.done) {
-                  // 스트리밍 완료 → 전체를 마크다운으로 다시 렌더링
+                  // 마지막에도 최종 전체 문자열을 다시 마크다운 변환 (안전하게)
                   loader.inner.innerHTML = renderMarkdown(currentContent);
 
-                  // 스트리밍 완료
-                  if (data.conversation_id) {
-                    conversationId = data.conversation_id;
-                  }
-                  if (data.perfume_list && data.perfume_list.length > 0) {
+                  if (data.conversation_id) conversationId = data.conversation_id;
+                  if (data.perfume_list?.length > 0) {
                     addPerfumeRecommendations(loader.wrap, data.perfume_list);
                   }
                   loadConversations();
