@@ -108,6 +108,7 @@
     return m ? m.pop() : '';
   }
   const CSRF_TOKEN = getCookie('csrftoken');
+  const SERVICE_TOKEN = "{{ SERVICE_TOKEN }}";
 
   // 초기 메시지 (서버 주입)
   let INITIAL_MESSAGES = [];
