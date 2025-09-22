@@ -892,6 +892,7 @@ def chat_stream_api(request):
         response['Cache-Control'] = 'no-cache'
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Headers'] = 'Cache-Control'
+        response['X-Accel-Buffering'] = 'no'   # Nginx 버퍼링 비활성화
         return response
 
     except Exception as e:
