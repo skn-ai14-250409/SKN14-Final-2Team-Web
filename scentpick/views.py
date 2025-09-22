@@ -121,6 +121,7 @@ def chat(request):
         "current_conversation": current_conversation,
         "current_conversation_id": current_conversation_id,
         "chat_messages": json.dumps(messages, default=str, ensure_ascii=False),  # JSON으로 직렬화
+        "SERVICE_TOKEN": SERVICE_TOKEN,
     })
 
 @login_required
