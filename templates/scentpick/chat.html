@@ -315,7 +315,7 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // ✅ 로딩 메시지: 친절한 팁을 함께 표기
+    // 로딩 메시지: 친절한 팁을 함께 표기
     function addLoading() {
       const fact = perfume_facts[Math.floor(Math.random() * perfume_facts.length)];
       return addMessage(`답변을 준비하고 있어요...\n💡 TIP: ${fact}`, false, false);
@@ -329,15 +329,12 @@
       addMessage(txt, true);
       sendBtn.disabled = true;
       input.disabled = true;
-      const loader = addLoading(); // 로딩 안내만 표시
-      let loader = null; // 답변 컨테이너는 따로 생성
+
+      // 1) 로딩 메시지 표시 (TIP)
+      const loadingMsg = addLoading();
 
       try {
-        // EventSource를 사용한 스트리밍 방식
         const streamUrl = "{% url 'scentpick:chat_stream_api' %}";
-
-        // POST 데이터를 URL 파라미터로 전송 (EventSource는 POST를 직접 지원하지 않음)
-        // 대신 fetch로 스트리밍 요청
         const response = await fetch(streamUrl, {
           method: "POST",
           headers: {
@@ -350,19 +347,19 @@
         });
 
         if (!response.ok) {
-          loader.inner.innerHTML = renderMarkdown(`오류: HTTP ${response.status}`);
+          loadingMsg.inner.innerHTML = renderMarkdown(`오류: HTTP ${response.status}`);
           return;
         }
 
-        // 스트리밍 응답 처리
+        // 2) 스트리밍 응답 준비
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         let currentContent = '';
 
-        // 로딩 메시지 제거 후 새 답변 메시지 생성
+        // 로딩 메시지 제거 & 답변 박스 새로 생성
         loadingMsg.wrap.remove();
-        loader = addMessage("", false, false);
+        const loader = addMessage("", false, false);
         loader.inner.classList.add("markdown-body");
 
         while (true) {
@@ -370,10 +367,8 @@
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-
-          // SSE 형식 파싱 (data: ... 형태)
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // 마지막 미완성 라인은 버퍼에 보관
+          buffer = lines.pop() || '';
 
           for (const line of lines) {
             if (line.startsWith('data: ')) {
@@ -386,22 +381,22 @@
                 }
 
                 if (data.content) {
-                  // 약간의 지연 → 타자 치는 듯한 효과
+                  // 타자 효과 (조금 지연)
                   await new Promise(resolve => setTimeout(resolve, 50));
 
-                  // 1) 스트리밍 중: 청크 그대로 span에 출력 (마크다운 무시)
+                  // 청크 그대로 출력 (마크다운 무시)
                   const span = document.createElement("span");
-                  span.textContent = data.content;   // 마크다운 적용 안함
+                  span.textContent = data.content;
                   loader.inner.appendChild(span);
                   box.scrollTop = box.scrollHeight;
 
-                  // 2) 전체 문자열 누적
+                  // 전체 문자열 누적
                   currentContent += data.content;
                 }
 
                 if (data.done) {
-                  // 3) 최종적으로 전체 답변을 마크다운으로 변환
-                  loader.inner.classList.add("markdown-body");  // 스타일 적용
+                  // 최종적으로 전체를 마크다운으로 변환
+                  loader.inner.classList.add("markdown-body");
                   loader.inner.innerHTML = renderMarkdown(currentContent);
 
                   if (data.conversation_id) {
@@ -421,7 +416,7 @@
         }
 
       } catch (e) {
-        loader.inner.innerHTML = renderMarkdown(`오류: ${e && e.message ? e.message : e}`);
+        loadingMsg.inner.innerHTML = renderMarkdown(`오류: ${e && e.message ? e.message : e}`);
       } finally {
         sendBtn.disabled = false;
         input.disabled = false;
