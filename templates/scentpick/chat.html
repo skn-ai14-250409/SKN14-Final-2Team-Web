@@ -360,7 +360,7 @@
         let currentContent = '';
 
         // 로딩 메시지 초기화
-        loader.inner.innerHTML = '';
+        // loader.inner.innerHTML = '';
         loader.inner.classList.add("markdown-body");
 
         while (true) {
@@ -384,6 +384,9 @@
                 }
 
                 if (data.content) {
+                  // 약간의 지연 (타자 치는 듯한 효과)
+                  await new Promise(resolve => setTimeout(resolve, 50));
+
                   // 1) 청크 단위 텍스트 그대로 출력 (타자 치는 느낌)
                   const span = document.createElement("span");
                   span.textContent = data.content;   // ← renderMarkdown 쓰지 말고 원문 그대로
