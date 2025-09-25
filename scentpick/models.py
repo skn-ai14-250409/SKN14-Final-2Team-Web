@@ -133,6 +133,8 @@ class Message(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    chat_image = models.CharField(max_length=500, blank=True, null=True)
+
     class Meta:
         db_table = "messages"
         indexes = [
