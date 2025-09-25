@@ -36,3 +36,4 @@ jobs:
           region: ap-northeast-2
           version_label: "app-${{ github.sha }}"
           deployment_package: Dockerrun.aws.json
+          wait_for_deployment: false   # 헬스체크 Green 기다리지 않음
