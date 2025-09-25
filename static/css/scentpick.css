@@ -275,7 +275,7 @@ body {
 
 .chat-history {
     list-style: none;
-    max-height: 600px;
+    max-height: 800px;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 5px;
@@ -348,7 +348,7 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
-    max-height: 500px;
+    max-height: 800px;
 }
 
 .message {
@@ -364,12 +364,12 @@ body {
 
 .message-content {
     max-width: 70%;
-    padding: 12px 15px;
+    padding: 12px 12px 12px 12px;
     border-radius: 15px;
     background: #f1f5f9;
     word-wrap: break-word;
     word-break: break-word;
-    white-space: pre-wrap;
+    /* white-space: pre-wrap; */
     overflow-wrap: break-word;
 }
 

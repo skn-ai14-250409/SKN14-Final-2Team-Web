@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 # --- 외부 라이브러리 ---
 import requests
+import boto3
 
 # --- Django 기본 ---
 from django.conf import settings
@@ -41,6 +42,14 @@ from uauth.models import UserDetail
 from uauth.utils import process_profile_image, upload_to_s3_and_get_url
 
 from .utils.note_translations import get_korean_note_name, get_english_note_name
+
+# S3 클라이언트 전역 설정
+s3_client = boto3.client(
+    "s3",
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    region_name=settings.AWS_S3_REGION_NAME,
+)
 
 def home(request):
     return render(request, "scentpick/home.html")
@@ -81,6 +90,7 @@ def chat(request):
                     'role': m.role,
                     'content': m.content,
                     'created_at': m.created_at,
+                    'chat_image': getattr(m, 'chat_image', None),  # 안전한 이미지 URL 접근
                     'perfume_list': []
                 }
                 
@@ -804,7 +814,7 @@ def chat_submit_api(request):
 @require_POST
 def chat_stream_api(request):
     """
-    스트리밍 채팅 API - Server-Sent Events 방식으로 실시간 응답
+    스트리밍 채팅 API - Server-Sent Events 방식으로 실시간 응답 (멀티모달 지원)
     """
     try:
         # JSON 요청 처리
@@ -812,14 +822,22 @@ def chat_stream_api(request):
             body = json.loads(request.body.decode("utf-8"))
             content = (body.get("content") or body.get("query") or "").strip()
             conversation_id = body.get("conversation_id")
+            image_file = None
         else:
+            # FormData 요청 처리 (이미지 + 텍스트)
             content = request.POST.get("content", "").strip()
             conversation_id = request.POST.get("conversation_id") or request.session.get("conversation_id")
+            image_file = request.FILES.get("image")
 
-        if not content:
+         # 텍스트도 없고 이미지도 없으면 에러
+        if not content and not image_file:
             def error_generator():
                 yield f"data: {json.dumps({'error': '내용이 비었습니다.'})}\n\n"
             return StreamingHttpResponse(error_generator(), content_type='text/event-stream')
+
+        # 이미지만 있을 경우 기본 query 채워주기
+        if not content and image_file:
+            content = "이미지 기반 추천 요청"
 
         # FastAPI로 스트리밍 요청 준비
         payload = {
@@ -827,6 +845,26 @@ def chat_stream_api(request):
             "query": content,
             "stream": True  # 스트리밍 요청임을 표시
         }
+
+        # 이미지 첨부 시 S3 업로드 (체계적인 경로 구조)
+        uploaded_image_url = None
+        if image_file:
+            # 체계적인 경로: chat_images/user_id/conversation_id/message_id_timestamp_filename
+            from datetime import datetime
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+            # conversation_id가 있으면 사용, 없으면 'new'로 임시 처리
+            conv_path = str(conversation_id) if conversation_id else 'new'
+            filename = f"chat_images/{request.user.id}/{conv_path}/{timestamp}_{image_file.name}"
+
+            s3_client.upload_fileobj(
+                image_file,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                filename,
+                ExtraArgs={"ContentType": image_file.content_type},
+            )
+            uploaded_image_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{filename}"
+            payload["image_url"] = uploaded_image_url
 
         if conversation_id:
             try:
@@ -841,6 +879,7 @@ def chat_stream_api(request):
         }
 
         def stream_generator():
+            final_conversation_id = None
             try:
                 # FastAPI 서버가 없을 때 임시 mock 응답
                 if not FASTAPI_CHAT_URL:
@@ -867,6 +906,15 @@ def chat_stream_api(request):
                     if line:
                         # FastAPI에서 오는 SSE 데이터를 그대로 전달
                         if line.startswith("data: "):
+                            try:
+                                # conversation_id 추출 시도
+                                data = json.loads(line[6:])
+                                if data.get('conversation_id'):
+                                    # conversation_id가 있으면 세션과 변수에 저장
+                                    request.session["conversation_id"] = data["conversation_id"]
+                                    final_conversation_id = data['conversation_id']
+                            except:
+                                pass
                             yield f"{line}\n\n"
                         else:
                             # 일반 텍스트라면 SSE 형식으로 감싸기
@@ -874,6 +922,19 @@ def chat_stream_api(request):
 
                 # 스트림 종료 신호
                 yield f"data: {json.dumps({'done': True})}\n\n"
+
+                # 스트리밍 완료 후 이미지 URL 업데이트
+                if uploaded_image_url and final_conversation_id:
+                    try:
+                        # 해당 conversation의 가장 최근 user 메시지 찾기
+                        conv = Conversation.objects.get(id=final_conversation_id, user=request.user)
+                        user_message = conv.messages.filter(role='user').order_by('-created_at').first()
+                        if user_message:
+                            user_message.chat_image = uploaded_image_url
+                            user_message.save()
+                            print(f"✅ Image URL saved to message {user_message.id}: {uploaded_image_url}")
+                    except Exception as e:
+                        print(f"❌ Failed to save image URL: {e}")
 
             except requests.RequestException as e:
                 # FastAPI 서버가 없을 때 mock 응답
@@ -896,6 +957,9 @@ def chat_stream_api(request):
         return response
 
     except Exception as e:
+        # Fast API 실패 시 업로드 취소
+        s3_client.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=filename)
+
         def error_generator():
             yield f"data: {json.dumps({'error': f'서버 오류: {str(e)}'})}\n\n"
         return StreamingHttpResponse(error_generator(), content_type='text/event-stream')
@@ -1171,27 +1235,26 @@ def toggle_like_dislike(request):
             'message': f'오류가 발생했습니다: {str(e)}'
         }, status=500)
 
+
 @login_required 
 def mypage(request):
     """마이페이지"""
     try:
         request.user = User.objects.get(username=request.user.username)
-        
-        # 추천 받은 향수 내역 (더미 데이터 - 실제로는 추천 시스템과 연결)
-        # 실제 구현시에는 RecommendationRun 모델을 사용하거나 추천 기록을 저장하는 테이블 필요
-        recommendation_runs = []
 
-        # =========================[ADD yyh] 추천 내역 집계 블록 시작 =========================
-        # 필터 파라미터
+        # --- 정렬 파라미터 ---
+        sort_by  = (request.GET.get('sort_by')  or 'date').strip()   # date|brand|name|count
+        sort_dir = (request.GET.get('sort_dir') or 'desc').strip()   # asc|desc
+        desc = (sort_dir == 'desc')
+
+        # =========================[ 추천 내역 집계 ]=========================
         brand = (request.GET.get('brand') or '').strip()
         name = (request.GET.get('name') or '').strip()
         date_from = (request.GET.get('date_from') or '').strip()
         date_to   = (request.GET.get('date_to') or '').strip()
 
-        # 내 추천 로그에서 향수별 집계(추천횟수, 최신일자)
         rec_qs = RecCandidate.objects.filter(run_rec__user=request.user)
 
-        # 필터(집계 전에 적용)
         if brand:
             rec_qs = rec_qs.filter(perfume__brand__icontains=brand)
         if name:
@@ -1207,77 +1270,73 @@ def mypage(request):
                      rec_count=Count('id'),
                      last_date=Max('run_rec__created_at'),
                  )
-                 .order_by('-last_date')  # 최신순
         )
+
+        # --- 정렬 결정 ---
+        order = []
+        if sort_by == 'brand':
+            order = ['-perfume__brand', '-perfume__name'] if desc else ['perfume__brand', 'perfume__name']
+        elif sort_by == 'name':
+            order = ['-perfume__name'] if desc else ['perfume__name']
+        elif sort_by == 'count':
+            # 같은 횟수면 최신순 보조 정렬
+            order = ['-rec_count', '-last_date'] if desc else ['rec_count', '-last_date']
+        else:  # 'date' 기본
+            order = ['-last_date'] if desc else ['last_date']
+
+        rec_agg = rec_agg.order_by(*order)
 
         # 페이지네이션(5개)
         rec_paginator = Paginator(rec_agg, 5)
         rec_page = rec_paginator.get_page(request.GET.get('page') or 1)
-        # =========================[ADD yyh] 추천 내역 집계 블록 끝 =========================
-        
-        # admin 사용자의 즐겨찾기한 향수들 가져오기
+        # ===============================================================
+
+        # 이하 즐겨찾기/피드백 기존 코드 그대로...
         favorite_perfumes = Perfume.objects.filter(
             favorited_by__user=request.user
         ).order_by('-favorited_by__created_at')
-        
-        # admin 사용자의 피드백 이벤트들 가져오기 (좋아요/싫어요)
+
         liked_feedback = FeedbackEvent.objects.filter(
-            user=request.user,
-            action='like'
+            user=request.user, action='like'
         ).select_related('perfume').order_by('-created_at')
-        
+
         disliked_feedback = FeedbackEvent.objects.filter(
-            user=request.user,
-            action='dislike'
+            user=request.user, action='dislike'
         ).select_related('perfume').order_by('-created_at')
-        
-        # 이미지 URL 부여
+
         for perfume in favorite_perfumes:
             perfume.image_url = f"https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{perfume.id}.jpg"
-        
         for feedback in liked_feedback:
             feedback.perfume.image_url = f"https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{feedback.perfume.id}.jpg"
-        
         for feedback in disliked_feedback:
             feedback.perfume.image_url = f"https://scentpick-images.s3.ap-northeast-2.amazonaws.com/perfumes/{feedback.perfume.id}.jpg"
-        
-        favorites_count = favorite_perfumes.count()
-        likes_count = liked_feedback.count()
-        dislikes_count = disliked_feedback.count()
-        
+
         context = {
-            'recommendation_runs': recommendation_runs,
-            # =========================[ADD yyh] 추천 내역 컨텍스트 추가 시작=========================
-            'rec_page': rec_page,          # 템플릿에서 rec_page.object_list 로 루프
-            'f_brand': brand,              # 필터 값 유지용
-            'f_name': name,
-            'f_date_from': date_from,
-            'f_date_to': date_to,
-            # =========================[ADD yyh] 추천 내역 컨텍스트 추가 끝=========================
+            'rec_page': rec_page,
+            'f_brand': brand, 'f_name': name, 'f_date_from': date_from, 'f_date_to': date_to,
             'favorite_perfumes': favorite_perfumes,
-            'favorites_count': favorites_count,
-            'liked_perfumes': liked_feedback,  # FeedbackEvent 객체들
-            'likes_count': likes_count,
-            'disliked_perfumes': disliked_feedback,  # FeedbackEvent 객체들
-            'dislikes_count': dislikes_count
+            'favorites_count': favorite_perfumes.count(),
+            'liked_perfumes': liked_feedback,
+            'likes_count': liked_feedback.count(),
+            'disliked_perfumes': disliked_feedback,
+            'dislikes_count': disliked_feedback.count(),
+            # ★ 템플릿에 현재 정렬 상태 전달 (화살표 표시용)
+            'sort_by': sort_by,
+            'sort_dir': sort_dir,
         }
-        
+
     except User.DoesNotExist:
         context = {
-            'recommendation_runs': [],
-            # =========================[ADD yyh] 기본값도 함께 추가 시작=========================
             'rec_page': None,
             'f_brand': '', 'f_name': '', 'f_date_from': '', 'f_date_to': '',
-            # =========================[ADD yyh] 기본값도 함께 추가 끝=========================
             'favorite_perfumes': Perfume.objects.none(),
             'favorites_count': 0,
-            'liked_perfumes': [],
-            'likes_count': 0,
-            'disliked_perfumes': [],
-            'dislikes_count': 0,
-            'error': 'admin 사용자를 찾을 수 없습니다.'
+            'liked_perfumes': [], 'likes_count': 0,
+            'disliked_perfumes': [], 'dislikes_count': 0,
+            'sort_by': 'date', 'sort_dir': 'desc',
+            'error': 'admin 사용자를 찾을 수 없습니다.',
         }
-    
+
     return render(request, "scentpick/mypage.html", context)
 
 @login_required
@@ -1421,6 +1480,7 @@ def conversation_messages_api(request, conv_id: int):
             'role': m.role,
             'content': m.content,
             'created_at': m.created_at.isoformat(),
+            'chat_image': getattr(m, 'chat_image', None),  # 안전한 이미지 URL 접근
         }
         
         # assistant 메시지인 경우 관련된 추천 데이터 찾기
