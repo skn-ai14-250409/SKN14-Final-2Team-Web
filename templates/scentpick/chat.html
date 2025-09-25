@@ -353,8 +353,7 @@
 
     function addLoading() {
       const fact = perfume_facts[Math.floor(Math.random() * perfume_facts.length)];
-      return addMessage(`답변을 준비하고 있어요...<br>
-      💡 TIP: ${fact}`, false, false);
+      return addMessage(`답변을 준비하고 있어요...<br>💡 TIP: ${fact}`, false, false);
     }
 
     async function send() {
@@ -367,6 +366,8 @@
 
       const userImageUrl = sendImage ? previewImage.src : null;
       addMessage(sendText, true, false, userImageUrl);
+
+      let fullText = "";  // 전체 응답 누적용
 
       // 버튼 누르는 순간 입력창/미리보기 초기화
       input.value = "";                     
@@ -424,8 +425,18 @@
                   loader.inner.classList.add("markdown-body");
                   firstChunk = false;
                 }
-                currentContent += data.content;
-                loader.inner.innerHTML = renderMarkdown(currentContent);
+
+                // 전체 텍스트 누적
+                fullText += data.content;
+
+                // 50ms 지연 → 타자 효과
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                // span 추가 방식으로 하나씩 쌓음 (원문 그대로 출력)
+                const span = document.createElement("span");
+                span.textContent = data.content;
+                loader.inner.appendChild(span);
+
                 box.scrollTop = box.scrollHeight;
               }
               if (data.done) {
@@ -435,6 +446,10 @@
                 if (data.perfume_list && data.perfume_list.length > 0) {
                   addPerfumeRecommendations(loader.wrap, data.perfume_list);
                 }
+
+                // 스트리밍이 끝나면 전체를 마크다운 렌더링으로 교체
+                loader.inner.innerHTML = renderMarkdown(fullText);
+
                 return;
               }
             } catch (e) { console.error("파싱 오류:", e, line); }
