@@ -431,7 +431,7 @@
 
                 // 받은 chunk를 글자 단위로 쪼개기
                 for (const char of data.content) {
-                  await new Promise(resolve => setTimeout(resolve, 50)); // 글자당 50ms 딜레이
+                  await new Promise(resolve => setTimeout(resolve, 20)); // 글자당 20ms 딜레이
                   const span = document.createElement("span");
                   span.textContent = char;
                   loader.inner.appendChild(span);
