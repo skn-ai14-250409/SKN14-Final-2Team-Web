@@ -429,15 +429,14 @@
                 // 전체 텍스트 누적
                 fullText += data.content;
 
-                // 50ms 지연 → 타자 효과
-                await new Promise(resolve => setTimeout(resolve, 50));
-
-                // span 추가 방식으로 하나씩 쌓음 (원문 그대로 출력)
-                const span = document.createElement("span");
-                span.textContent = data.content;
-                loader.inner.appendChild(span);
-
-                box.scrollTop = box.scrollHeight;
+                // 받은 chunk를 글자 단위로 쪼개기
+                for (const char of data.content) {
+                  await new Promise(resolve => setTimeout(resolve, 50)); // 글자당 50ms 딜레이
+                  const span = document.createElement("span");
+                  span.textContent = char;
+                  loader.inner.appendChild(span);
+                  box.scrollTop = box.scrollHeight;
+                }
               }
               if (data.done) {
                 if (data.conversation_id) {
