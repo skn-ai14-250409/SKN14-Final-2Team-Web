@@ -1,23 +1,32 @@
-# Python 3.12 이미지를 기반으로 사용
-FROM python:3.12
+FROM python:3.12-slim
 
-# 환경 변수 설정
-# .pyc 파일 생성 방지
 ENV PYTHONDONTWRITEBYTECODE=1
-
-# Python 출력 버퍼링 방지
 ENV PYTHONUNBUFFERED=1
 
-# 작업 디렉토리 생성 및 설정
 WORKDIR /app
 
-# 의존성 파일 복사 및 설치
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# 빌드 및 런타임에 필요한 OS 패키지 설치
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       build-essential \
+       libpq-dev \
+       default-libmysqlclient-dev \
+       libjpeg-dev \
+       zlib1g-dev \
+       libssl-dev \
+       pkg-config \
+    && pip install --upgrade pip
 
-# 프로젝트 파일을 image 내부 WORKDIR로 복사
+# requirements 먼저 복사해서 설치 (캐시 활용 최적화)
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# 불필요한 빌드 툴 제거 + 캐시 정리
+RUN apt-get purge -y --auto-remove build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# 프로젝트 소스 복사
 COPY . .
 
-# Gunicorn으로 Django 실행
-CMD ["gunicorn", "-c", "gunicorn.conf.py"]
 EXPOSE 8000
+CMD ["gunicorn", "-c", "gunicorn.conf.py"]
