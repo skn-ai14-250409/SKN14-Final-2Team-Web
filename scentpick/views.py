@@ -26,6 +26,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 
 # --- 프로젝트 내부 (app) ---
 from .models import (
@@ -1235,7 +1236,7 @@ def toggle_like_dislike(request):
             'message': f'오류가 발생했습니다: {str(e)}'
         }, status=500)
 
-
+@never_cache
 @login_required 
 def mypage(request):
     """마이페이지"""
@@ -1279,7 +1280,6 @@ def mypage(request):
         elif sort_by == 'name':
             order = ['-perfume__name'] if desc else ['perfume__name']
         elif sort_by == 'count':
-            # 같은 횟수면 최신순 보조 정렬
             order = ['-rec_count', '-last_date'] if desc else ['rec_count', '-last_date']
         else:  # 'date' 기본
             order = ['-last_date'] if desc else ['last_date']
@@ -1291,7 +1291,7 @@ def mypage(request):
         rec_page = rec_paginator.get_page(request.GET.get('page') or 1)
         # ===============================================================
 
-        # 이하 즐겨찾기/피드백 기존 코드 그대로...
+        # 즐겨찾기/피드백
         favorite_perfumes = Perfume.objects.filter(
             favorited_by__user=request.user
         ).order_by('-favorited_by__created_at')
@@ -1320,7 +1320,6 @@ def mypage(request):
             'likes_count': liked_feedback.count(),
             'disliked_perfumes': disliked_feedback,
             'dislikes_count': disliked_feedback.count(),
-            # ★ 템플릿에 현재 정렬 상태 전달 (화살표 표시용)
             'sort_by': sort_by,
             'sort_dir': sort_dir,
         }
