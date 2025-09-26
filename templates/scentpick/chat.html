@@ -246,6 +246,29 @@
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
+      // 허용 확장자 목록
+      const allowedExtensions = ["jpg", "jpeg", "png", "gif"];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      // 파일 확장자 확인
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        showToast("이미지 파일이 아닙니다. (허용: JPG, JPEG, PNG, GIF)", "error");
+        fileInput.value = "";
+        uploadedFile = null;
+        return;
+      }
+
+      // 파일 크기 확인
+      if (file.size > maxSize) {
+        showToast("이미지 크기는 5MB 이하여야 합니다.", "error");
+        fileInput.value = "";
+        uploadedFile = null;
+        return;
+      }
+
+      // 통과 시 미리보기 표시
       uploadedFile = file;
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -254,6 +277,7 @@
       };
       reader.readAsDataURL(file);
     });
+    
     removeImage.addEventListener("click", () => {
       uploadedFile = null;
       fileInput.value = "";

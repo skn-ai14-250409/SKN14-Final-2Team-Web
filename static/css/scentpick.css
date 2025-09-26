@@ -56,7 +56,10 @@ body {
     white-space: nowrap;
 }
 
-.nav-item { display:flex; align-items:center; }
+.nav-item {
+    display: flex;
+    align-items: center;
+}
 
 .nav-item a {
     text-decoration: none;
@@ -81,14 +84,35 @@ body {
 }
 
 /* Right-side auth area inside nav */
-.nav-auth { margin-left: 8px; gap: 10px; }
-.nav-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; margin-right: 6px; }
-.user-info { background:#f1f5f9; padding:6px 10px; border-radius:8px; font-size:14px; }
-.user-menu-btn { margin-left: 6px; }
+.nav-auth {
+    margin-left: 8px;
+    gap: 10px;
+}
+
+.nav-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e2e8f0;
+    margin-right: 6px;
+}
+
+.user-info {
+    background: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.user-menu-btn {
+    margin-left: 6px;
+}
 
 /* Main Content */
 .main-content {
-    flex: 1;               /* 남는 공간 차지 */
+    flex: 1;
+    /* 남는 공간 차지 */
     margin-top: 80px;
     padding: 40px 20px;
 }
@@ -109,8 +133,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Home Page */
@@ -238,12 +269,32 @@ body {
 }
 
 /* Brand accents */
-.social-btn.brand-naver { color:#03C75A; border-color:#b9f3cb; }
-.social-btn.brand-naver:hover { background:#ecfff3; }
-.social-btn.brand-kakao { color:#000; border-color:#FEE500; }
-.social-btn.brand-kakao:hover { background:#fffbea; }
-.social-btn.brand-google { color:#4285F4; border-color:#cfe0ff; }
-.social-btn.brand-google:hover { background:#f3f7ff; }
+.social-btn.brand-naver {
+    color: #03C75A;
+    border-color: #b9f3cb;
+}
+
+.social-btn.brand-naver:hover {
+    background: #ecfff3;
+}
+
+.social-btn.brand-kakao {
+    color: #000;
+    border-color: #FEE500;
+}
+
+.social-btn.brand-kakao:hover {
+    background: #fffbea;
+}
+
+.social-btn.brand-google {
+    color: #4285F4;
+    border-color: #cfe0ff;
+}
+
+.social-btn.brand-google:hover {
+    background: #f3f7ff;
+}
 
 /* Chat Page */
 .chat-container {
@@ -390,12 +441,33 @@ body {
     line-height: 1.3;
 }
 
-.message-content h1 { font-size: 18px; }
-.message-content h2 { font-size: 16px; }
-.message-content h3 { font-size: 15px; color: #4a5568; }
-.message-content h4 { font-size: 14px; color: #4a5568; }
-.message-content h5 { font-size: 13px; color: #4a5568; }
-.message-content h6 { font-size: 12px; color: #4a5568; }
+.message-content h1 {
+    font-size: 18px;
+}
+
+.message-content h2 {
+    font-size: 16px;
+}
+
+.message-content h3 {
+    font-size: 15px;
+    color: #4a5568;
+}
+
+.message-content h4 {
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.message-content h5 {
+    font-size: 13px;
+    color: #4a5568;
+}
+
+.message-content h6 {
+    font-size: 12px;
+    color: #4a5568;
+}
 
 .message-content strong {
     font-weight: 700;
@@ -703,15 +775,20 @@ body {
 }
 
 .product-detail-info h1 {
-    font-size: clamp(18px, 4vw, 32px);  /* 길면 자동으로 줄임 */
+    font-size: clamp(18px, 4vw, 32px);
+    /* 길면 자동으로 줄임 */
     margin-bottom: 10px;
     color: #2d3748;
     line-height: 1.2;
 
-    white-space: normal !important;     /* 줄바꿈 허용 */
-    overflow: visible !important;       /* 숨김 해제 */
-    text-overflow: clip !important;     /* ... 방지 */
-    word-break: break-word;             /* 단어 단위 줄바꿈 */
+    white-space: normal !important;
+    /* 줄바꿈 허용 */
+    overflow: visible !important;
+    /* 숨김 해제 */
+    text-overflow: clip !important;
+    /* ... 방지 */
+    word-break: break-word;
+    /* 단어 단위 줄바꿈 */
 }
 
 .product-detail-brand {
@@ -905,9 +982,12 @@ body {
     padding: 0 8px;
     box-sizing: border-box;
 
-    flex: 1;            /* 🔑 main-content flex 안에서 공간을 채워 푸터를 밀어냄 */
-    min-height: 0;      /* 🔑 grid가 불필요하게 커지지 않도록 보정 */
-    min-height: calc(100vh - 200px); /* 헤더+푸터 제외 */
+    flex: 1;
+    /* 🔑 main-content flex 안에서 공간을 채워 푸터를 밀어냄 */
+    min-height: 0;
+    /* 🔑 grid가 불필요하게 커지지 않도록 보정 */
+    min-height: calc(100vh - 200px);
+    /* 헤더+푸터 제외 */
 }
 
 .profile-section {
@@ -936,7 +1016,10 @@ body {
     list-style: none;
 }
 
-.profile-menu li { margin-bottom: 8px; }
+.profile-menu li {
+    margin-bottom: 8px;
+}
+
 .profile-menu a {
     display: block;
     padding: 10px 12px;
@@ -947,20 +1030,31 @@ body {
     font-weight: 500;
     background: #fff;
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-    font-size: 16px !important; /* 14~18px 중 원하는 값 */
+    font-size: 16px !important;
+    /* 14~18px 중 원하는 값 */
 }
+
 .profile-menu a:hover {
     border-color: #6366f1;
-    background: rgba(99,102,241,0.06);
+    background: rgba(99, 102, 241, 0.06);
     color: #2d3748;
     transform: translateY(-1px);
 }
-.profile-menu a:visited { color: #2d3748; }
-.profile-menu a:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+.profile-menu a:visited {
+    color: #2d3748;
+}
+
+.profile-menu a:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
 .profile-menu a.danger {
     border-color: #fecaca;
     color: #b91c1c;
 }
+
 .profile-menu a.danger:hover {
     background: #fee2e2;
 }
@@ -1189,120 +1283,1487 @@ body {
 }
 
 /* ===== yyh 상단 '추천받은 향수 내역' 전용 표형 레이아웃 시작===== */
-.recommendations-section .rec-table { 
-  margin-top: 12px;
+.recommendations-section .rec-table {
+    margin-top: 12px;
 }
 
-.recommendations-section .rec-head{
-  display: grid;
-  grid-template-columns: 100px 54px 160px 1fr 100px;
-  column-gap: 16px;
-  padding: 10px 0 8px;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
+.recommendations-section .rec-head {
+    display: grid;
+    grid-template-columns: 100px 54px 160px 1fr 100px;
+    column-gap: 16px;
+    padding: 10px 0 8px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
 }
 
-.recommendations-section .rec-list{
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.recommendations-section .rec-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.recommendations-section .rec-item{
-  display: grid;
-  grid-template-columns: 100px 54px 160px 1fr 100px;
-  column-gap: 16px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
+.recommendations-section .rec-item {
+    display: grid;
+    grid-template-columns: 100px 54px 160px 1fr 100px;
+    column-gap: 16px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
 }
 
-.recommendations-section .rec-date{
-  color:#4b5563;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.recommendations-section .rec-date {
+    color: #4b5563;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.recommendations-section .rec-brand{
-  font-weight: 500;
-  color:#374151;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.recommendations-section .rec-brand {
+    font-weight: 500;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.recommendations-section .rec-name{
-  color: #2563eb;
-  text-decoration: underline;   /* 원하면 none으로 둬도 됨 */
-  white-space: normal;          /* 줄바꿈 허용 */
-  overflow: visible;            /* 숨김 해제 */
-  text-overflow: clip;          /* … 방지 */
-  word-break: break-word;       /* 긴 단어 줄바꿈 */
-  min-width: 0;
+.recommendations-section .rec-name {
+    color: #2563eb;
+    text-decoration: underline;
+    /* 원하면 none으로 둬도 됨 */
+    white-space: normal;
+    /* 줄바꿈 허용 */
+    overflow: visible;
+    /* 숨김 해제 */
+    text-overflow: clip;
+    /* … 방지 */
+    word-break: break-word;
+    /* 긴 단어 줄바꿈 */
+    min-width: 0;
 }
-.recommendations-section .rec-name:hover{ text-decoration: underline; }
 
-.recommendations-section .rec-count{
-  text-align: right;
-  color:#1f2937;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.recommendations-section .rec-name:hover {
+    text-decoration: underline;
+}
+
+.recommendations-section .rec-count {
+    text-align: right;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* 모바일(선택): 2행으로 접기 */
-@media (max-width: 640px){
-  .recommendations-section .rec-head,
-  .recommendations-section .rec-item{
-    grid-template-columns: 100px 1fr; /* 날짜 | 나머지 */
-    row-gap: 6px;
-  }
-  .recommendations-section .rec-brand{ order: 2; }
-  .recommendations-section .rec-name{ order: 3; }
-  .recommendations-section .rec-count{ order: 4; text-align: left; }
+@media (max-width: 640px) {
+
+    .recommendations-section .rec-head,
+    .recommendations-section .rec-item {
+        grid-template-columns: 100px 1fr;
+        /* 날짜 | 나머지 */
+        row-gap: 6px;
+    }
+
+    .recommendations-section .rec-brand {
+        order: 2;
+    }
+
+    .recommendations-section .rec-name {
+        order: 3;
+    }
+
+    .recommendations-section .rec-count {
+        order: 4;
+        text-align: left;
+    }
 }
 
 /* [FIX] 선호 영역: 항목이 1개여도 2열 폭 유지 */
-.likes-section .recommendations-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  /* 두 칸 폭(카드 2개+갭) 만큼만 컨테이너를 제한 */
-  max-width: 700px;            /* 카드 카드 + gap 합친 폭(원하는 값으로 약간 조정 가능) */
-  margin: 15px 0 20px 0;       /* 가운데/좌측 정렬은 취향대로 */
+.likes-section .recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    /* 두 칸 폭(카드 2개+갭) 만큼만 컨테이너를 제한 */
+    max-width: 700px;
+    /* 카드 카드 + gap 합친 폭(원하는 값으로 약간 조정 가능) */
+    margin: 15px 0 20px 0;
+    /* 가운데/좌측 정렬은 취향대로 */
 }
 
 
-.recommendation-card .feedback-btn{ 
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 56px !important;
-  height: 32px !important;
-  padding: 0 12px !important;
-  border-radius: 16px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f7fafc !important;
-  color: #4a5568 !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  cursor: pointer !important;
+.recommendation-card .feedback-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 56px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f7fafc !important;
+    color: #4a5568 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
 }
 
 /* 활성 색상만 별도 */
-.recommendation-card .like-btn.active{
-  background:#4a90e2 !important; color:#fff !important; border:none !important;
+.recommendation-card .like-btn.active {
+    background: #4a90e2 !important;
+    color: #fff !important;
+    border: none !important;
 }
-.recommendation-card .dislike-btn.active{
-  background:#e74c3c !important; color:#fff !important; border:none !important;
+
+.recommendation-card .dislike-btn.active {
+    background: #e74c3c !important;
+    color: #fff !important;
+    border: none !important;
 }
+
 /* ===== yyh 상단 '추천받은 향수 내역' 전용 표형 레이아웃 끝===== */
 
 /* 마이페이지 전용: main-content 좌우 여백 제거 */
 body.mypage .main-content {
-  padding: 40px 0 0 0 !important;  /* 위아래 40px, 좌우 0 */
+    padding: 40px 0 0 0 !important;
+    /* 위아래 40px, 좌우 0 */
+}
+
+
+/*마이페이지 제발 좀 고정 돼라 */
+body.mypage .like-dislike-section .like-dislike-container,
+body.mypage .favorites-section .like-dislike-container {
+    margin-top: 0 !important;
+}
+
+body.mypage .likes-section>h3.section-title,
+body.mypage .dislikes-section>h3.section-title,
+body.mypage .favorites-main-section>h3.section-title {
+    margin: 0 0 20px 0 !important;
+    min-height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1.2 !important;
+}
+
+body.mypage .mypage-container {
+    row-gap: 20px !important;
+}
+
+/*마이페이지 좌우 섹션 고정 제발 */
+/* 좌/우 섹션의 위 패딩을 동일하게 맞춰서 제목 baseline 정렬 */
+body.mypage .recommendations-section.like-dislike-section {
+    padding-top: 20px !important;
+}
+
+body.mypage .favorites-section {
+    padding-top: 20px !important;
+}
+
+body.mypage .like-dislike-section .like-dislike-container,
+body.mypage .favorites-section .like-dislike-container {
+    margin-top: 0 !important;
+}
+
+body.mypage .likes-section>h3.section-title,
+body.mypage .dislikes-section>h3.section-title,
+body.mypage .favorites-main-section>h3.section-title {
+    margin: 0 0 20px 0 !important;
+    min-height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1.2 !important;
+}
+
+
+/* 마이페이지 이미지 박스 크기 고정 제발 */
+body.mypage .likes-section .recommendations-grid,
+body.mypage .dislikes-section .recommendations-grid,
+body.mypage .favorites-section .recommendations-grid {
+    align-items: stretch;
+}
+
+body.mypage .recommendation-card {
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+body.mypage .perfume-image-container {
+    height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body.mypage .perfume-img {
+    width: 72px !important;
+    height: 96px !important;
+    object-fit: cover !important;
+}
+
+
+body.mypage .perfume-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin: 8px 0 4px !important;
+    line-height: 1.3 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-height: calc(1.3em * 2) !important;
+    max-height: calc(1.3em * 2) !important;
+}
+
+body.mypage .perfume-brand {
+    font-size: 12px !important;
+    color: #718096 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    height: 1.2em !important;
+}
+
+
+body.mypage .recommendation-card .perfume-brand {
+    margin-bottom: 16px !important;
+}
+
+body.mypage .recommendation-card .perfume-brand+div {
+    margin-top: 8px !important;
+}
+
+/* === 좌/우 카드 박스 완전 동일화 패치 === */
+
+/* 1) 좌/우 섹션 패딩을 동일하게(가운데 상단 “추천 받은 향수 내역”은 유지) */
+body.mypage .recommendations-section.like-dislike-section,
+body.mypage .favorites-section {
+    padding: 24px !important;
+    /* ← 좌우 모두 동일 */
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .1) !important;
+}
+
+/* 2) 두 섹션의 카드 그리드 규격을 완전히 동일하게 */
+body.mypage .likes-section .recommendations-grid,
+body.mypage .dislikes-section .recommendations-grid,
+body.mypage .favorites-main-section .recommendations-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: none !important;
+    /* ← 왼쪽에 남아있던 max-width:700px 제거 */
+    margin: 15px 0 20px 0 !important;
+    align-items: stretch !important;
+    /* 행 내 카드 높이 동일화 */
+}
+
+/* 3) 카드(박스) 외곽선/패딩/레이아웃을 완전히 동일하게 */
+body.mypage .recommendation-card,
+body.mypage .favorites-section .recommendation-card {
+    border: 1px solid #e2e8f0 !important;
+    /* 즐겨찾기 카드도 동일 테두리 */
+    padding: 16px !important;
+    /* 패딩도 동일 */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+/* 4) 이미지·제목·브랜드 영역 규격 통일(이미 적용돼도 재보정) */
+body.mypage .perfume-image-container {
+    height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body.mypage .perfume-img {
+    width: 72px !important;
+    height: 96px !important;
+    object-fit: cover !important;
+}
+
+body.mypage .perfume-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin: 8px 0 4px !important;
+    line-height: 1.3 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-height: calc(1.3em * 2) !important;
+    max-height: calc(1.3em * 2) !important;
+}
+
+body.mypage .perfume-brand {
+    font-size: 12px !important;
+    color: #718096 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    height: 1.2em !important;
+    margin-bottom: 16px !important;
+}
+
+/* 5) 버튼 위 여백(브랜드와 버튼 사이 간격) */
+body.mypage .recommendation-card .perfume-brand+div {
+    margin-top: 8px !important;
+}
+
+
+
+/* === 좌/우 카드 박스 완전 동일화 + 미세 밀림 방지 === */
+
+/* 1) 좌/우 섹션 패딩/모서리/그림자 통일 */
+body.mypage .recommendations-section.like-dislike-section,
+body.mypage .favorites-section {
+    padding: 24px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .1) !important;
+}
+
+/* 2) 두 섹션의 카드 그리드 규격을 완전히 동일하게 */
+body.mypage .likes-section .recommendations-grid,
+body.mypage .dislikes-section .recommendations-grid,
+body.mypage .favorites-main-section .recommendations-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: none !important;
+    /* 왼쪽에 남아있던 max-width 등 제거 */
+    margin: 15px 0 20px 0 !important;
+    align-items: stretch !important;
+}
+
+/* 3) 카드 외곽/패딩/레이아웃 통일 + 고정 높이로 미세오차 차단 */
+:root {
+    --card-h: 320px;
+}
+
+/* 필요하면 310~340px 사이로 조정 */
+body.mypage .recommendation-card,
+body.mypage .favorites-section .recommendation-card {
+    border: 1px solid #e2e8f0 !important;
+    /* 즐겨찾기도 동일 테두리 */
+    padding: 16px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: var(--card-h) !important;
+    /* ✅ 고정 높이 */
+}
+
+/* 4) 이미지/제목/브랜드 영역 규격 통일 */
+body.mypage .perfume-image-container {
+    height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body.mypage .perfume-img {
+    width: 72px !important;
+    height: 96px !important;
+    object-fit: cover !important;
+}
+
+body.mypage .perfume-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin: 8px 0 4px !important;
+    line-height: 1.3 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    /* ✅ 2줄까지만 표시 */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-height: calc(1.3em * 2) !important;
+    /* 2줄 높이 확보 */
+    max-height: calc(1.3em * 2) !important;
+}
+
+body.mypage .perfume-brand {
+    font-size: 12px !important;
+    color: #718096 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    height: 1.2em !important;
+    margin-bottom: 16px !important;
+    /* 버튼과 간격 */
+}
+
+/* 5) 상단 날짜 줄도 통일(즐겨찾기는 visibility:hidden이라 공간 동일) */
+body.mypage .recommendation-date {
+    font-size: 12px !important;
+    color: #718096 !important;
+    margin-bottom: 10px !important;
+    height: 18px !important;
+    /* ✅ 고정 */
+    line-height: 18px !important;
+}
+
+/* 6) 버튼 줄(선호/비선호 or 즐겨찾기 해제) 높이 고정: 카드 하단 균형 */
+body.mypage .recommendation-card>div:last-child {
+    min-height: 36px !important;
+    /* 버튼 1개/2개라도 동일 높이 */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 8px !important;
+}
+
+/* 7) 버튼 스타일 기본(있다면 그대로, 없으면 통일) */
+body.mypage .recommendation-card .feedback-btn {
+    min-width: 56px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f7fafc !important;
+    color: #4a5568 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+body.mypage .recommendation-card .like-btn.active {
+    background: #4a90e2 !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+body.mypage .recommendation-card .dislike-btn.active {
+    background: #e74c3c !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+/* 8) 즐겨찾기 해제 버튼도 높이 맞춤 */
+body.mypage .remove-favorite {
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 16px !important;
+}
+
+/* 탭 UI */
+.ld-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 12px 0
+}
+
+.ld-tab {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 9999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #4a5568;
+    cursor: pointer
+}
+
+.ld-tab.on {
+    background: #4a90e2;
+    color: #fff;
+    border-color: #4a90e2;
+}
+
+/* 좌측 탭 높이만큼 우측도 여백 추가해서 상단 정렬 맞춤 */
+body.mypage .favorites-section .favorites-main-section {
+    padding-top: 43px !important;
+}
+
+/* 그리드 페이지네이션 */
+.grid-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.grid-pager .gp-prev,
+.grid-pager .gp-next,
+.grid-pager .gp-num {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.grid-pager .gp-num.on {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    font-weight: 600;
+}
+
+.grid-pager button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.grid-pager .gp-ellipsis {
+    padding: 0 4px;
+    color: #64748b;
+    user-select: none;
+}
+
+/* 그리드 페이지네이션이 숨긴 카드를 진짜로 숨기기 (inline style 우선) */
+body.mypage .recommendations-grid .recommendation-card[style*="display: none"] {
+    display: none !important;
+}
+
+/* 그리드가 남는 높이가 생겨도 위쪽부터 붙도록 */
+.recommendations-grid {
+    align-content: start;
+    /* 세로 정렬: 위쪽 고정 */
+    grid-auto-flow: row;
+    /* 행 우선 배치(안전) */
+}
+
+/* 투명 패드(빈 칸 채우기) */
+.recommendations-grid .grid-pad {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* 그리드 페이지네이션: 높이 고정해서 좌우 섹션 하단이 항상 맞도록 */
+.grid-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    min-height: 36px;
+    /* 버튼 높이 + 여백 만큼 고정 */
+}
+
+/* 내용은 없지만 높이는 유지 (JS에서 붙인 클래스) */
+.grid-pager--empty {
+    visibility: hidden;
+    /* 자리 차지 O, 보이기만 숨김 */
+}
+
+/* 뒤로가기 버튼 */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.back-btn:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ===============================
+   모든 카드 크기 통일
+=============================== */
+.card-section {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 기존 카드들도 card-section 공통 적용 */
+.product-detail-card,
+.notes-section,
+.analysis-dashboard {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 모든 카드 박스 크기 통일 */
+.product-detail-card,
+.notes-section,
+.analysis-dashboard {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+.product-detail-card {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 40px;
+}
+
+/* 모든 카드 박스 크기 통일 */
+.product-detail-card,
+.notes-section,
+.analysis-dashboard {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+/* 상세 카드 전용: 오른쪽 정보 영역을 더 넓게 */
+.product-detail-card {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    /* 왼쪽 이미지 : 오른쪽 정보 */
+    align-items: center;
+    /* 세로 가운데 정렬 */
+}
+
+
+.product-detail-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.product-detail-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.product-detail-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.product-detail-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+/* 메인 제품 정보 컨테이너 */
+.product-detail-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.product-detail-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+/* 제품 이미지 */
+.product-image-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.product-main-image {
+    width: 100%;
+    max-width: 432px;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.product-main-image:hover {
+    transform: scale(1.02);
+}
+
+/* 제품 정보 */
+.product-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2d3748;
+    margin: 0;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.product-brand {
+    font-size: 20px;
+    color: #6366f1;
+    font-weight: 600;
+    margin: 0;
+}
+
+.product-details {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.product-concentration,
+.product-sizes,
+.product-gender {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.product-description {
+    color: #4a5568;
+    line-height: 1.8;
+    font-size: 16px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 4px solid #6366f1;
+}
+
+/* 액션 버튼 */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    background: white;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.favorite-btn:hover {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.favorite-btn.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.like-btn:hover {
+    border-color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+}
+
+.like-btn.active {
+    background: #e53e3e;
+    color: white;
+    border-color: #e53e3e;
+}
+
+.dislike-btn:hover {
+    border-color: #718096;
+    background: rgba(113, 128, 150, 0.1);
+    color: #718096;
+}
+
+.dislike-btn.active {
+    background: #718096;
+    color: white;
+    border-color: #718096;
+}
+
+.action-icon {
+    font-size: 16px;
+}
+
+/* 구매 버튼 */
+.buy-btn {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    color: white;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+    width: 100%;
+    max-width: 300px;
+}
+
+.buy-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(30, 64, 175, 0.4);
+}
+
+.buy-btn:disabled {
+    background: #e2e8f0;
+    color: #a0aec0;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 섹션 헤더 */
+.section-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.section-header h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+}
+
+.section-subtitle {
+    font-size: 16px;
+    color: #718096;
+    margin: 0;
+}
+
+/* 노트 섹션 */
+.notes-section {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 40px;
+    max-width: 900px;
+}
+
+.main-accords-section {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.main-accords-section h4 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 25px;
+}
+
+.accords-container {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.accord-item {
+    text-align: center;
+}
+
+.accord-circle {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #1e40af, #3b82f6, #60a5fa);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+}
+
+.accord-name {
+    font-size: 14px;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* 노트 그리드 */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.note-category h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.note-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.note-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a5568;
+    transition: transform 0.3s ease;
+    min-width: 80px;
+}
+
+.note-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.note-image {
+    width: 35px;
+    height: 35px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    margin-bottom: 8px;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 분석 대시보드 */
+.analysis-dashboard {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 40px;
+    max-width: 900px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.analysis-panel {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.analysis-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+}
+
+.analysis-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e0;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.panel-icon {
+    font-size: 32px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.panel-title h4 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+}
+
+.panel-subtitle {
+    font-size: 15px;
+    color: #718096;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* 데이터 시각화 */
+.data-visualization {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.data-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.data-label {
+    min-width: 120px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.data-bar-container {
+    flex: 1;
+    height: 32px;
+    background: #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+    border-radius: 16px;
+    transition: width 0.8s ease;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+}
+
+.data-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.data-value {
+    position: absolute;
+    right: 16px;
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 15px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    z-index: 2;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .product-detail-card {
+        grid-template-columns: 1fr;
+        padding: 25px;
+        gap: 30px;
+    }
+
+    .product-title {
+        font-size: 24px;
+    }
+
+    .action-buttons {
+        justify-content: center;
+    }
+
+    .notes-grid,
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .accords-container {
+        gap: 15px;
+    }
+
+    .accord-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 10px;
+    }
+
+    .analysis-panel {
+        padding: 20px;
+    }
+
+    .data-label {
+        min-width: 80px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-detail-container {
+        padding: 10px;
+    }
+
+    .product-detail-card,
+    .notes-section,
+    .analysis-dashboard {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .dashboard-grid {
+        gap: 20px;
+    }
+}
+
+/* 제품 상세 카드와 다음 섹션 사이 간격 */
+.product-detail-container {
+    margin-bottom: 40px;
+}
+
+/* 전체 컨테이너: 흰색 카드 유지 */
+.product-detail-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+    /* 아래 노트랑 간격 넉넉히 */
+}
+
+/* 디테일 태그 (농도, 용량, 성별) */
+.product-concentration,
+.product-sizes,
+.product-gender {
+    background: #f8f9fa;
+    /* 연한 회색 한 톤으로 통일 */
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+/* 설명 박스: 배경 없애고 텍스트만 */
+.product-description {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #4b5563;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.favorite-btn,
+.like-btn,
+.dislike-btn {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.favorite-btn.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.like-btn.active {
+    background: #e53e3e;
+    color: white;
+    border-color: #e53e3e;
+}
+
+.dislike-btn.active {
+    background: #6b7280;
+    color: white;
+    border-color: #6b7280;
+}
+
+.buy-btn {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+}
+
+.product-description {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #4a5568;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.product-concentration,
+.product-sizes,
+.product-gender {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.action-buttons {
+    margin-top: 10px;
+}
+
+.product-detail-box {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 40px;
+    max-width: 900px;
+}
+
+.product-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.detail-chip {
+    background: #f1f5f9;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.buy-btn {
+    background: #3b82f6;
+    color: white;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+    width: 100%;
+    max-width: 300px;
+}
+
+.accord-circle {
+    width: 70px;
+    height: 70px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.product-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+}
+
+.product-description {
+    max-height: 120px !important;
+    overflow-y: auto !important;
+    line-height: 1.5 !important;
+    margin-top: 12px !important;
+    padding-right: 4px !important;
+}
+
+/* 향수명 크기 줄이기 */
+.product-title {
+    font-size: 20px !important;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+/* 브랜드 글씨 크기 줄이기 */
+.product-brand {
+    font-size: 14px !important;
+    color: #6b7280;
+    /* 회색 느낌 */
+    margin-bottom: 8px;
+}
+
+/* 디테일 칩 (오드퍼퓸, 용량, 성별) */
+.detail-chip {
+    font-size: 13px !important;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-right: 6px;
+}
+
+/* 설명 텍스트 */
+.product-description {
+    font-size: 14px;
+    line-height: 1.4;
+    max-height: 100px;
+    overflow-y: auto;
+    margin-top: 8px;
+    padding-right: 4px;
+}
+
+/* 즐겨찾기/좋아요/싫어요 버튼 */
+.action-btn {
+    font-size: 13px !important;
+    padding: 6px 12px;
+    border-radius: 16px;
+    margin: 4px;
+}
+
+/* 구매 버튼 */
+.buy-btn {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.product-title {
+    font-size: 28px !important;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.product-brand {
+    font-size: 15px !important;
+    color: #6b7280;
+    margin-bottom: 3px;
+}
+
+.detail-chip {
+    font-size: 12px !important;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-right: 4px;
+}
+
+.product-description {
+    font-size: 16px;
+    line-height: 1.5;
+    max-height: none;
+    overflow: visible;
+    margin-top: 8px;
+    padding-right: 4px;
+}
+
+.action-btn {
+    font-size: 12px !important;
+    padding: 5px 10px;
+    border-radius: 14px;
+    margin: 2px;
+}
+
+.buy-btn {
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+    border-radius: 18px;
+    margin-top: 2px;
 }
