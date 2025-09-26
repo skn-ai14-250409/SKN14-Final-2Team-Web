@@ -164,8 +164,7 @@
   <div class="recommendations-section like-dislike-section" style="grid-column: 2 / 3;">
     <div class="like-dislike-container" style="margin-top: 8px;">
       <!-- ✅ 선호 -->
-      <div class="likes-section">
-        <h3 style="margin-bottom:20px;font-size:18px;color:#2d3748;">선호 향수 ({{ likes_count }}개)</h3>
+      <div class="likes-section"><h3 class="section-title">선호 향수 ({{ likes_count }}개)</h3>
         <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
           {% for feedback in liked_perfumes %}
           <div class="recommendation-card like-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
@@ -186,8 +185,7 @@
       </div>
 
       <!-- ✅ 비선호 -->
-      <div class="dislikes-section">
-        <h3 style="margin-bottom:20px;font-size:18px;color:#2d3748;">비선호 향수 ({{ dislikes_count }}개)</h3>
+      <div class="dislikes-section"><h3 class="section-title">비선호 향수 ({{ dislikes_count }}개)</h3>
         <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
           {% for feedback in disliked_perfumes %}
           <div class="recommendation-card dislike-card perfume-card-clickable" data-feedback-id="{{ feedback.id }}" data-perfume-id="{{ feedback.perfume.id }}">
@@ -215,8 +213,7 @@
   <div class="favorites-section" style="grid-column: 3 / 4;">
     <div class="like-dislike-container" style="margin-top: 8px;">
       <!-- ✅ 즐겨찾기 -->
-      <div class="favorites-main-section">
-        <h3 style="margin-bottom:20px;font-size:18px;color:#2d3748;">즐겨찾기 ({{ favorites_count }}개)</h3>
+      <div class="favorites-main-section"><h3 class="section-title">즐겨찾기 ({{ favorites_count }}개)</h3>
         {% if favorite_perfumes %}
         <div class="recommendations-grid" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;margin-bottom:20px!important;margin-top:15px!important;width:100%!important;box-sizing:border-box!important;">
           {% for perfume in favorite_perfumes %}
@@ -314,6 +311,7 @@
     }
     ensureEmpty('.likes-section', likeGrid, '선호 향수가 없습니다.');
     ensureEmpty('.dislikes-section', dislikeGrid, '비선호 향수가 없습니다.');
+    if (window.updateLikeDislikeTabCounts) window.updateLikeDislikeTabCounts();
   }
 
   // ★ 높이 고정 + 5줄 패딩
@@ -525,6 +523,174 @@ document.addEventListener("DOMContentLoaded", function(){
   });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const wrap = document.querySelector('.like-dislike-section .like-dislike-container');
+  if (!wrap) return;
+  const likes = wrap.querySelector('.likes-section');
+  const dislikes = wrap.querySelector('.dislikes-section');
+  if (!likes || !dislikes) return;
+
+  // 탭 바 생성
+  const likeCnt = likes.querySelectorAll('.recommendation-card').length;
+  const dislikeCnt = dislikes.querySelectorAll('.recommendation-card').length;
+
+  const bar = document.createElement('div');
+  bar.className = 'ld-tabs';
+  bar.innerHTML = `
+    <button class="ld-tab on" data-tab="likes">선호 (${likeCnt}개)</button>
+    <button class="ld-tab" data-tab="dislikes">비선호 (${dislikeCnt}개)</button>
+  `;
+  wrap.insertBefore(bar, likes);
+
+  // 기본은 선호만 표시
+  dislikes.style.display = 'none';
+
+  // 탭 토글
+  bar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ld-tab'); if (!btn) return;
+    bar.querySelectorAll('.ld-tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const tab = btn.dataset.tab;
+    likes.style.display    = (tab === 'likes')    ? '' : 'none';
+    dislikes.style.display = (tab === 'dislikes') ? '' : 'none';
+  });
+
+  // 개수 갱신 훅 (updateCounts()에서 호출)
+  window.updateLikeDislikeTabCounts = function () {
+    const likeCnt = likes.querySelectorAll('.recommendation-card').length;
+    const dislikeCnt = dislikes.querySelectorAll('.recommendation-card').length;
+    const likeBtn = bar.querySelector('[data-tab="likes"]');
+    const dislikeBtn = bar.querySelector('[data-tab="dislikes"]');
+    if (likeBtn) likeBtn.textContent = `선호 (${likeCnt}개)`;
+    if (dislikeBtn) dislikeBtn.textContent = `비선호 (${dislikeCnt}개)`;
+  };
+});
+</script>
+<script>
+/* ====== 그리드 페이지네이션 (공용) ====== */
+(function(){
+  const PAGE_SIZE = 6;
+
+  // ★ 비어있는 칸을 채우는 투명 패드 추가
+  function fillPlaceholders(grid, pageSize = PAGE_SIZE){
+    if (!grid) return;
+    // 기존 패드 제거
+    grid.querySelectorAll('.grid-pad').forEach(n=>n.remove());
+
+    // 보이는 카드 개수
+    const visible = grid.querySelectorAll('.recommendation-card')
+      ? Array.from(grid.querySelectorAll('.recommendation-card')).filter(c => c.style.display !== 'none').length
+      : 0;
+
+    const need = Math.max(pageSize - visible, 0);
+    if (!need) return;
+
+    // 카드 높이 측정 (숨겨진 카드만 있다면 임시 표시해서 측정)
+    let sample = grid.querySelector('.recommendation-card:not([style*="display: none"])') 
+              || grid.querySelector('.recommendation-card');
+    let h = 300;
+    if (sample){
+      const wasHidden = sample.style.display === 'none';
+      if (wasHidden) sample.style.display = 'flex';
+      h = sample.getBoundingClientRect().height || h;
+      if (wasHidden) sample.style.display = 'none';
+    }
+
+    // 필요 개수만큼 패드 생성 (DOM의 끝에 붙여서 "위에서부터" 카드가 채워지도록)
+    for (let i=0;i<need;i++){
+      const pad = document.createElement('div');
+      pad.className = 'grid-pad';
+      pad.style.height = h + 'px';
+      grid.appendChild(pad);
+    }
+  }
+
+  function applyPagination(grid, pageSize = PAGE_SIZE){
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.recommendation-card'));
+    const total = cards.length;
+    const pages = Math.max(Math.ceil(total / pageSize), 1);
+
+    let page = parseInt(grid.dataset.page || '1', 10);
+    if (page < 1) page = 1;
+    if (page > pages) page = pages;
+    grid.dataset.page = String(page);
+
+    // 카드 show/hide (인덱스 기준으로 정확히 6개만 표시)
+    cards.forEach((card, idx) => {
+      const p = Math.floor(idx / pageSize) + 1;
+      card.style.display = (p === page) ? 'flex' : 'none';
+    });
+
+    // ★ 부족한 칸은 투명 패드로 채우기
+    fillPlaceholders(grid, pageSize);
+
+    // 페이지 바 만들기/갱신
+    let pager = grid.nextElementSibling;
+    if (!pager || !pager.classList.contains('grid-pager')) {
+      pager = document.createElement('div');
+      pager.className = 'grid-pager';
+      grid.after(pager);
+    }
+
+    if (pages === 1) {
+      pager.innerHTML = '';
+      pager.style.display = 'flex';
+      pager.classList.add('grid-pager--empty');
+      return;
+    } else {
+      pager.classList.remove('grid-pager--empty');
+    }
+    pager.style.display = 'flex';
+
+    const btn = (n, active=false) => `<button class="gp-num ${active?'on':''}" data-p="${n}">${n}</button>`;
+    let html = `<button class="gp-prev"${page===1?' disabled':''}>&lt;</button><div class="gp-pages">`;
+
+    if (pages <= 5) {
+      for (let n=1;n<=pages;n++) html += btn(n, n===page);
+    } else {
+      const pushRange=(s,e)=>{ for(let n=s;n<=e;n++) html+=btn(n, n===page); };
+      if (page <= 3) { pushRange(1,3); html += `<span class="gp-ellipsis">…</span>`; html += btn(pages); }
+      else if (page >= pages-2) { html += btn(1); html += `<span class="gp-ellipsis">…</span>`; pushRange(pages-2,pages); }
+      else { html += btn(1); html += `<span class="gp-ellipsis">…</span>`; pushRange(page-1,page+1); html += `<span class="gp-ellipsis">…</span>`; html += btn(pages); }
+    }
+
+    html += `</div><button class="gp-next"${page===pages?' disabled':''}>&gt;</button>`;
+    pager.innerHTML = html;
+
+    pager.onclick = (e)=>{
+      const num = e.target.closest('.gp-num');
+      if (num) { grid.dataset.page = num.dataset.p; applyPagination(grid, pageSize); return; }
+      if (e.target.closest('.gp-prev') && page > 1) { grid.dataset.page = page-1; applyPagination(grid, pageSize); return; }
+      if (e.target.closest('.gp-next') && page < pages) { grid.dataset.page = page+1; applyPagination(grid, pageSize); return; }
+    };
+  }
+
+  function repaginateAll(){
+    applyPagination(document.querySelector('.likes-section .recommendations-grid'));
+    applyPagination(document.querySelector('.dislikes-section .recommendations-grid'));
+    applyPagination(document.querySelector('.favorites-section .recommendations-grid'));
+  }
+
+  window.repaginateAll = repaginateAll;
+
+  document.addEventListener('DOMContentLoaded', repaginateAll);
+
+  document.addEventListener('click', (e)=>{
+    const tab = e.target.closest('.ld-tab');
+    if (tab) repaginateAll();
+  });
+
+  const _origUpdateCounts = window.updateCounts;
+  window.updateCounts = function(){
+    if (typeof _origUpdateCounts === 'function') _origUpdateCounts();
+    repaginateAll();
+  };
+})();
+</script>
+
 {% endblock script %}
 
 <style>
@@ -752,4 +918,14 @@ body.mypage #rec-list-wrap .rec-list > li > :nth-child(3) a{
   text-overflow: clip !important;
   word-break: break-word !important;
 }
+
+.section-title {
+  margin: 0 0 20px 0 !important;
+  font-size: 18px;
+  color: #2d3748;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
 </style>
