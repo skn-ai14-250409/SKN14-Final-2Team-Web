@@ -370,6 +370,9 @@
         addMessage("안녕하세요! ScentPick AI입니다. 어떤 향수를 찾고 계신가요?", false, false);
         document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
         input.focus();
+
+        // 대화 목록 갱신
+        await loadConversations();
       } catch (e) {
         console.error('새 채팅 시작 실패:', e);
         addMessage(`새 채팅을 시작하는 중 문제가 발생했습니다.`, false, false);
@@ -513,7 +516,13 @@
               }
               if (data.done) {
                 if (data.conversation_id) {
+                  const isNewConversation = !conversationId;
                   conversationId = data.conversation_id;
+
+                  // 새 대화가 생성된 경우 대화 목록 갱신
+                  if (isNewConversation) {
+                    loadConversations();
+                  }
                 }
                 if (data.perfume_list && data.perfume_list.length > 0) {
                   addPerfumeRecommendations(loader.wrap, data.perfume_list);
