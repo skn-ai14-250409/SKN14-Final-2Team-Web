@@ -39,7 +39,7 @@
         <div class="products-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
           {% for p in perfumes %}
             {% if p.detail_url %}
-              <a href="{{ p.detail_url }}" target="_blank" rel="noopener" class="product-card weather-card">
+              <a href="https://scentpick.store/perfume/{{ p.id }}" target="_blank" rel="noopener" class="product-card weather-card">
             {% else %}
               <div class="product-card weather-card">
             {% endif %}
@@ -100,7 +100,7 @@
         <div class="products-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
           {% for p in seasonal_perfumes %}
             {% if p.detail_url %}
-              <a href="{{ p.detail_url }}" target="_blank" rel="noopener" class="product-card season-card">
+              <a href="https://scentpick.store/perfume/{{ p.id }}" target="_blank" rel="noopener" class="product-card season-card">
             {% else %}
               <div class="product-card season-card">
             {% endif %}
